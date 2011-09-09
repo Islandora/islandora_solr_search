@@ -31,7 +31,7 @@ class IslandoraSolrQueryProcessor {
   function buildAndExecuteQuery($query, $fq=null, $dismax=null) {
 
     if (variable_get('islandora_solr_search_block_request_handler') == 'standard') {
-      $namespace = trim(variable_get('solr_namespace_restriction'));
+      $namespace = trim(variable_get('solr_namespace_restriction', NULL));
       if ($namespace) {
         if (strpos($fq, "PID:$namespace") === FALSE) {
           $fq = "PID:$namespace*";
