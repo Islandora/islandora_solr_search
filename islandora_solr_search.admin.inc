@@ -15,7 +15,7 @@ function islandora_solr_admin_settings(&$form_state) {
   }
   $handlers['standard'] = 'standard';
 
-
+ $handler = !empty($form_state['values']['islandora_solr_search_block_request_handler']) ? $form_state['values']['islandora_solr_search_block_request_handler'] : variable_get('islandora_solr_search_block_request_handler', 'standard');
   $solr_url = !empty($form_state['values']['islandora_solr_search_block_url']) ? $form_state['values']['islandora_solr_search_block_url'] : variable_get('islandora_solr_search_block_url', 'localhost:8080/solr');
   $solr_avail = solr_available($solr_url);
   if ($solr_avail) {
@@ -70,38 +70,53 @@ function islandora_solr_admin_settings(&$form_state) {
     '#type' => 'select',
     '#title' => t('Request Handler'),
     '#options' => $handlers,
-    '#description' => t('Request handlers defined by !config', array('!config' => l('solrconfig.xml', 'http://wiki.apache.org/solr/SolrConfigXml' ))),
-    '#default_value' => variable_get('islandora_solr_search_block_request_handler', 'standard'),
+    '#description' => t('Request handlers defined by !config', array('!config' => l('solrconfig.xml', 'http://wiki.apache.org/solr/SolrConfigXml'))),
+    '#default_value' => $handler,
+    '#ahah' => array(
+      'path' => 'islandora/solr/process',
+      'wrapper' => 'solr-url',
+      'effect' => 'fade',
+      'event' => 'change',
+    ),
   );
 
+  if ($handler == 'standard') {
+    $form['solr_ahah_wrapper']['solr_namespace_restriction'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Limit results to namespace'),
+      '#size' => 5,
+      '#default_value' => variable_get('solr_namespace_restriction', ''),
+      '#description' => t("Enter a namespace ie 'demo' to restrict results to PIDs within that namespace <br /><em>note: this setting may only be used with 'standard' request handler.</em>"),
+    );
+  }
   $profiles = module_invoke_all("islandora_solr_primary_display");
   uksort($profiles, "sort_default_first");
-  foreach( $profiles as $machine_name => $profile ) {
+  foreach ($profiles as $machine_name => $profile) {
     $islandora_solr_primary_display_options[$machine_name] = $profile['name'];
   }
 
-  if( !empty( $islandora_solr_primary_display_options )) {
+  if (!empty($islandora_solr_primary_display_options)) {
     $form['islandora_solr_primary_display'] = array(
       '#type' => 'radios',
       '#title' => t('Default Display Profile'),
       '#options' => $islandora_solr_primary_display_options,
-      '#default_value' => variable_get( 'islandora_solr_primary_display', 'default' ),
+      '#default_value' => variable_get('islandora_solr_primary_display', 'default'),
       '#description' => "Preferred normal display profile for search results.  These may be provided by third-party modules. ",
     );
   }
 
   $profiles = module_invoke_all("islandora_solr_secondary_display");
   uksort($profiles, "sort_default_first");
-  foreach( $profiles as $machine_name => $profile ) {
+  foreach ($profiles as $machine_name => $profile) {
     $islandora_solr_secondary_display_options[$machine_name] = $profile['name'];
   }
 
-  if( !empty( $islandora_solr_secondary_display_options )) {
+  if (!empty($islandora_solr_secondary_display_options)) {
     $form['islandora_solr_secondary_display'] = array(
       '#type' => 'checkboxes',
       '#title' => t('Secondary Display Profiles'),
       '#options' => $islandora_solr_secondary_display_options,
-      '#default_value' => variable_get( 'islandora_solr_secondary_display', array() ),
+      '#default_value' => variable_get('islandora_solr_secondary_display', array()),
       '#description' => "Enabled secondary output types. ",
     );
   }
@@ -305,7 +320,6 @@ function solr_settings_form_submit($form, &$form_state) {
   drupal_rebuild_theme_registry();
 }
 
-
 function solr_admin_refresh($form, &$form_state) {
   $values = $form_state['values'];
   unset($form_state['submit_handlers']);
@@ -324,7 +338,9 @@ function solr_admin_refresh($form, &$form_state) {
  * @return <int> 
  */
 function sort_default_first($a, $b) {
-  if( !strcasecmp($a, 'default' )) return -1;
-  if( !strcasecmp($b, 'default' )) return 1;
-  return strcasecmp($a,$b);
+  if (!strcasecmp($a, 'default'))
+    return -1;
+  if (!strcasecmp($b, 'default'))
+    return 1;
+  return strcasecmp($a, $b);
 }
