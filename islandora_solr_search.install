@@ -21,7 +21,6 @@
  * @see _update_message_text()
  * @see _update_cron_notify()
  */
-
 function islandora_solr_search_requirements($phase) {
   $t = get_t();
   $requirements = array();
@@ -31,9 +30,9 @@ function islandora_solr_search_requirements($phase) {
 
     if (!class_exists(Apache_Solr_Service)) {
       $requirements['islandora_solr_search'] = array(
-          'title' => $t('Missing Apache Client'),
-          'description' => $t('This module requires the ' . l('Apache Solr php client', 'http://code.google.com/p/solr-php-client') . '.  Please install the client directory in the root directory of this module before continuing.'),
-          'severity' => REQUIREMENT_ERROR,
+        'title' => $t('Missing Apache Client'),
+        'description' => $t('This module requires the ' . l('Apache Solr php client', 'http://code.google.com/p/solr-php-client') . '.  Please install the client directory in the root directory of this module before continuing.'),
+        'severity' => REQUIREMENT_ERROR,
       );
     }
   }

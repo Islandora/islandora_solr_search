@@ -211,12 +211,21 @@ function islandora_solr_search_islandora_solr_query_blocks() {
   );
 }
 
+/**
+ * islandora solr simple search form
+ * @return type 
+ */
 function islandora_solr_simple_search_form() {
   module_load_include('inc', 'islandora_solr_search', 'IslandoraSolrResults');
   $resultsClass = new IslandoraSolrResults();
   return $resultsClass->build_simple_solr_form();
 }
 
+/**
+ * islandora solr search block form validate
+ * @param type $form
+ * @param type $form_state 
+ */
 function islandora_solr_search_block_form_validate($form, &$form_state) {
 
   $repeat = variable_get('islandora_solr_search_block_repeat', '3');
@@ -231,6 +240,11 @@ function islandora_solr_search_block_form_validate($form, &$form_state) {
   }
 }
 
+/**
+ * islandora solr simple search form submit
+ * @param type $form
+ * @param type $form_state 
+ */
 function islandora_solr_simple_search_form_submit($form, &$form_state) {
   $searchString = $form_state['values']['islandora_simple_search_query'];
   $searchString = htmlspecialchars(drupal_urlencode($searchString), ENT_QUOTES, 'utf-8', false);
@@ -238,6 +252,11 @@ function islandora_solr_simple_search_form_submit($form, &$form_state) {
   drupal_goto("islandora/solr/search/$searchString/-/dismax");
 }
 
+/**
+ * islandora solr search block form
+ * @global type $queryClass
+ * @return type 
+ */
 function islandora_solr_search_block_form() {
   global $queryClass;
   islandora_solr_search_init();
@@ -247,6 +266,12 @@ function islandora_solr_search_block_form() {
   return $resultsClass->build_solr_search_form(null, null, $queryClass->solrQuery);
 }
 
+/**
+ * theme islandora solr search block form
+ * @global type $queryClass
+ * @param type $form
+ * @return type 
+ */
 function theme_islandora_solr_search_block_form($form) {
   global $queryClass;
   islandora_solr_search_init();
@@ -256,6 +281,14 @@ function theme_islandora_solr_search_block_form($form) {
   return $resultsClass->theme_solr_search_form($form);
 }
 
+/**
+ * islandora solr search
+ * @global type $queryClass
+ * @param type $query
+ * @param type $fq
+ * @param type $dismax
+ * @return type 
+ */
 function islandora_solr_search($query, $fq=null, $dismax=null) {
   global $queryClass;
   islandora_solr_search_init();
@@ -323,6 +356,12 @@ function islandora_solr_search($query, $fq=null, $dismax=null) {
 //  return $queryResult;
 }
 
+/**
+ * islandora solr search block form submit
+ * @global type $queryClass
+ * @param type $form
+ * @param type $form_state 
+ */
 function islandora_solr_search_block_form_submit($form, &$form_state) {
   global $queryClass;
   islandora_solr_search_init();
@@ -360,7 +399,7 @@ function islandora_solr_search_help($path, $arg) {
   switch ($path) {
     case 'admin/help#islandora_solr_search':
       return t(
-          '<p>
+              '<p>
          The Islandora Solr Search extends the functionality of the Fedora_Repository module.
          This module allows one or more of a series of blocks to be configured to search a solr index.
          This module can co-exist with the original Fedora_Repositories search block, but Solr\'s
@@ -379,15 +418,20 @@ function islandora_solr_search_help($path, $arg) {
            <li>The Islandora Solr Simple Search Block will use will add  defType=dismax to the configured request handler. The request handler tag in <b>solrconfig.xml</b> must have an attribute of <b>default="true"</b>.</li>
          </ul>
         ', array(
-        '!guide' => l('Islandora Guide', 'https://wiki.duraspace.org/display/ISLANDORA/Islandora+Guide'),
-        '!sWiki' => l("Solr Wiki", 'http://wiki.apache.org/solr/SolrTomcat'),
-        '!GSearch' => l('GSearch Documentation', 'https://wiki.duraspace.org/display/FCSVCS/Generic+Search+Service+2.2'),
-        '!client' => l('Apache Solr php client', 'http://code.google.com/p/solr-php-client'),
-          )
+            '!guide' => l('Islandora Guide', 'https://wiki.duraspace.org/display/ISLANDORA/Islandora+Guide'),
+            '!sWiki' => l("Solr Wiki", 'http://wiki.apache.org/solr/SolrTomcat'),
+            '!GSearch' => l('GSearch Documentation', 'https://wiki.duraspace.org/display/FCSVCS/Generic+Search+Service+2.2'),
+            '!client' => l('Apache Solr php client', 'http://code.google.com/p/solr-php-client'),
+              )
       );
   }
 }
 
+/**
+ * islandora solr search init
+ * @global IslandoraSolrQueryProcessor $queryClass
+ * @staticvar boolean $islandora_solr_search_init 
+ */
 function islandora_solr_search_init() {
   static $islandora_solr_search_init = false;
   if (!$islandora_solr_search_init) {

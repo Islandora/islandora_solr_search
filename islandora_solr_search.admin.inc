@@ -15,7 +15,7 @@ function islandora_solr_admin_settings(&$form_state) {
   }
   $handlers['standard'] = 'standard';
 
- $handler = !empty($form_state['values']['islandora_solr_search_block_request_handler']) ? $form_state['values']['islandora_solr_search_block_request_handler'] : variable_get('islandora_solr_search_block_request_handler', 'standard');
+  $handler = !empty($form_state['values']['islandora_solr_search_block_request_handler']) ? $form_state['values']['islandora_solr_search_block_request_handler'] : variable_get('islandora_solr_search_block_request_handler', 'standard');
   $solr_url = !empty($form_state['values']['islandora_solr_search_block_url']) ? $form_state['values']['islandora_solr_search_block_url'] : variable_get('islandora_solr_search_block_url', 'localhost:8080/solr');
   $solr_avail = solr_available($solr_url);
   if ($solr_avail) {
@@ -225,7 +225,7 @@ function solr_available($solr_url) {
 }
 
 /**
- *
+ * get handlers??
  * @param String $solr_url
  * @return array
  */
@@ -262,7 +262,7 @@ function update_solr_url_div() {
 }
 
 /**
- *
+ * callback prep ??
  * @return array
  * Utilty function to prep $form_state for ahah
  */
@@ -282,7 +282,7 @@ function callback_prep() {
 }
 
 /**
- *
+ * Solr settings from submin
  * @param array $form
  * @param array $form_state
  * @return null
@@ -320,6 +320,11 @@ function solr_settings_form_submit($form, &$form_state) {
   drupal_rebuild_theme_registry();
 }
 
+/**
+ * Solr admin refresh
+ * @param type $form
+ * @param array $form_state 
+ */
 function solr_admin_refresh($form, &$form_state) {
   $values = $form_state['values'];
   unset($form_state['submit_handlers']);

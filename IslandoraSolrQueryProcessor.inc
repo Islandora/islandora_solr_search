@@ -1,15 +1,18 @@
 <?php
 
-/*
+/**
+ * @file
  * Contains methods to build and execute a solr query.
  * Depends on Apache_Solr_Php client.
  */
 
-// TODO: Stop using global vars, start using this object's vars.
-// The module itself should initially create an instance of this
-// object and reference the query vars inside that object when calling
-// other output display functions.
-
+/**
+ * Islandora Solr Query Processor
+ * @todo Stop using global vars, start using this object's vars.
+ *  The module itself should initially create an instance of this
+ *  object and reference the query vars inside that object when calling
+ *  other output display functions.
+ */
 class IslandoraSolrQueryProcessor {
 
   static $facetSeparator = '~'; //used to separate facets in url
@@ -23,11 +26,21 @@ class IslandoraSolrQueryProcessor {
   public $solrFilters;
   public $solrResult;
 
+  /**
+   * Constructor
+   */
   function IslandoraSolrQueryProcessor() {
     module_load_include('php', 'islandora_solr_search', 'SolrPhpClient/Apache/Solr/Service');
     module_load_include('inc', 'islandora_solr_search', 'includes/common');
   }
 
+  /**
+   * Build and execute a query
+   * @param type $query
+   * @param type $fq
+   * @param type $dismax
+   * @return type 
+   */
   function buildAndExecuteQuery($query, $fq=null, $dismax=null) {
 
     if (variable_get('islandora_solr_search_block_request_handler', NULL) == 'standard') {
@@ -42,8 +55,10 @@ class IslandoraSolrQueryProcessor {
     return $this->executeQuery();
   }
 
-  //default implementation for solr search.  You can configure others in the block config settings
-  // TODO: Get rid of the global $facetArray?  It is the only global yet relied upon.
+  /**
+   * Default implementation for solr search.  You can configure others in the block config settings
+   * @todo Get rid of the global $facetArray?  It is the only global yet relied upon.
+   */
   function buildQuery($query, $fq=null, $dismax=null) {
     // Get pager variable
     $startPage = isset($_GET['page']) ? $_GET['page'] : 0;
@@ -79,7 +94,6 @@ class IslandoraSolrQueryProcessor {
     $rawFacetVals = variable_get("islandora_solr_search_block_facets", 'dc.subject,dc.type');
     $facetArray = islandora_build_substitution_list($rawFacetVals);
     $facetFields = implode(",", array_keys($facetArray));
-
 
 
     $facetlimit = variable_get('islandora_solr_search_block_facet_limit', '12');
@@ -151,10 +165,17 @@ class IslandoraSolrQueryProcessor {
     return;
   }
 
+  /**
+   * Reset Results
+   */
   function resetResults() {
     unset($this->solrResult);
   }
 
+  /**
+   * Execute the query
+   * @return type 
+   */
   function executeQuery() {
 
     // //////////////////////////////////////////////////////////////////////////// //
