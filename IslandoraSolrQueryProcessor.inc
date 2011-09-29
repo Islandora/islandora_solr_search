@@ -50,6 +50,9 @@ class IslandoraSolrQueryProcessor {
       }
 
       if ($namespace) {
+        if ($fq == '-') {
+          $fq = '';
+        }
         if (strpos($fq, "PID:$namespace") === FALSE) {
           if ($fq) {
             $fq .= $this->facetSeparator;
@@ -116,7 +119,6 @@ class IslandoraSolrQueryProcessor {
 
 
     $debugQuery = (variable_get('islandora_solr_search_debug_mode', 0) ? "true" : null ); //any val incl. 'false' is treated as true by Solr
-    $fq = preg_replace('/PID:.*\*/', '', $fq);
 
     if ($fq != NULL && $fq != '-') {
       $fq = restoreSlashes($fq); //put the slash back
