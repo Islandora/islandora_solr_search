@@ -139,6 +139,7 @@ class IslandoraSolrQueryProcessor {
     // The breadcrumb should go in the display class
     $queryurl = "islandora/solr/search/" . replaceSlashes($this->solrQuery);
     $breadcrumb_fq = $islandora_fq;
+    $facet = NULL; // Nigelb, This is being used outside of the for loop where it is being created this is probably incorrect.
     if (strcmp($islandora_fq, "-")) {
       foreach (csv_explode(IslandoraSolrQueryProcessor::$facetSeparator, $islandora_fq, '"', true) as $facet) {
         $field = substr($facet, 0, strpos($facet, ":"));
