@@ -98,8 +98,8 @@ class IslandoraSolrResultsTable extends IslandoraSolrResults {
       $translated_field_name = isset($this->allSubsArray[$field]) ? $this->allSubsArray[$field] : $field;
       $field_array = array(
         'data' => $translated_field_name,
-        'field' => null,
-        'sort' => null,
+        'field' => NULL,
+        'sort' => NULL,
         'title' => $field,
       );
       $header[] = $field_array;
@@ -114,7 +114,7 @@ class IslandoraSolrResultsTable extends IslandoraSolrResults {
       $result_num = $recordStart + $num + 1;
       $rows[$row][] = array(
         'data' => (isset($val_array['PID']) ? l($result_num,'fedora/repository/'.$val_array['PID']) : $result_num),
-        'header' => true,
+        'header' => TRUE,
       );
       foreach ($fields as $field) {
         if (isset ($val_array[$field])) {
@@ -129,7 +129,7 @@ class IslandoraSolrResultsTable extends IslandoraSolrResults {
     $output .= theme_table($header,$rows,array('class'=>'islandora_solr_search_results_table'));
 
     if( variable_get('islandora_solr_search_debug_mode', 0) ) { // debug dump
-      $results_r .= "<pre>Results: ".print_r($results,true)."</pre>";
+      $results_r .= "<pre>Results: ".print_r($results,TRUE)."</pre>";
       $fieldset_r = array(
         '#title' => t("Raw Results"),                                                                                                                                             
         '#collapsible' => TRUE,

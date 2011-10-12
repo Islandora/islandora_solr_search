@@ -57,7 +57,7 @@ function replaceSlashes($str) {
 
 
 //a better explode method allows quotes in the returned strings.  taken from the php.net site
-function csv_explode($delim=',', $str, $enclose='"', $preserve=false) {
+function csv_explode($delim=',', $str, $enclose='"', $preserve=FALSE) {
   $resArr = array();
   $n = 0;
   $expEncArr = explode($enclose, $str);

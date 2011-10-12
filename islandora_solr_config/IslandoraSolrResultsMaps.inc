@@ -41,7 +41,7 @@ class IslandoraSolrResultsMaps extends IslandoraSolrResults {
     foreach ($results->response->docs as $doc) {
       $output .= '<li><table>';
       $rowspan = 0;
-      $pidValue = null;
+      $pidValue = NULL;
       $output .= '<tr>';
       $output .= '<td ><img src="' . $base_url . '/fedora/repository/' . htmlspecialchars($doc->PID, ENT_QUOTES, 'utf-8') . '/TN"/></td>';
       $output .= '<td><table>';

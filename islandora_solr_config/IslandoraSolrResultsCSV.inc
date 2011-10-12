@@ -74,7 +74,7 @@ class IslandoraSolrResultsCSV extends IslandoraSolrResults {
 
       // else ...
       $rawResponse = $solrQueryProcessor->solrResult->getRawResponse();
-      $responseData = json_decode($rawResponse,true); // true == associative array, not object
+      $responseData = json_decode($rawResponse,TRUE); // TRUE == associative array, not object
       unset($rawResponse); // unknown usefulness
 
       $docs = $responseData['response']['docs'];
