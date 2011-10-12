@@ -249,6 +249,7 @@ function islandora_solr_simple_search_form_submit($form, &$form_state) {
   $searchString = $form_state['values']['islandora_simple_search_query'];
   $searchString = htmlspecialchars(drupal_urlencode($searchString), ENT_QUOTES, 'utf-8', false);
   $searchString = str_replace('/', '~slsh~', $searchString); //replace the slash so url doesn't break
+  $dismax = '';
   if (variable_get('dismax_allowed', FALSE)) {
     $dismax = 'dismax';
   }

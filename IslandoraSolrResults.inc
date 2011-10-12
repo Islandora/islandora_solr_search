@@ -175,7 +175,7 @@ class IslandoraSolrResults {
       }
       $items[] = theme_table(null, $rows, array('class' => 'islandora_solr_search_results_object'));
     }
-    $output .= theme_item_list($items, $title, $type, array('class' => 'stuff', 'start' => ($recordStart + 1)));
+    $output = theme_item_list($items, $title, $type, array('class' => 'stuff', 'start' => ($recordStart + 1)));
     if (variable_get('islandora_solr_search_debug_mode', 0)) { // debug dump
       $results_r .= "<pre>Results: " . print_r($results, true) . "</pre>";
       $fieldset_r = array(
@@ -218,9 +218,7 @@ class IslandoraSolrResults {
       // In the future, we could reasonably break the query on boolean operators
       // and allow one part to be removed at a time.
       $query_list_items[] .= l(
-              '<img class="islandora_solr_add_remove_link" src="' . $base_url . '/' . drupal_get_path('module', 'islandora_solr_search') . '/images/delete.png" alt="Remove search term">',
-              'islandora/solr/search/' . " " . '/' . replaceSlashes($islandora_fq) . '/dismax',
-              array('html' => true)
+              '<img class="islandora_solr_add_remove_link" src="' . $base_url . '/' . drupal_get_path('module', 'islandora_solr_search') . '/images/delete.png" alt="Remove search term">', 'islandora/solr/search/' . " " . '/' . replaceSlashes($islandora_fq) . '/dismax', array('html' => true)
           ) . ' ' . stripslashes($solrQueryProcessor->solrQuery);
 
       $output .= '<div class="islandora_solr_search_query_wrap">';
@@ -260,9 +258,7 @@ class IslandoraSolrResults {
           $filter_name = substr($filter_name, 1);
         }
         $filter_list_items[] = l(
-                '<img class="islandora_solr_add_remove_link" src="' . $base_url . '/' . drupal_get_path('module', 'islandora_solr_search') . '/images/delete.png" alt="Remove this filter">',
-                'islandora/solr/search/' . replaceSlashes($solrQueryProcessor->solrQuery) . '/' . replaceSlashes($filter_disable) . '/' . $solrQueryProcessor->solrDefType,
-                array('html' => true)
+                '<img class="islandora_solr_add_remove_link" src="' . $base_url . '/' . drupal_get_path('module', 'islandora_solr_search') . '/images/delete.png" alt="Remove this filter">', 'islandora/solr/search/' . replaceSlashes($solrQueryProcessor->solrQuery) . '/' . replaceSlashes($filter_disable) . '/' . $solrQueryProcessor->solrDefType, array('html' => true)
             ) . ' ' . $this->facetFieldArray[$filter_name] . ($exclude ? ' != ' : ' = ') . $filter_value;
       }
     }
@@ -308,9 +304,9 @@ class IslandoraSolrResults {
    */
   function displayFacets($solrQueryProcessor) {
     global $base_url;
-    $output = '';
+    $facet_output = $output = '';
     $islandora_fq = $solrQueryProcessor->solrFilters;
-    $islandora_facets = $solrQueryProcessor->solrResult->facet_counts->facet_fields;
+    $islandora_facets = isset($solrQueryProcessor->solrResult->facet_counts->facet_fields) ? $solrQueryProcessor->solrResult->facet_counts->facet_fields : array();
 
     if (empty($islandora_facets)) {
       return $output; //no facets to show
@@ -326,6 +322,7 @@ class IslandoraSolrResults {
         unset($normal_facet_output);
         $filter_include = null;
         $filter_exclude = null;
+        $disable_link = FALSE;
         foreach ($field as $name => $number) {
           if ($islandora_fq && $islandora_fq != '-') {//there are existing facets in the query
             $disable_link = strstr($islandora_fq, $key . ':"' . replaceSlashes($name) . '"'); //we don't want a link for this facet as we already used it
@@ -445,7 +442,8 @@ class IslandoraSolrResults {
         $t = $i - 1;
         $j = $i - 2;
         $andorj = ( isset($andOrs[$j]) ? $andOrs[$j] : 'AND' );
-        $field_and_term = explode(':', $queryArray[$t]);
+
+        $field_and_term = isset($queryArray[$t]) ? explode(':', $queryArray[$t]) : array('', '');
         $form["andor$t"] = array(
           '#title' => '',
           '#type' => 'select',
