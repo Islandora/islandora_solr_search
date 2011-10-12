@@ -204,7 +204,9 @@ class IslandoraSolrResults {
     global $base_url;
     $output = '';
     $islandora_fq = restoreSlashes($solrQueryProcessor->solrFilters);
-    $islandora_facets = $solrQueryProcessor->solrResult->facet_counts->facet_fields;
+    $islandora_facets = isset($solrQueryProcessor->solrResult->facet_counts->facet_fields) ?
+        $solrQueryProcessor->solrResult->facet_counts->facet_fields :
+        NULL;
     //dsm($islandora_facets);
     if (strlen(trim($solrQueryProcessor->solrQuery))) {
 

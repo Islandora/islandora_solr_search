@@ -122,9 +122,10 @@ function islandora_solr_admin_settings(&$form_state) {
     );
   }
 
+  //Notice: Undefined index: #options in expand_checkboxes() (line 1930 of /Applications/MAMP/htdocs/drupal-6.22/includes/form.inc).
   $form['dismax_allowed'] = array(
-    '#type' => 'checkboxes',
-    '#value' => $dismax_allowed
+    '#type' => 'hidden',
+    '#value' => variable_get('dismax_allowed', $dismax_allowed),
   );
 
   $form['islandora_solr_search_block_repeat'] = array(
@@ -269,7 +270,7 @@ function check_dismax($solr_url, $selected_handler) {
         foreach ($handler->lst as $first) {
           foreach ($first->str as $str) {
             if ($str['name'] == 'qf') {
-              $dismax= true;
+              $dismax = true;
             }
           }
         }
