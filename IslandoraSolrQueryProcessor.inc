@@ -115,7 +115,7 @@ class IslandoraSolrQueryProcessor {
     $requestHandler = variable_get("islandora_solr_search_block_request_handler", "standard");
     $highlight_field =  variable_get("islandora_solr_snippet_field", "");
     $this->solrParams = array(
-      'facet' => 'TRUE',
+      'facet' => 'true',
       'facet.mincount' => $facetMinCount,
       'facet.limit' => $facetlimit,
       'qt' => $requestHandler,
