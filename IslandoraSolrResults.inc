@@ -134,11 +134,23 @@ class IslandoraSolrResults {
    * @param Apache_Solr_Object $results
    */
   function printResults($results) {
+
     $items = array();
     $type = "ol";
     $title = NULL;
     $recordStart = $results->response->start;
     $limitResults = variable_get('islandora_solr_search_limit_result_fields', 0);
+    $highlights = $results->highlighting;
+    foreach ($highlights as $highlight) {
+      $fields = get_object_vars($highlight);
+      $keys = array_keys($fields);
+      if (count($keys) > 0) {
+        foreach ($highlight->$keys[0] as $body) {
+          //drupal_set_message("$keys[0]  $body");
+        }
+      }
+      //drupal_set_message($highlight->$keys[0]);
+    }
 
     global $base_url;
     if (empty($results)) {

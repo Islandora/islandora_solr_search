@@ -125,7 +125,7 @@ function islandora_solr_admin_settings(&$form_state) {
   //Notice: Undefined index: #options in expand_checkboxes() (line 1930 of /Applications/MAMP/htdocs/drupal-6.22/includes/form.inc).
   $form['dismax_allowed'] = array(
     '#type' => 'hidden',
-    '#value' => variable_get('dismax_allowed', $dismax_allowed),
+    '#value' => $dismax_allowed,
   );
 
   $form['islandora_solr_search_block_repeat'] = array(
@@ -146,7 +146,15 @@ function islandora_solr_admin_settings(&$form_state) {
     '#default_value' => variable_get('islandora_solr_searchterms', 'dc.title ~ Title'),
     '#wysiwyg' => FALSE,
   );
-
+  $form['islandora_solr_snippet_field'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Snippet Field'),
+    '#default_value' => variable_get('islandora_solr_snippet_field', ''),
+    '#description' => t("If a match is found on this field, a snippet of text will be returned, with the search term highlighted.<br />
+      An optional friendly label may inserted using the following pattern <strong>dsm.Text ~ Full Text</strong><br />
+      <strong>Note:</strong><em> This feature is not supported by all display profiles.</em> "),
+    '#wysiwyg' => FALSE,
+  );
   $form['islandora_solr_search_block_facets'] = array(
     '#type' => 'textarea',
     '#title' => t('Facet Fields'),

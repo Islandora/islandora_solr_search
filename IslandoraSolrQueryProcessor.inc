@@ -104,16 +104,24 @@ class IslandoraSolrQueryProcessor {
     $rawFacetVals = variable_get("islandora_solr_search_block_facets", 'dc.subject,dc.type');
     $facetArray = islandora_build_substitution_list($rawFacetVals);
     $facetFields = implode(",", array_keys($facetArray));
-
+    $keys = array('');
+    $snippetArray = islandora_build_substitution_list(variable_get("islandora_solr_snippet_field", ""));
+    if(is_array($snippetArray)){
+      $keys = array_keys($snippetArray);
+    }
 
     $facetlimit = variable_get('islandora_solr_search_block_facet_limit', '12');
     $facetMinCount = variable_get('islandora_solr_search_block_facet_min_count', '2');
     $requestHandler = variable_get("islandora_solr_search_block_request_handler", "standard");
+    $highlight_field =  variable_get("islandora_solr_snippet_field", "");
     $this->solrParams = array(
       'facet' => 'TRUE',
       'facet.mincount' => $facetMinCount,
       'facet.limit' => $facetlimit,
       'qt' => $requestHandler,
+      'hl' => 'true',
+      'hl.fl' => trim($keys[0]),
+      'hl.fragsize' =>400,
       'facet.field' => explode(',', $facetFields), //comma separated list configured in the block config
     );
 
