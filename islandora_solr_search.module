@@ -103,13 +103,15 @@ function islandora_solr_search_block($op = 'list', $delta = 0, $edit = array()) 
           $displayClass = new IslandoraSolrResults();
           $block_function = $solr_blocks[$delta]['function'];
           if (method_exists($displayClass, $block_function)) {
-            $block['content'] = $displayClass->$block_function($queryClass);
+            $content = $displayClass->$block_function($queryClass);
+            $block['content'] = !empty($content) ? $content : NULL;
           }
 
           // Otherwise, simply load the form.
         }
         elseif (!empty($solr_blocks[$delta]['form'])) {
           $block['content'] = drupal_get_form($solr_blocks[$delta]['form']);
+          var_dump('content');
         }
       }
 

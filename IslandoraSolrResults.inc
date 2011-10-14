@@ -391,9 +391,11 @@ class IslandoraSolrResults {
     // This is a quick workaround:                                                      //
     //////////////////////////////////////////////////////////////////////////////////////
     $facet_output = str_replace('%2B', '%252B', $facet_output);
-    $output .='<div class="islandora_solr_search_facet_wrap">';
-    $output .= $facet_output;
-    $output .= '</div>';
+    if(!empty($facet_output)) {
+      $output .='<div class="islandora_solr_search_facet_wrap">';
+      $output .= $facet_output;
+      $output .= '</div>';
+    }
 
     return $output;
   }
