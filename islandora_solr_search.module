@@ -111,7 +111,6 @@ function islandora_solr_search_block($op = 'list', $delta = 0, $edit = array()) 
         }
         elseif (!empty($solr_blocks[$delta]['form'])) {
           $block['content'] = drupal_get_form($solr_blocks[$delta]['form']);
-          var_dump('content');
         }
       }
 
@@ -252,7 +251,7 @@ function islandora_solr_simple_search_form_submit($form, &$form_state) {
   $searchString = htmlspecialchars(drupal_urlencode($searchString), ENT_QUOTES, 'utf-8', FALSE);
   $searchString = str_replace('/', '~slsh~', $searchString); //replace the slash so url doesn't break
   $dismax = '';
-  if (variable_get('dismax_allowed', FALSE)) {
+  if (variable_get('dismax_allowed', TRUE)) {
     $dismax = 'dismax';
   }
   drupal_goto("islandora/solr/search/$searchString/-/$dismax");

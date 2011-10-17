@@ -280,7 +280,6 @@ function check_dismax($solr_url, $selected_handler) {
           foreach ($first->str as $str) {
             if ($str['name'] == 'qf') {
               $dismax= TRUE;
-              $dismax = true;
             }
           }
         }
