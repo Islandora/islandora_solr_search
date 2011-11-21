@@ -325,6 +325,10 @@ class IslandoraSolrResults {
     if (empty($islandora_facets)) {
       return $output; //no facets to show
     }
+    
+    // set counter to include javascript later
+    $i = 0;
+    
     foreach ($islandora_facets as $key => $field) {
       $list_items = array();
       $list_type = "ul";
@@ -337,6 +341,7 @@ class IslandoraSolrResults {
         $filter_include = NULL;
         $filter_exclude = NULL;
         $disable_link = FALSE;
+//        dsm($field);
         foreach ($field as $name => $number) {
           if ($islandora_fq && $islandora_fq != '-') {//there are existing facets in the query
             $disable_link = strstr($islandora_fq, $key . ':"' . replaceSlashes($name) . '"'); //we don't want a link for this facet as we already used it
@@ -375,15 +380,47 @@ class IslandoraSolrResults {
         }
         if ($facet_count >= 2) {
           $facet_output .='<div class="islandora_solr_search_facet">';
+          
+          // shown limit
+          $shown_limit = variable_get('islandora_solr_search_block_facet_shown_limit', 0);
+          $facetlimit = variable_get('islandora_solr_search_block_facet_limit', '12');
+          $facetMinCount = variable_get('islandora_solr_search_block_facet_min_count', '2');
+          
           $list_title = $this->facetFieldArray[$key];
           $list_type = "ul";
           $list_attributes = array('class' => 'islandora_solr_search_facet_list facet_list');
+          
+          // set show more variable
+          $show_more = FALSE;
+         
+          // split the array if shown_limit is between the min and max limits and if the total is larger than the shown_limit.
+          if ($facet_count > $shown_limit AND $shown_limit < $facetlimit AND $shown_limit > $facetMinCount) {
+            $list_items_hidden = array_slice($list_items, $shown_limit);
+            $list_items = array_slice($list_items, 0, $shown_limit);
+            $show_more = TRUE;
+          }
+          
           $facet_output .= theme_item_list($list_items, $list_title, $list_type, $list_attributes);
+          
+          // set counter
+          if ($show_more == TRUE) {
+            $i++;
+            $facet_output .= '<a href="#" class="shown-toggle">' . t('Show more') . '</a>';
+            $facet_output .= '<a href="#" class="shown-toggle hidden">' . t('Show less') . '</a>';
+            $facet_output .= '<div class="toggle-wrapper hidden">';
+            $facet_output .= theme_item_list($list_items_hidden, NULL, $list_type, $list_attributes);
+            $facet_output .= '</div>';
+          }
+                    
           $facet_output .='</div>';
         }
       }
     }
 
+    if ($i >= 1) {
+      // if there is at least one occurence of a split array, we add js to the page.
+      drupal_add_js(drupal_get_path('module', 'islandora_solr_search') . '/js/islandora_solr_search_shown_limit.js');
+    }
 
     //////////////////////////////////////////////////////////////////////////////////////
     // as we add additional facets, we're repeatedly URL-encoding old facet             //

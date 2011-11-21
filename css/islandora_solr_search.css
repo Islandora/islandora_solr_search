@@ -92,3 +92,10 @@ html.js .refresh-button {
 .strikethrough {
   text-decoration: line-through !important;
 }
+
+/* hide the 2nd list if a facet list is split in two */
+
+.islandora_solr_search_facet .hidden
+{
+  display: none;
+}

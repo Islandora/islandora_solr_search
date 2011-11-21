@@ -188,11 +188,18 @@ function islandora_solr_admin_settings(&$form_state) {
     '#description' => t('Minimum facet count required for display'),
     '#default_value' => variable_get('islandora_solr_search_block_facet_min_count', '2'),
   );
+  $form['islandora_solr_search_block_facet_shown_limit'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Initially shown facets'),
+    '#size' => 5,
+    '#description' => t('The number which should be shown initially. If there are more, then the a "Show more" button will allow the rest up to the value below to be shown. Use 0 to disable.'),
+    '#default_value' => variable_get('islandora_solr_search_block_facet_shown_limit', '0'),
+  );
   $form['islandora_solr_search_block_facet_limit'] = array(
     '#type' => 'textfield',
     '#title' => t('Maximum Facets returned'),
     '#size' => 5,
-    '#description' => t('Set the number of terms that should be returned to the user.<br />
+    '#description' => t('Set the maximum number of terms that should be returned to the user.<br />
       For example, if there are 100 possible subjects in a faceted result, you may wish to return only the top 10.'),
     '#default_value' => variable_get('islandora_solr_search_block_facet_limit', '10'),
   );
