@@ -33,7 +33,7 @@ class IslandoraSolrResults {
    * @param type $solrQueryProcessor
    * @param type $title
    * @param type $output
-   * @return string 
+   * @return string
    */
   function displayResults($solrQueryProcessor, $title = "Search Results", $output = '') {
 
@@ -80,7 +80,7 @@ class IslandoraSolrResults {
     }
 
     // if number of elements is the same as the number of disabled displays,
-    // this means that there are no displays enabled. 
+    // this means that there are no displays enabled.
     if ($array_count != $i) {
 
       $output .= "<div id='islandora_solr_secondary_display_profiles'>";
@@ -325,10 +325,10 @@ class IslandoraSolrResults {
     if (empty($islandora_facets)) {
       return $output; //no facets to show
     }
-    
+
     // set counter to include javascript later
     $i = 0;
-    
+
     foreach ($islandora_facets as $key => $field) {
       $list_items = array();
       $list_type = "ul";
@@ -378,30 +378,30 @@ class IslandoraSolrResults {
             $facet_count++;
           }
         }
-        if ($facet_count >= 2) {
+        if ($facet_count >= 1) {
           $facet_output .='<div class="islandora_solr_search_facet">';
-          
+
           // shown limit
           $shown_limit = variable_get('islandora_solr_search_block_facet_shown_limit', 0);
           $facetlimit = variable_get('islandora_solr_search_block_facet_limit', '12');
           $facetMinCount = variable_get('islandora_solr_search_block_facet_min_count', '2');
-          
+
           $list_title = $this->facetFieldArray[$key];
           $list_type = "ul";
           $list_attributes = array('class' => 'islandora_solr_search_facet_list facet_list');
-          
+
           // set show more variable
           $show_more = FALSE;
-         
+
           // split the array if shown_limit is between the min and max limits and if the total is larger than the shown_limit.
           if ($facet_count > $shown_limit AND $shown_limit < $facetlimit AND $shown_limit > $facetMinCount) {
             $list_items_hidden = array_slice($list_items, $shown_limit);
             $list_items = array_slice($list_items, 0, $shown_limit);
             $show_more = TRUE;
           }
-          
+
           $facet_output .= theme_item_list($list_items, $list_title, $list_type, $list_attributes);
-          
+
           // set counter
           if ($show_more == TRUE) {
             $i++;
@@ -411,7 +411,7 @@ class IslandoraSolrResults {
             $facet_output .= theme_item_list($list_items_hidden, NULL, $list_type, $list_attributes);
             $facet_output .= '</div>';
           }
-                    
+
           $facet_output .='</div>';
         }
       }
@@ -442,7 +442,7 @@ class IslandoraSolrResults {
    * @param type $repeat
    * @param type $pathToSearchTerms
    * @param type $query
-   * @return string 
+   * @return string
    */
   function build_solr_search_form($repeat = NULL, $pathToSearchTerms = NULL, $query = NULL) {
 
@@ -528,7 +528,7 @@ class IslandoraSolrResults {
   /**
    * Build simple solr form
    * @global type $islandora_query
-   * @return type 
+   * @return type
    */
   function build_simple_solr_form() {
     $required = FALSE;
@@ -557,7 +557,7 @@ class IslandoraSolrResults {
   /**
    * Theme solr search form
    * @param type $form
-   * @return type 
+   * @return type
    */
   function theme_solr_search_form($form) {
     if (!isset($repeat)) {
