@@ -28,7 +28,7 @@ function islandora_solr_search_requirements($phase) {
   if ($phase == 'install') {
 
 
-    if (!class_exists(Apache_Solr_Service)) {
+    if (!class_exists('Apache_Solr_Service')) {
       $requirements['islandora_solr_search'] = array(
         'title' => $t('Missing Apache Client'),
         'description' => $t('This module requires the ' . l('Apache Solr php client', 'http://code.google.com/p/solr-php-client') . '.  Please install the client directory in the root directory of this module before continuing.'),

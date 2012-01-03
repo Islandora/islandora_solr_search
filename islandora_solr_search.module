@@ -247,6 +247,7 @@ function islandora_solr_search_block_form_validate($form, &$form_state) {
  * @param type $form_state 
  */
 function islandora_solr_simple_search_form_submit($form, &$form_state) {
+  $form_state['rebuild'] = TRUE;
   $searchString = $form_state['values']['islandora_simple_search_query'];
   $searchString = htmlspecialchars(drupal_urlencode($searchString), ENT_QUOTES, 'utf-8', FALSE);
   $searchString = str_replace('/', '~slsh~', $searchString); //replace the slash so url doesn't break
@@ -298,8 +299,9 @@ function islandora_solr_search($query, $fq=NULL, $dismax=NULL) {
   global $queryClass;
   islandora_solr_search_init();
 
+
   // Build and execute Apache Solr query
-  $queryResult = $queryClass->buildAndExecuteQuery($query, $fq, $dismax);
+  $queryResult = $queryClass->buildAndExecuteQuery("$query $addition_string", $fq, $dismax);
 
   // Get the preferred display profile
   // Order: First choice is what's in the ?profile query var
@@ -368,6 +370,7 @@ function islandora_solr_search($query, $fq=NULL, $dismax=NULL) {
  * @param type $form_state 
  */
 function islandora_solr_search_block_form_submit($form, &$form_state) {
+  $form_state['rebuild'] = TRUE;
   global $queryClass;
   islandora_solr_search_init();
 

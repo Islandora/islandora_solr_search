@@ -112,19 +112,26 @@ class IslandoraSolrResultsTable extends IslandoraSolrResults {
     foreach ($values as $num => $val_array) {
       unset($rowclass);
       $result_num = $recordStart + $num + 1;
-      $rows[$row][] = array(
+      $rows[$row]['data'][] = array(
         'data' => (isset($val_array['PID']) ? l($result_num,'fedora/repository/'.$val_array['PID']) : $result_num),
         'header' => TRUE,
+        'class' => 'col-first'
+        
       );
-      foreach ($fields as $field) {
-        if (isset ($val_array[$field])) {
-          $rows[$row][] = $val_array[$field];
-        } else {
-          $rows[$row][] = '';
+      $field_count = count($fields);
+      foreach ($fields as $fieldnum => $field) {
+        if (!isset ($val_array[$field])) {
+          $val_array['field'] = " ";
         }
+          $cell_data = array('data' => $val_array[$field]);
+          $rows[$row]['data'][] = $cell_data;
+        
       }
+      $rows[$row]['data'][$field_count]['class'] = 'col-last';
       $row++;
     }
+    $rows[0]['class'] = 'row-first';
+    $rows[$row -1]['class'] = 'row-last';
 
     $output .= theme_table($header,$rows,array('class'=>'islandora_solr_search_results_table'));
 

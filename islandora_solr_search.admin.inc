@@ -90,6 +90,10 @@ function islandora_solr_admin_settings(&$form_state) {
       '#description' => t("Enter a namespace ie 'demo' to restrict results to PIDs within that namespace <br /><em>note: this setting may only be used with 'standard' request handler.</em>"),
     );
   }
+
+
+
+
   $profiles = module_invoke_all("islandora_solr_primary_display");
   uksort($profiles, "sort_default_first");
   foreach ($profiles as $machine_name => $profile) {
@@ -136,6 +140,25 @@ function islandora_solr_admin_settings(&$form_state) {
     '#default_value' => variable_get('islandora_solr_search_block_repeat', '3'),
   );
 
+  $form['sort_fields'] = array(
+    '#type' => 'fieldset',
+    '#collapsible' => TRUE,
+  );
+
+  $form['sort_fields']['islandora_solr_search_sort_field'] = array(
+    '#type' => 'textfield', '#title' => t('Sort field'),
+    '#size' => 20,
+    '#description' => t('Results will be sorted on this field.  If left blank will default to <em>score</em> '),
+    '#default_value' => variable_get('islandora_solr_search_sort_field', ''),
+  );
+
+  $form['sort_fields']['islandora_solr_search_sort_order'] = array(
+    '#type' => 'radios',
+    '#title' => t('Sort Order'),
+    '#options' => array('asc' => t('Accending'), 'desc' => t('Decending')),
+    '#default_value' => 'desc',
+  );
+
   $form['islandora_solr_searchterms'] = array(
     '#type' => 'textarea',
     '#title' => t('Search Terms'),
@@ -155,9 +178,11 @@ function islandora_solr_admin_settings(&$form_state) {
       <strong>Note:</strong><em> This feature is not supported by all display profiles.</em> "),
     '#wysiwyg' => FALSE,
   );
+
   $form['islandora_solr_search_block_facets'] = array(
     '#type' => 'textarea',
     '#title' => t('Facet Fields'),
+    '#default_value' => variable_get('islandora_solr_search_block_facets', ''),
     '#description' => t("Indicate which fields will appear in the <strong>Islandora Facet Block</strong>.<br />
       Enter terms on separate lines using the following pattern: field [tilde] preferred label. ie <strong>dc.title ~ Title</strong> "),
     '#default_value' => variable_get('islandora_solr_search_block_facets', 'dc.subject ~ Subject,dc.type ~ Type'),
@@ -239,15 +264,18 @@ function islandora_solr_admin_settings(&$form_state) {
  * Checks availability of Solr installation
  *
  */
+
 function solr_available($solr_url) {
-  // path from url is parsed to allow graceful inclusion or exclusion of 'http://'
-  $pathParts = parse_url($solr_url);
-  $path = 'http://' . $pathParts['host'] . ':' . $pathParts['port'] . $pathParts['path'] . '/admin/file';
-  $test = @fopen($path, "r");
-  if ($test) {
-    return TRUE;
+  $handle = curl_init($solr_url);
+  curl_setopt($handle, CURLOPT_RETURNTRANSFER, TRUE);
+  $response = curl_exec($handle);
+  $httpCode = curl_getinfo($handle, CURLINFO_HTTP_CODE);
+  $retval = TRUE;
+  if ($httpCode % 100 == 4) {
+    $retval = FALSE;
   }
-  return FALSE;
+  curl_close($handle);
+  return $retval;
 }
 
 /**
@@ -286,7 +314,8 @@ function check_dismax($solr_url, $selected_handler) {
         foreach ($handler->lst as $first) {
           foreach ($first->str as $str) {
             if ($str['name'] == 'qf') {
-              $dismax= TRUE;
+              $dismax = TRUE;
+
             }
           }
         }

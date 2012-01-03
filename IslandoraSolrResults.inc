@@ -140,7 +140,13 @@ class IslandoraSolrResults {
     $title = NULL;
     $recordStart = $results->response->start;
     $limitResults = variable_get('islandora_solr_search_limit_result_fields', 0);
+    $rawResponse = $results->getRawResponse();
+    $responseArray = json_decode($rawResponse, true);
+    $docs = $responseArray['response']['docs'];
+    //retrieve 'highlighing' from resultset.
+    $highlightResults = $responseArray['highlighting'];
     $highlights = $results->highlighting;
+
     foreach ($highlights as $highlight) {
       $fields = get_object_vars($highlight);
       $keys = array_keys($fields);
@@ -160,7 +166,7 @@ class IslandoraSolrResults {
     foreach ($results->response->docs as $doc) {
       $rows = array();
       $row = 0;
-
+      $snippet = null;
       foreach ($doc as $field => $value) {
 
         if ($limitResults && empty($this->resultFieldArray[$field])) {
@@ -177,13 +183,24 @@ class IslandoraSolrResults {
         }
 
         if ($field == 'PID') {
+          $pid = $value;
           $l = l($value, 'fedora/repository/' . htmlspecialchars($value, ENT_QUOTES, 'utf-8'));
           $rows[$row][] = $l;
+          if (is_array($keys)) {
+            $snippet = $highlightResults[$value][$keys[0]];
+          }
         }
         else {
           $rows[$row][] = $value;
         }
         $row++;
+      }
+      if ($snippet) {
+        $rows[$row][] = array(
+          'data' => 'Full Text',
+          'header' => TRUE,
+        );
+        $rows[$row][] = $snippet[0];
       }
       $items[] = theme_table(NULL, $rows, array('class' => 'islandora_solr_search_results_object'));
     }
