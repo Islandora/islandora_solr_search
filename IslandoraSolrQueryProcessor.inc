@@ -153,6 +153,19 @@ class IslandoraSolrQueryProcessor {
     }
     $this->solrStart = max(0, $startPage) * $this->solrLimit;
 
+    // look for the current display
+    // it seems like this function is happening before we even look which display
+    // to use, so we'll have to check again using hook_invoke_all and checking
+    // the variable.
+    $primary_profiles = module_invoke_all("islandora_solr_primary_display");
+    $islandora_solr_primary_display = ((isset($_GET['display']) AND array_key_exists($_GET['display'], $primary_profiles)) ? $_GET['display'] : variable_get('islandora_solr_primary_display', 'default'));
+    //global $current_display;
+    $display = isset($_GET['display']) ? $islandora_solr_primary_display : '';
+    $query = '';
+    if ($display) {
+      $query = array('display' => $display);
+    }
+
     // The breadcrumb should go in the display class
     $queryurl = "islandora/solr/search/" . replaceSlashes($this->solrQuery);
     $breadcrumb_fq = $islandora_fq;
@@ -163,6 +176,7 @@ class IslandoraSolrQueryProcessor {
         $value = restoreSlashes(trim(substr($facet, strpos($facet, ":") + 1), '"'));
         $options = array('html' => TRUE);
         $options['attributes']['title'] = $facet;
+        $options['query'] = $query; // query for display
         $crumblink = $queryurl . "/" . $breadcrumb_fq . (empty($this->solrDefType) ? '' : '/' . $this->solrDefType);
         $cut_fq = $this->delete_filter($islandora_fq, $facet);
         $cutlink = $queryurl . "/" . $cut_fq . (empty($this->solrDefType) ? '' : '/' . $this->solrDefType);
@@ -170,7 +184,7 @@ class IslandoraSolrQueryProcessor {
           $options['attributes']['class'] = "strikethrough";
         }
         $breadcrumb[] = l($value, $crumblink, $options) .
-            " <span class='islandora_solr_search_breadcrumb_super'>(" . l("x", $cutlink, array('attributes' => array('title' => "Remove " . $facet))) . ")</span>";
+            " <span class='islandora_solr_search_breadcrumb_super'>(" . l("x", $cutlink, array('attributes' => array('title' => "Remove " . $facet), 'query' => $query)) . ")</span>";
         $breadcrumb_fq = $this->delete_filter($breadcrumb_fq, $facet);
       }
     }
@@ -185,8 +199,8 @@ class IslandoraSolrQueryProcessor {
         }
       }
       if ($queryval != '%252F') {
-        $breadcrumb[] = l($queryval, $queryurl . "/-", array('attributes' => array('title' => $this->solrQuery))) .
-            " <span class='islandora_solr_search_breadcrumb_super'>(" . l("x", $cutlink, array('attributes' => array('title' => "Remove " . $facet))) . ")</span>";
+        $breadcrumb[] = l($queryval, $queryurl . "/-", array('attributes' => array('title' => $this->solrQuery), 'query' => $query)) .
+            " <span class='islandora_solr_search_breadcrumb_super'>(" . l("x", $cutlink, array('attributes' => array('title' => "Remove " . $facet), 'query' => $query)) . ")</span>";
       }
     }
     $breadcrumb[] = l(t('Home'), NULL);

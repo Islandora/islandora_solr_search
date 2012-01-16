@@ -6,6 +6,8 @@ module_load_include('inc', 'islandora_solr_search', 'IslandoraSolrQueryProcessor
 
 //$islandora_query;
 $queryClass;
+// set current display
+$current_display;
 
 /**
  * @file
@@ -303,14 +305,19 @@ function islandora_solr_search($query, $fq=NULL, $dismax=NULL) {
   // Build and execute Apache Solr query
   $queryResult = $queryClass->buildAndExecuteQuery("$query $addition_string", $fq, $dismax);
 
+  // get profiles
+  $primary_profiles = module_invoke_all("islandora_solr_primary_display");
+  $secondary_profiles = module_invoke_all("islandora_solr_secondary_display");
   // Get the preferred display profile
   // Order: First choice is what's in the ?profile query var
   //        Second choice is the primary display profile
   //        Third choice is the default IslandoraSolrResults
-  $islandora_solr_primary_display = variable_get('islandora_solr_primary_display', 'default');
+  $islandora_solr_primary_display = ((isset($_GET['display']) AND array_key_exists($_GET['display'], $primary_profiles)) ? $_GET['display'] : variable_get('islandora_solr_primary_display', 'default'));
   $islandora_solr_selected_display = isset($_GET['solr_profile']) ? $_GET['solr_profile'] : NULL;
-  $primary_profiles = module_invoke_all("islandora_solr_primary_display");
-  $secondary_profiles = module_invoke_all("islandora_solr_secondary_display");
+
+  // set global variable
+  global $current_display;
+  $current_display = $islandora_solr_primary_display;
 
   // TODO: Also filter secondary displays against those checked in the configuration options.
   if (isset($secondary_profiles[$islandora_solr_selected_display])) {

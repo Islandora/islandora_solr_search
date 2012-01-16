@@ -237,6 +237,15 @@ class IslandoraSolrResults {
         $solrQueryProcessor->solrResult->facet_counts->facet_fields :
         NULL;
     //dsm($islandora_facets);
+    
+    // look for the current display
+    global $current_display;
+    $display = isset($_GET['display']) ? $current_display : '';
+    $query = '';
+    if ($display) {
+      $query = array('display' => $display);
+    }
+    
     if (strlen(trim($solrQueryProcessor->solrQuery))) {
 
       // Variables to build a drupal-ish unordered list
@@ -248,9 +257,12 @@ class IslandoraSolrResults {
       // OK, so it's a list of one.
       // In the future, we could reasonably break the query on boolean operators
       // and allow one part to be removed at a time.
-      $query_list_items[] .= l(
-              '<img class="islandora_solr_add_remove_link" src="' . $base_url . '/' . drupal_get_path('module', 'islandora_solr_search') . '/images/delete.png" alt="Remove search term">', 'islandora/solr/search/' . " " . '/' . replaceSlashes($islandora_fq) . '/dismax', array('html' => TRUE)
-          ) . ' ' . stripslashes($solrQueryProcessor->solrQuery);
+      
+      // set link properties
+      $image = '<img class="islandora_solr_add_remove_link" src="' . $base_url . '/' . drupal_get_path('module', 'islandora_solr_search') . '/images/delete.png" alt="Remove search term">';
+      $link = 'islandora/solr/search/' . " " . '/' . replaceSlashes($islandora_fq) . '/dismax';
+      
+      $query_list_items[] .= l($image, $link, array('html' => TRUE, 'query' => $query )) . ' ' . stripslashes($solrQueryProcessor->solrQuery);
 
       $output .= '<div class="islandora_solr_search_query_wrap">';
 
@@ -288,9 +300,12 @@ class IslandoraSolrResults {
           $exclude = TRUE;
           $filter_name = substr($filter_name, 1);
         }
-        $filter_list_items[] = l(
-                '<img class="islandora_solr_add_remove_link" src="' . $base_url . '/' . drupal_get_path('module', 'islandora_solr_search') . '/images/delete.png" alt="Remove this filter">', 'islandora/solr/search/' . replaceSlashes($solrQueryProcessor->solrQuery) . '/' . replaceSlashes($filter_disable) . '/' . $solrQueryProcessor->solrDefType, array('html' => TRUE)
-            ) . ' ' . $this->facetFieldArray[$filter_name] . ($exclude ? ' != ' : ' = ') . $filter_value;
+        
+        // set link properties
+        $image = '<img class="islandora_solr_add_remove_link" src="' . $base_url . '/' . drupal_get_path('module', 'islandora_solr_search') . '/images/delete.png" alt="Remove this filter">';
+        $link = 'islandora/solr/search/' . replaceSlashes($solrQueryProcessor->solrQuery) . '/' . replaceSlashes($filter_disable) . '/' . $solrQueryProcessor->solrDefType;
+        
+        $filter_list_items[] = l($image, $link,  array('html' => TRUE, 'query' => $query )) . ' ' . $this->facetFieldArray[$filter_name] . ($exclude ? ' != ' : ' = ') . $filter_value;
       }
     }
 
@@ -385,12 +400,21 @@ class IslandoraSolrResults {
             $evenodd = ( $facet_count % 2 ? 'odd' : 'even' );
             $lplus = 'islandora/solr/search/' . $solrQueryProcessor->solrQuery . '/' . $filter_include . '/' . $solrQueryProcessor->solrDefType;
             $lminus = 'islandora/solr/search/' . $solrQueryProcessor->solrQuery . '/' . $filter_exclude . '/' . $solrQueryProcessor->solrDefType;
+            
+
+            // look for the current display
+            global $current_display;
+            $display = isset($_GET['display']) ? $current_display : '';
+            $query = '';
+            if ($display) {
+              $query = array('display' => $display);
+            }
+                        
             $text = $name;
-            $attrs = array();
-            $list_items[] = l($text, $lplus, $attrs) . ' (' . $number . ')' .
+            $list_items[] = l($text, $lplus, array('query' => $query)) . ' (' . $number . ')' .
                 '<span class="plusminus">' .
-                l('+', $lplus, array('attributes' => array('class' => 'plus'))) . ' ' .
-                l('-', $lminus, array('attributes' => array('class' => 'minus'))) .
+                l('+', $lplus, array('attributes' => array('class' => 'plus'), 'query' => $query )) . ' ' .
+                l('-', $lminus, array('attributes' => array('class' => 'minus'), 'query' => $query )) .
                 '</span>';
             $facet_count++;
           }
