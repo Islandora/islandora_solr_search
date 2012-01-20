@@ -303,7 +303,7 @@ function islandora_solr_search($query, $fq=NULL, $dismax=NULL) {
 
 
   // Build and execute Apache Solr query
-  $queryResult = $queryClass->buildAndExecuteQuery("$query $addition_string", $fq, $dismax);
+  $queryResult = $queryClass->buildAndExecuteQuery($query, $fq, $dismax);
 
   // get profiles
   $primary_profiles = module_invoke_all("islandora_solr_primary_display");
