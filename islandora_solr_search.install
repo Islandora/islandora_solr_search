@@ -39,3 +39,46 @@ function islandora_solr_search_requirements($phase) {
   return $requirements;
 }
 
+
+/**
+* @file
+* Implementation of hook_install
+*/
+ 
+function islandora_solr_search_install() {
+  
+  $message = t("Islandora Solr Search <a href ='!link'>configuration page</a>.", array('!link' => '/admin/settings/islandora_solr_search'));
+  drupal_set_message($message);
+}
+
+/**
+* Implementation of hook_uninstall
+*/
+ 
+function islandora_solr_search_uninstall() {
+  
+  // removing variables
+  // @TODO: update the latest additions
+  $variables = array(
+    'islandora_solr_primary_display',
+    'islandora_solr_secondary_display',
+    'islandora_solr_searchterms',
+    'islandora_solr_search_block_facets',
+    'islandora_solr_search_block_facet_limit',
+    'islandora_solr_search_block_facet_min_count',
+    'islandora_solr_search_block_facet_shown_limit',
+    'islandora_solr_search_block_repeat',
+    'islandora_solr_search_block_request_handler',
+    'islandora_solr_search_block_url',
+    'islandora_solr_search_debug_mode',
+    'islandora_solr_search_limit_result_fields',
+    'islandora_solr_search_num_of_results',
+    'islandora_solr_search_result_fields',
+    'islandora_solr_search_sort_field',
+    'islandora_solr_search_sort_order',
+    'islandora_solr_snippet_field',
+  );
+  foreach ($variables as $variable) {
+    variable_del($variable);
+  }
+}
