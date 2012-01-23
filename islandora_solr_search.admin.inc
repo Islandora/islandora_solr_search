@@ -92,22 +92,83 @@ function islandora_solr_admin_settings(&$form_state) {
   }
 
 
+  // get the table settings
+  $primary_display_array = variable_get('islandora_solr_primary_display_table', array());
 
+  $enabled = array();
+  
+  // set the table form items
+  $form['islandora_solr_primary_display_table'] = array(
+    '#tree' => TRUE, // this attribute is important to return the submitted values in a deeper nested arrays in
+  );
 
   $profiles = module_invoke_all("islandora_solr_primary_display");
-  uksort($profiles, "sort_default_first");
-  foreach ($profiles as $machine_name => $profile) {
-    $islandora_solr_primary_display_options[$machine_name] = $profile['name'];
-  }
+  
+  if (!empty($profiles)) {
+        
+    $profiles_sorted = array();
+    // if the table settings are set (weight), we change the order of the table rows.
+    if(isset($primary_display_array['weight'])) {
+      // new variable
+      $weight = $primary_display_array['weight'];
+      
+      // check if all values are unique
+      if(count(array_unique($weight)) == 1) {
+        // sort alphabetically with default on top
+        uksort($profiles, "sort_default_first");
+        $profiles_sorted = $profiles;
+      }
+      else{
+        // First sort by value and then sort equal values by key: http://stackoverflow.com/a/6611077/477949
+        array_multisort(array_values($weight), SORT_ASC, array_keys($weight), SORT_ASC, $weight);
 
-  if (!empty($islandora_solr_primary_display_options)) {
-    $form['islandora_solr_primary_display'] = array(
+        // re-order the array
+        foreach($weight as $key => $value) {
+          $profiles_sorted[$key] = $profiles[$key];
+        }
+      }
+    }
+    // or else use the default
+    else {
+      // sort alphabetically with default on top
+      uksort($profiles, "sort_default_first"); // only apply when there's no sort variable available.
+      $profiles_sorted = $profiles;
+    }
+    
+    
+    
+    // table loop
+    foreach ($profiles_sorted as $machine_name => $profile) {
+    
+      $options[$machine_name] = '';
+
+      $form['islandora_solr_primary_display_table']['name'][$machine_name] = array(
+        '#value' => $profile['name'],
+      );
+      $form['islandora_solr_primary_display_table']['machine_name'][$machine_name] = array(
+        '#value' => $machine_name,      
+      );
+      $form['islandora_solr_primary_display_table']['weight'][$machine_name] = array(
+        '#type' => 'weight',
+        '#default_value' => ($primary_display_array['weight'][$machine_name]) ? $primary_display_array['weight'][$machine_name] : 0,
+      );
+      $form['islandora_solr_primary_display_table']['configuration'][$machine_name] = array(
+        '#value' => (isset($profile['configuration']) AND $profile['configuration'] != '') ? l(t('configure'), $profile['configuration']): '',              
+      );
+    }
+    
+    $form['islandora_solr_primary_display_table']['default'] = array(
       '#type' => 'radios',
-      '#title' => t('Default Display Profile'),
-      '#options' => $islandora_solr_primary_display_options,
+      '#options' => $options,
       '#default_value' => variable_get('islandora_solr_primary_display', 'default'),
-      '#description' => "Preferred normal display profile for search results.  These may be provided by third-party modules. ",
     );
+    $form['islandora_solr_primary_display_table']['enabled'] = array(
+      '#type' => 'checkboxes',
+      '#options' => $options,
+      '#default_value' => (!empty($primary_display_array)) ? $primary_display_array['enabled'] : $primary_display_array, // $primary_display_array['enabled'][$machine_name]
+    );    
+    
+    
   }
 
   $profiles = module_invoke_all("islandora_solr_secondary_display");
@@ -155,7 +216,7 @@ function islandora_solr_admin_settings(&$form_state) {
   $form['sort_fields']['islandora_solr_search_sort_order'] = array(
     '#type' => 'radios',
     '#title' => t('Sort Order'),
-    '#options' => array('asc' => t('Accending'), 'desc' => t('Decending')),
+    '#options' => array('asc' => t('Ascending'), 'desc' => t('Decending')),
     '#default_value' => 'desc',
   );
 
@@ -250,11 +311,69 @@ function islandora_solr_admin_settings(&$form_state) {
     drupal_set_message(t('The settings have not been saved because of the errors.'), 'error');
   }
   $form['#submit'][] = 'solr_settings_form_submit';
-  $form['#theme'] = 'system_settings_form';
-
+  //$form['#theme'] = 'system_settings_form';
+  $form['#theme'] = 'islandora_solr_search_admin_settings';
 
   return ($form);
 }
+
+
+/**
+ * theme_islandora_solr_search_admin_settings()
+ */
+function theme_islandora_solr_search_admin_settings($form){
+  //dsm($form);
+  $default = variable_get('islandora_solr_primary_display', 'default');
+  $rows = array();
+ 
+  foreach ($form['islandora_solr_primary_display_table']['machine_name'] as $key => $element) {
+    $row = array();
+    // check if $key is really the array we need. we shouldn't select the #parent array for example.
+    if (is_array($element) && element_child($key)) {
+ 
+      if ($key == $default) {
+        $form['islandora_solr_primary_display_table']['enabled'][$key]['#attributes']['disabled'] = 'disabled';
+        $form['islandora_solr_primary_display_table']['enabled'][$key]['#value'] = TRUE;
+      }
+      
+      $row[] = array('data' => drupal_render($form['islandora_solr_primary_display_table']['default'][$key]));
+      $row[] = array('data' => drupal_render($form['islandora_solr_primary_display_table']['enabled'][$key]));
+      $row[] = array('data' => drupal_render($form['islandora_solr_primary_display_table']['name'][$key]));
+      $row[] = array('data' => drupal_render($form['islandora_solr_primary_display_table']['machine_name'][$key]));
+      $row[] = array('data' => drupal_render($form['islandora_solr_primary_display_table']['weight'][$key]));
+      $row[] = array('data' => drupal_render($form['islandora_solr_primary_display_table']['configuration'][$key]));
+ 
+      $rows[] = $row;
+    }
+  }
+  
+  // Individual table headers.
+  // default | enabled | name | Machine readable name |  weight | configuration
+  $header = array();
+  $header[] = t('Default');
+  $header[] = t('Enabled');
+  $header[] = t('Name');
+  $header[] = t('Machine readable name');
+  $header[] = t('Weight');
+  $header[] = t('Configuration');
+  
+  // put the rendered table in another fieldset.
+  $form['islandora_solr_primary_display_table']['#type'] = 'item';
+  $form['islandora_solr_primary_display_table']['#title'] = t('Primary Display Profile');
+  $form['islandora_solr_primary_display_table']['#description'] = t('Preferred normal display profile for search results.  These may be provided by third-party modules.');
+  $form['islandora_solr_primary_display_table']['#value'] = theme('table', $header, $rows);
+
+  //dsm($form);
+  
+  // render form
+  $output = '';
+  $output .= drupal_render($form);
+  //dsm($form);
+  return $output;
+}
+
+
+
 
 /**
  *
@@ -360,13 +479,23 @@ function callback_prep() {
 }
 
 /**
- * Solr settings from submin
+ * Solr settings from submit
  * @param array $form
  * @param array $form_state
  * @return NULL
  */
 function solr_settings_form_submit($form, &$form_state) {
+  //dsm($form_state);
 
+  // old_default variable
+  $old_default = variable_get('islandora_solr_primary_display', 'default');
+  // new_default variable
+  $new_default = $form_state['values']['islandora_solr_primary_display_table']['default'];
+  // make default enabled
+  $form_state['values']['islandora_solr_primary_display_table']['enabled'][$new_default] = $new_default;
+  $form_state['values']['islandora_solr_primary_display_table']['enabled'][$old_default] = $old_default;
+  variable_set('islandora_solr_primary_display', $new_default);
+  
   if ($form_state['clicked_button']['#id'] != 'edit-submit') {
     $form_state['rebuild'] = TRUE;
     return;
