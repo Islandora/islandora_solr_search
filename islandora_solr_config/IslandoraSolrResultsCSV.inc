@@ -1,7 +1,8 @@
 <?php
 
-/*
- * contains methods to search solr and display results.  depends on Apache_Solr_Php client.
+/**
+ * @file
+ * Contains methods to search solr and display results.  depends on Apache_Solr_Php client.
  */
 
 module_load_include('inc', 'islandora_solr_search', 'IslandoraSolrResults');
@@ -57,7 +58,7 @@ class IslandoraSolrResultsCSV extends IslandoraSolrResults {
 
     $docfile = tmpfile();
 
-    while( $solrQueryProcessor->solrStart < $upperLimit ) {
+    while ($solrQueryProcessor->solrStart < $upperLimit) {
 
       // Perform the incremental re-query.
       $solrQueryProcessor->resetResults();
@@ -68,13 +69,13 @@ class IslandoraSolrResultsCSV extends IslandoraSolrResults {
       $solrQueryProcessor->solrStart = $lowerLimit;
 
       // If there are no results, skip ahead (i.e. exit).
-      if(empty($solrQueryProcessor->solrResult)) {
+      if (empty($solrQueryProcessor->solrResult)) {
         continue;
       }
 
       // else ...
       $rawResponse = $solrQueryProcessor->solrResult->getRawResponse();
-      $responseData = json_decode($rawResponse,TRUE); // TRUE == associative array, not object
+      $responseData = json_decode($rawResponse, TRUE); // TRUE == associative array, not object
       unset($rawResponse); // unknown usefulness
 
       $docs = $responseData['response']['docs'];
@@ -82,13 +83,13 @@ class IslandoraSolrResultsCSV extends IslandoraSolrResults {
       // This loop is just to update the maximum value counts for each field
       // because if any field in the entire resultset has multiple values,
       // we must break the field into multiple iterated fields.
-      foreach($docs as $doc) {
-        fputs( $docfile, addcslashes( serialize($doc), "\n\r\\" )."\n");
-        foreach($doc as $field => $value) {
+      foreach ($docs as $doc) {
+        fputs($docfile, addcslashes(serialize($doc), "\n\r\\") . "\n");
+        foreach ($doc as $field => $value) {
 
           $field_count = is_array($value) ? count($value) : 1;
 
-          if( !isset( $field_counts[$field] )) {
+          if (!isset( $field_counts[$field])) {
             $field_counts[$field] = $field_count;
           }
           else {
@@ -111,7 +112,7 @@ class IslandoraSolrResultsCSV extends IslandoraSolrResults {
 
     }
 
-    fseek($docfile,0);
+    fseek($docfile, 0);
 
     $header = array();
     $rows = array();
@@ -120,14 +121,14 @@ class IslandoraSolrResultsCSV extends IslandoraSolrResults {
     // For fields with a single value, the header is simply wrapped.
     // For fields where at least one multiple value was found across
     // the resultset, the field is iterated the maximum number of times.
-    foreach( $field_counts as $field=>$count ) {
-      if( $count == 1 ) {
+    foreach ($field_counts as $field => $count) {
+      if ($count == 1) {
         $header[] = $wrap . str_replace('"', $replace_value, $field) . $wrap;
       }
       else {
         $i = 1;
-        while( $i <= $count ) {
-          $header[] = $wrap . str_replace('"', $replace_value, $field."_".$i) . $wrap;
+        while ($i <= $count) {
+          $header[] = $wrap . str_replace('"', $replace_value, $field . "_" . $i) . $wrap;
           $i++;
         }
       }
@@ -135,16 +136,16 @@ class IslandoraSolrResultsCSV extends IslandoraSolrResults {
 
     // Generate refactored output matrix.
     $row_count = 0;
-    while( $line = fgets( $docfile )) {
-      $doc = unserialize( stripcslashes( $line ));
-      foreach( $field_counts as $field=>$count ) {
+    while ($line = fgets($docfile)) {
+      $doc = unserialize( stripcslashes($line));
+      foreach ($field_counts as $field => $count) {
         $i = 0;
-        while( $i < $count ) {
-          if( isset( $doc[$field] )) {
-            if( $i === 0 && is_string($doc[$field] )) {
+        while ($i < $count) {
+          if (isset($doc[$field])) {
+            if ($i === 0 && is_string($doc[$field])) {
               $rows[$row_count][] = $wrap . str_replace('"', $replace_value, $doc[$field]) . $wrap;
             }
-            elseif( isset( $doc[$field][$i] ) ) {
+            elseif (isset( $doc[$field][$i])) {
               $rows[$row_count][] = $wrap . str_replace('"', $replace_value, $doc[$field][$i]) . $wrap;
             }
             else {
@@ -164,14 +165,14 @@ class IslandoraSolrResultsCSV extends IslandoraSolrResults {
     drupal_set_header('Content-Disposition: attachment; filename="searchresults.csv"');
 
     print implode($seperator, $header) . "\r\n";
-    foreach( $rows as $count => $row ) {
+    foreach ($rows as $count => $row) {
       print implode($seperator, $row) . "\r\n";
     }
 
-    drupal_set_message("Exported ".($count+1)." records from index to CSV");
+    drupal_set_message(check_plain(t('Exported !count records from index to CSV', array('!count' => $count+1))));
 
     fclose($docfile);
-    
+
     exit;
 
   }

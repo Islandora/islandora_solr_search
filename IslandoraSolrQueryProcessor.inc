@@ -39,29 +39,16 @@ class IslandoraSolrQueryProcessor {
    * @param type $query
    * @param type $fq
    * @param type $dismax
-   * @return type 
+   * @return type
    */
-  function buildAndExecuteQuery($query, $fq=NULL, $dismax=NULL, $params = NULL) {
-
+  function buildAndExecuteQuery($query, $fq=NULL, $dismax=NULL, $display = NULL, $params = NULL) {
     if (variable_get('islandora_solr_search_block_request_handler', NULL) == 'standard') {
-      $namespace = trim(variable_get('solr_namespace_restriction', NULL));
+
       if (!$query || $query == ' ') {
         $query = '%252F';
       }
-
-      if ($namespace) {
-        if ($fq == '-') {
-          $fq = '';
-        }
-        if (strpos($fq, "PID:$namespace") === FALSE) {
-          if ($fq) {
-            $fq .= $this->facetSeparator;
-          }
-          $fq .= "PID:$namespace*";
-        }
-      }
     }
-    $this->buildQuery($query, $fq, $dismax, $params);
+    $this->buildQuery($query, $fq, $dismax, $display, $params);
 
     return $this->executeQuery();
   }
@@ -70,18 +57,17 @@ class IslandoraSolrQueryProcessor {
    * Default implementation for solr search.  You can configure others in the block config settings
    * @todo Get rid of the global $facetArray?  It is the only global yet relied upon.
    */
-  function buildQuery($query, $fq=NULL, $dismax=NULL, $params = array()) {
+  function buildQuery($query, $fq = NULL, $dismax = NULL, $display = NULL, $params = array() ) {
     // Get pager variable
     $startPage = isset($_GET['page']) ? $_GET['page'] : 0;
     $this->solrLimit = variable_get('islandora_solr_search_num_of_results', 20);
     global $base_url, $facetArray; //used by facet block as well
-
     // -- cut here --
     // Get display profile
     $islandora_solr_primary_display = variable_get('islandora_solr_primary_display', 'default');
     $profiles = module_invoke_all("islandora_solr_primary_display");
     if (!isset($profiles[$islandora_solr_primary_display])) {
-      drupal_set_message("There is an error in the solr search configuration: the display profile is not found.", 'error');
+      drupal_set_message(t('There is an error in the solr search configuration: the display profile is not found.'), 'error');
       return "";
     }
     $profile = $profiles[$islandora_solr_primary_display];
@@ -90,6 +76,14 @@ class IslandoraSolrQueryProcessor {
         $params[] = $param;
       }
     }
+    
+    if ($display == variable_get('islandora_solr_primary_display', 'default')) {
+      $display_param = '';
+    }
+    else {
+      $display_param = $display;
+    }
+    
     // Include the file for the display profile
     require_once(drupal_get_path('module', $profile['module']) . '/' . $profile['file']);
 
@@ -153,43 +147,29 @@ class IslandoraSolrQueryProcessor {
     }
     $this->solrStart = max(0, $startPage) * $this->solrLimit;
 
-    // look for the current display
-    // it seems like this function is happening before we even look which display
-    // to use, so we'll have to check again using hook_invoke_all and checking
-    // the variable.
-    $primary_profiles = module_invoke_all("islandora_solr_primary_display");
-    $islandora_solr_primary_display = ((isset($_GET['display']) AND array_key_exists($_GET['display'], $primary_profiles)) ? $_GET['display'] : variable_get('islandora_solr_primary_display', 'default'));
-    //global $current_display;
-    $display = isset($_GET['display']) ? $islandora_solr_primary_display : '';
-    $query = '';
-    if ($display) {
-      $query = array('display' => $display);
-    }
-
     // The breadcrumb should go in the display class
     $queryurl = "islandora/solr/search/" . replaceSlashes($this->solrQuery);
     $breadcrumb_fq = $islandora_fq;
     $facet = NULL; // Nigelb, This is being used outside of the for loop where it is being created this is probably incorrect.
     if (strcmp($islandora_fq, "-")) {
       foreach (csv_explode(IslandoraSolrQueryProcessor::$facetSeparator, $islandora_fq, '"', TRUE) as $facet) {
-        $field = substr($facet, 0, strpos($facet, ":"));
-        $value = restoreSlashes(trim(substr($facet, strpos($facet, ":") + 1), '"'));
+        $field = drupal_substr($facet, 0, strpos($facet, ":"));
+        $value = restoreSlashes(trim(drupal_substr($facet, strpos($facet, ":") + 1), '"'));
         $options = array('html' => TRUE);
         $options['attributes']['title'] = $facet;
-        $options['query'] = $query; // query for display
-        $crumblink = $queryurl . "/" . $breadcrumb_fq . (empty($this->solrDefType) ? '' : '/' . $this->solrDefType);
+        $crumblink = $queryurl . "/" . $breadcrumb_fq . (empty($this->solrDefType) ? '/-' : '/' . $this->solrDefType) . '/' . $display_param;
         $cut_fq = $this->delete_filter($islandora_fq, $facet);
-        $cutlink = $queryurl . "/" . $cut_fq . (empty($this->solrDefType) ? '' : '/' . $this->solrDefType);
+        $cutlink = $queryurl . "/" . $cut_fq . (empty($this->solrDefType) ? '/-' : '/' . $this->solrDefType) . '/' . $display_param;
         if (!strncmp("-", $facet, 1)) {
           $options['attributes']['class'] = "strikethrough";
         }
         $breadcrumb[] = l($value, $crumblink, $options) .
-            " <span class='islandora_solr_search_breadcrumb_super'>(" . l("x", $cutlink, array('attributes' => array('title' => "Remove " . $facet), 'query' => $query)) . ")</span>";
+            " <span class='islandora_solr_search_breadcrumb_super'>(" . l(t('x'), $cutlink, array('attributes' => array('title' => "Remove " . $facet))) . ")</span>";
         $breadcrumb_fq = $this->delete_filter($breadcrumb_fq, $facet);
       }
     }
     if (!empty($this->solrQuery) && strcmp($this->solrQuery, ' ')) {
-      $cutlink = "islandora/solr/search/ /" . $islandora_fq . "/dismax";
+      $cutlink = "islandora/solr/search/ /" . $islandora_fq . "/dismax/" . $display_param;
       $queryval = $this->solrQuery;
       $tokens = explode(" ", $queryval);
       foreach ($tokens as $token) {
@@ -199,21 +179,37 @@ class IslandoraSolrQueryProcessor {
         }
       }
       if ($queryval != '%252F') {
-        $breadcrumb[] = l($queryval, $queryurl . "/-", array('attributes' => array('title' => $this->solrQuery), 'query' => $query)) .
-            " <span class='islandora_solr_search_breadcrumb_super'>(" . l("x", $cutlink, array('attributes' => array('title' => "Remove " . $facet), 'query' => $query)) . ")</span>";
+        $queryurl = $queryurl . '/-/' . $this->solrDefType . '/' . $display_param;
+        $breadcrumb[] = l($queryval, $queryurl, array('attributes' => array('title' => $this->solrQuery))) .
+            " <span class='islandora_solr_search_breadcrumb_super'>(" . l(t('x'), $cutlink, array('attributes' => array('title' => "Remove " . $facet))) . ")</span>";
       }
     }
     $breadcrumb[] = l(t('Home'), NULL);
     if (!empty($breadcrumb))
       $breadcrumb = array_reverse($breadcrumb);
     drupal_set_breadcrumb($breadcrumb);
-
     $this->solrFilters = $islandora_fq;
+
+    // restrict results based on specified namespace
+    $namespace = variable_get('solr_namespace_restriction', 'null');
+    if ($namespace) {
+      $this->solrParams['fq'][] = "PID:$namespace\:*";
+    }
+
+    // if no qf fields are specified in rthe requestHandler a default list is supplied here for dismax searches
+    if (!variable_get('dismax_allowed', 0) && $dismax == "dismax") {
+      $this->solrParams['qf'] = 'dc.title^5 dc.subject^2 dc.description^2 dc.creator^2 dc.contributor^1 dc.type';
+    }
+
+    // add display to $this object
+    $this->display = $display;
 
     // At this point let's invoke a hook for third-party modules to mess about
     // with the query parameters if they need to.  Third party modules may alter
     // this object's query parameters if they wish.
     module_invoke_all("islandora_solr_search_query_processor", &$this);
+    $processor->solrParams['fq'][] = $fq;
+
     return;
   }
 
@@ -226,7 +222,7 @@ class IslandoraSolrQueryProcessor {
 
   /**
    * Execute the query
-   * @return type 
+   * @return type
    */
   function executeQuery() {
 
@@ -245,7 +241,7 @@ class IslandoraSolrQueryProcessor {
     try {
       $results = $solr->search($this->solrQuery, $this->solrStart, $this->solrLimit, $this->solrParams);
     } catch (Exception $e) {
-      drupal_set_message(t('error searching ') . $e->getMessage());
+      drupal_set_message(check_plain(t('error searching')) . ' ' . $e->getMessage());
     }
     $this->solrResult = $results;
     if (empty($results)) {

@@ -1,7 +1,8 @@
 <?php
 
 /*
- * contains methods to search solr and display results.  depends on Apache_Solr_Php client.
+ * @file
+ * Contains methods to search solr and display results.  depends on Apache_Solr_Php client.
  */
 
 module_load_include('inc', 'islandora_solr_search', 'IslandoraSolrResults');
@@ -32,7 +33,7 @@ class IslandoraSolrResultsMaps extends IslandoraSolrResults {
    *   output manually, should refactor to use drupal forms api.
    */
   function printResults($results) {
-    $output.= '<ol start="' . ($recordStart + 1) . '">';
+    $output .= '<ol start="' . ($recordStart + 1) . '">';
     global $base_url;
     if (empty($results)) {
       return "no results";
@@ -54,8 +55,9 @@ class IslandoraSolrResultsMaps extends IslandoraSolrResults {
         }
         if ($field == 'PID') {
           $pidValue = $value;
-          $output.='<td><a href="' . $base_url . '/fedora/repository/' . htmlspecialchars($value, ENT_QUOTES, 'utf-8') . '">' . $value . '</td></tr>';
-        } else {
+          $output .= '<td><a href="' . $base_url . '/fedora/repository/' . htmlspecialchars($value, ENT_QUOTES, 'utf-8') . '">' . $value . '</td></tr>';
+        }
+        else {
           $output .= '<td>' . $value . '</td></tr>';
         }
       }

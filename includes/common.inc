@@ -1,12 +1,13 @@
 <?php
 
 /*
+ * @file
  * Contains some non-class-specific methods and things I'm not sure where to put.
  */
 
 $facetSeparator = '~';
-$replacements = array("~slsh~","~plus~");
-$values = array("/","+");
+$replacements = array("~slsh~", "~plus~");
+$values = array("/", "+");
 
 
 /**
@@ -44,15 +45,15 @@ function islandora_solr_search_pager_init($total, $limit = 10, $element = 0) {
 }
 
 function restoreSlashes($str) {
-  $replacements = array("~slsh~","~plus~");
-  $values = array("/","+");
-  return str_replace($replacements,$values,$str); //can't have a slash in the url breaks drupal clean urls
+  $replacements = array("~slsh~", "~plus~");
+  $values = array("/", "+");
+  return str_replace($replacements, $values, $str); //can't have a slash in the url breaks drupal clean urls
 }
 
 function replaceSlashes($str) {
-  $replacements = array("~slsh~","~plus~");
-  $values = array("/","+");
-  return str_replace($values,$replacements,$str); // reverse of above
+  $replacements = array("~slsh~", "~plus~");
+  $values = array("/", "+");
+  return str_replace($values, $replacements, $str); // reverse of above
 }
 
 
@@ -61,10 +62,11 @@ function csv_explode($delim=',', $str, $enclose='"', $preserve=FALSE) {
   $resArr = array();
   $n = 0;
   $expEncArr = explode($enclose, $str);
-  foreach($expEncArr as $EncItem) {
-    if($n++%2) {
-      array_push($resArr, array_pop($resArr) . ($preserve?$enclose:'') . $EncItem.($preserve?$enclose:''));
-    }else {
+  foreach ($expEncArr as $EncItem) {
+    if ($n++ %2) {
+      array_push($resArr, array_pop($resArr) . ($preserve?$enclose:'') . $EncItem . ($preserve?$enclose:''));
+    }
+    else {
       $expDelArr = explode($delim, $EncItem);
       array_push($resArr, array_pop($resArr) . array_shift($expDelArr));
       $resArr = array_merge($resArr, $expDelArr);
@@ -90,10 +92,10 @@ function lesser_escape($value) {
 function solr_escape($facets) {
   $returnFacets = array();
   foreach ($facets as $facet) {
-    $tmp = substr($facet, 0, strpos($facet, ':"'));
+    $tmp = drupal_substr($facet, 0, strpos($facet, ':"'));
     $tmp = lesser_escape(trim($tmp));
 
-    $returnFacets[] = $tmp . substr($facet,strpos($facet,':"'),strlen($facet));
+    $returnFacets[] = $tmp . drupal_substr($facet, strpos($facet, ':"'), drupal_strlen($facet));
 
   }
   return $returnFacets;

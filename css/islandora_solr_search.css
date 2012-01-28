@@ -99,3 +99,17 @@ html.js .refresh-button {
 {
   display: none;
 }
+
+/* admin section */
+
+#solr_facet_table th,
+#solr_facet_table td
+{
+  vertical-align: top;
+  width: 33%;
+}
+
+#solr_facet_table .form-item
+{
+  white-space: normal;
+}
