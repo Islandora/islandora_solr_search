@@ -81,8 +81,8 @@ function lesser_escape($value) {
   // Zac removed the quotation mark and whitespace from this list.
   // a) Spaces in our search strings don't need escaping
   // b) We want to allow users to use quotation marks to indicate multi-word phrases
-
-  $pattern = '/(\+|-|&&|\|\||!|\(|\)|\{|}|\[|]|\^|~|\*|\?|:|\\\)/';
+ //  (alan) pulled the asterisk from excaping to allow wild cards
+  $pattern = '/(\+|-|&&|\|\||!|\(|\)|\{|}|\[|]|\^|~|\?|:|\\\)/';
   $replace = '\\\$1';
 
   return preg_replace($pattern, $replace, $value);

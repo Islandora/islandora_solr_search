@@ -20,6 +20,8 @@ function islandora_solr_admin_settings(&$form_state) {
     drupal_set_message(check_plain($message));
     return;
   }
+
+  drupal_add_js(drupal_get_path('module', 'islandora_solr_search') . '/js/solr_table.js');
   $handlers['standard'] = 'standard';
 
   $handler = !empty($form_state['values']['islandora_solr_search_block_request_handler']) ? $form_state['values']['islandora_solr_search_block_request_handler'] : variable_get('islandora_solr_search_block_request_handler', 'standard');
@@ -94,6 +96,11 @@ function islandora_solr_admin_settings(&$form_state) {
   );
 
 
+  $form['advanced_button'] = array(
+    '#type' => 'button',
+    '#value' => 'Show Full Table',
+    '#attributes' => array('class' => 'show_table_button', 'id' => 'table_button_id'),
+  );
 
   // get the table settings
   $primary_display_array = variable_get('islandora_solr_primary_display_table', array());
@@ -301,7 +308,7 @@ function islandora_solr_admin_settings(&$form_state) {
     '#type' => 'submit',
     '#value' => t('Save Solr Configuration'),
     '#weight' => 50,
-    );
+  );
   $form['buttons']['reset'] = array('#type' => 'submit', '#value' => t('Reset to defaults'));
 
   if (!empty($_POST) && form_get_errors()) {
@@ -320,7 +327,7 @@ function islandora_solr_admin_settings(&$form_state) {
 function theme_islandora_solr_search_admin_settings($form) {
   $default = variable_get('islandora_solr_primary_display', 'default');
   $rows = array();
-    //clean up facet params
+  //clean up facet params
 
   // render facet display table
   $facet_header = array();
@@ -357,11 +364,11 @@ function theme_islandora_solr_search_admin_settings($form) {
       }
 
       $row[] = array('data' => drupal_render($form['islandora_solr_primary_display_table']['default'][$key]));
-      $row[] = array('data' => drupal_render($form['islandora_solr_primary_display_table']['enabled'][$key]));
+      $row[] = array('data' => drupal_render($form['islandora_solr_primary_display_table']['enabled'][$key]), 'class' => 'advanced');
       $row[] = array('data' => drupal_render($form['islandora_solr_primary_display_table']['name'][$key]), 'title' => $key);
-      $row[] = array('data' => drupal_render($form['islandora_solr_primary_display_table']['machine_name'][$key]));
+      $row[] = array('data' => drupal_render($form['islandora_solr_primary_display_table']['machine_name'][$key]), 'class' => 'advanced');
       $row[] = array('data' => drupal_render($form['islandora_solr_primary_display_table']['weight'][$key]));
-      $row[] = array('data' => drupal_render($form['islandora_solr_primary_display_table']['configuration'][$key]));
+      $row[] = array('data' => drupal_render($form['islandora_solr_primary_display_table']['configuration'][$key]), 'class' => 'advanced');
 
       $rows[] = array('data' => $row, 'class' => 'draggable');
     }
@@ -369,7 +376,19 @@ function theme_islandora_solr_search_admin_settings($form) {
 
   // Individual table headers.
   // default | enabled | name | Machine readable name |  weight | configuration
-  $header = array(t('Default'), t('Enabled'), t('Name'), t('Machine readable name'), t('Weight'), t('Configuration'));
+  $header = array();
+  $header[] = array('data' => t('Default'));
+  $header[] = array('data' => t('Enabled'), 'class' => 'advanced');
+  $header[] = array('data' => t('Name'));
+  $header[] = array('data' => t('Machine readable name'), 'class' => 'advanced');
+  $header[] = array('data' => t('Weight'));
+  $header[] = array('data' => t('Configuration'), 'class' => 'advanced');
+
+
+  // add tabledrag features
+
+  drupal_add_tabledrag('solr_config_table', 'order', 'sibling', 'solr_weight');
+
 
   // put the rendered table in another fieldset.
   $form['islandora_solr_primary_display_table']['#type'] = 'item';
