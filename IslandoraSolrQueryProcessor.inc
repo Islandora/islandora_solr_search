@@ -169,9 +169,9 @@ class IslandoraSolrQueryProcessor {
       }
     }
     if (!empty($this->solrQuery) && strcmp($this->solrQuery, ' ')) {
-      $cutlink = "islandora/solr/search/ /" . $islandora_fq . "/dismax/" . $display_param;
+      $cutlink = "islandora/solr/search/ /$islandora_fq/dismax/$display_param";
       $queryval = $this->solrQuery;
-      $tokens = explode(" ", $queryval);
+      $tokens = explode(' ', $queryval);
       foreach ($tokens as $token) {
         preg_match("/^.*:/", $token, $matches);
         if (isset($matches[0])) {
@@ -179,7 +179,7 @@ class IslandoraSolrQueryProcessor {
         }
       }
       if ($queryval != '%252F') {
-        $queryurl = $queryurl . '/-/' . $this->solrDefType . '/' . $display_param;
+        $queryurl = "$queryurl/-/{$this->solrDefType}/$display_param";
         $breadcrumb[] = l($queryval, $queryurl, array('attributes' => array('title' => $this->solrQuery))) .
             " <span class='islandora_solr_search_breadcrumb_super'>(" . l(t('x'), $cutlink, array('attributes' => array('title' => "Remove " . $facet))) . ")</span>";
       }
@@ -207,9 +207,8 @@ class IslandoraSolrQueryProcessor {
     // At this point let's invoke a hook for third-party modules to mess about
     // with the query parameters if they need to.  Third party modules may alter
     // this object's query parameters if they wish.
-    module_invoke_all("islandora_solr_search_query_processor", &$this);
+    module_invoke_all('islandora_solr_search_query_processor', $this); //The hook implementation needs to specify that it takes a reference, not be passed one
     $processor->solrParams['fq'][] = $fq;
-
     return;
   }
 

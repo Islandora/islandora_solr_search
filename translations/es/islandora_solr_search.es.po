@@ -1,0 +1,271 @@
+#$Id$
+#
+# Spanish translation of Drupal (general)
+# Copyright YEAR NAME <EMAIL@ADDRESS>
+# Generated from files:
+#  IslandoraSolrQueryProcessor.inc: n/a
+#  IslandoraSolrResults.inc: n/a
+#  islandora_solr_search.admin.inc: n/a
+#  islandora_solr_search.module: n/a
+#  islandora_solr_search.install: n/a
+#  islandora_solr_search.info: n/a
+#  islandora_solr_config/islandora_solr_config.info: n/a
+#  includes/common.inc: n/a
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"POT-Creation-Date: 2011-09-26 10:57-0300\n"
+"PO-Revision-Date: 2011-09-26 10:57-0300\n"
+"Last-Translator: NAME <EMAIL@ADDRESS>\n"
+"Language-Team: Spanish <EMAIL@ADDRESS>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: IslandoraSolrQueryProcessor.inc:171
+msgid "Home"
+msgstr "Origen"
+
+#: IslandoraSolrQueryProcessor.inc:213
+msgid "error searching "
+msgstr "Error en búsqueda"
+
+#: IslandoraSolrQueryProcessor.inc:217
+msgid "Error searching solr index. Is the solr search block configured properly?"
+msgstr "Error en búsqueda del índice."
+
+#: IslandoraSolrResults.inc:190
+msgid "Raw Results"
+msgstr "Resultados sin procesar"
+
+#: IslandoraSolrResults.inc:479;509
+msgid "search"
+msgstr "Buscar"
+
+#: islandora_solr_search.admin.inc:31
+msgid "Successfully connected to Solr server at !islandora_solr_search_block_url"
+msgstr "Conectado correctamente a Solr en !islandora_solr_search_block_url"
+
+#: islandora_solr_search.admin.inc:33
+msgid "Unable to connect to Solr server at !islandora_solr_search_block_url</p>"
+msgstr "No se pudo conectar a Solr en !islandora_solr_search_block_url"
+
+#: islandora_solr_search.admin.inc:45
+msgid "Solr url"
+msgstr "URL de Solr"
+
+#: islandora_solr_search.admin.inc:48
+msgid "The url of the Solr installation.  Defaults to localhost:8080/solr."
+msgstr "URL en la que está instalado Solr.  Es originalmente http://localhost:8080/solr"
+
+#: islandora_solr_search.admin.inc:60
+msgid "Test connection"
+msgstr "Probar la conexión"
+
+#: islandora_solr_search.admin.inc:72
+msgid "Request Handler"
+msgstr "Manejador de consulta ('RequestHandler' en Solr)"
+
+#: islandora_solr_search.admin.inc:74
+msgid "Request handlers as defined by !config"
+msgstr "Los que están disponibles a partir de la configuración de Solr en !config"
+
+#: islandora_solr_search.admin.inc:87
+msgid "Limit results to namespace"
+msgstr "Limitar los resultados por espacios de nombres."
+
+#: islandora_solr_search.admin.inc:90
+msgid "Enter a namespace ie 'demo' to restrict results to PIDs within that namespace <br /><em>note: this setting may only be used with 'standard' request handler.</em>"
+msgstr "Entrar en un espacio de nombres a los que para restringir PIDs. <br /><em>Nota: Este parámetro sólo se aplica con el RequestHandler 'standard'</em>"
+
+#: islandora_solr_search.admin.inc:102
+msgid "Default Display Profile"
+msgstr "Visualización principal"
+
+#: islandora_solr_search.admin.inc:118
+msgid "Secondary Display Profiles"
+msgstr "Visualización secundaria"
+
+#: islandora_solr_search.admin.inc:132
+msgid "Search Field Repetition"
+msgstr "Repeticiones cuadro de búsqueda"
+
+#: islandora_solr_search.admin.inc:134
+msgid "The number of fields you would like to have appear in the <strong>Solr Advanced Search Block</strong>"
+msgstr "El número de repeticiones de los cuadros de búsqueda en el <strong>Bloque de búsqueda avanzada con Solr</strong>"
+
+#: islandora_solr_search.admin.inc:140
+msgid "Search Terms"
+msgstr ""
+
+#: islandora_solr_search.admin.inc:141
+msgid "Indicate what fields should appear in the dropdown menu of terms for the <strong>Solr Advanced Search Block</strong>.<br />\n      Enter terms on separate lines using the following pattern: field [tilde] preferred label. ie <strong>dc.title ~ Title</strong><br />\n      Review the schema.xml to see what terms are available. A list of the fields available when using the schema.xml packaged with the Islandora Solr\n      module is available in Islandora's online documentation."
+msgstr ""
+
+#: islandora_solr_search.admin.inc:151
+msgid "Facet Fields"
+msgstr ""
+
+#: islandora_solr_search.admin.inc:152
+msgid "Indicate which fields will appear in the <strong>Islandora Facet Block</strong>.<br />\n      Enter terms on separate lines using the following pattern: field [tilde] preferred label. ie <strong>dc.title ~ Title</strong> "
+msgstr ""
+
+#: islandora_solr_search.admin.inc:155
+msgid "dc.subject ~ Subject,dc.type ~ Type"
+msgstr ""
+
+#: islandora_solr_search.admin.inc:160
+msgid "Labels for Returned Fields"
+msgstr ""
+
+#: islandora_solr_search.admin.inc:161
+msgid "Set labels for fields returned from query.\n      Enter terms on separate lines using the following pattern: field [tilde] preferred label. ie <strong>dc.title ~ Title</strong>"
+msgstr ""
+
+#: islandora_solr_search.admin.inc:169
+msgid "Limit results to fields listed above?"
+msgstr ""
+
+#: islandora_solr_search.admin.inc:172
+msgid "If checked, results displayed will be limited to the fields specified above.<br/><strong>Note:</strong> Some display profiles may not honour this value."
+msgstr ""
+
+#: islandora_solr_search.admin.inc:177
+msgid "Minimum Results to Display Facet"
+msgstr ""
+
+#: islandora_solr_search.admin.inc:179
+msgid "Minimum facet count required for display"
+msgstr ""
+
+#: islandora_solr_search.admin.inc:184
+msgid "Maximum Facets returned"
+msgstr ""
+
+#: islandora_solr_search.admin.inc:186
+msgid "Set the number of terms that should be returned to the user.<br />\n      For example, if there are 100 possible subjects in a faceted result, you may wish to return only the top 10."
+msgstr ""
+
+#: islandora_solr_search.admin.inc:192
+msgid "Results per page"
+msgstr ""
+
+#: islandora_solr_search.admin.inc:194
+msgid "The number of results to show per page. "
+msgstr ""
+
+#: islandora_solr_search.admin.inc:199
+msgid "Debug Mode?"
+msgstr ""
+
+#: islandora_solr_search.admin.inc:202
+msgid "Dumps solr query to the screen for testing"
+msgstr ""
+
+#: islandora_solr_search.admin.inc:205
+msgid "Save Solr Configuration"
+msgstr ""
+
+#: islandora_solr_search.admin.inc:206;335;345
+msgid "Reset to defaults"
+msgstr ""
+
+#: islandora_solr_search.admin.inc:209
+msgid "The settings have not been saved because of the errors."
+msgstr ""
+
+#: islandora_solr_search.admin.inc:346
+msgid "The configuration options have been reset to their default values."
+msgstr ""
+
+#: islandora_solr_search.admin.inc:349
+msgid "The solr configuration options have been saved."
+msgstr ""
+
+#: islandora_solr_search.module:150
+msgid "Fields (default)"
+msgstr ""
+
+#: islandora_solr_search.module:155
+msgid "A simple output."
+msgstr ""
+
+#: islandora_solr_search.module:239
+msgid "Please enter search term."
+msgstr ""
+
+#: islandora_solr_search.module:404
+msgid "<p>\n         The Islandora Solr Search extends the functionality of the Fedora_Repository module.\n         This module allows one or more of a series of blocks to be configured to search a solr index.\n         This module can co-exist with the original Fedora_Repositories search block, but Solr's\n         additional functionality will normally make the original block redundant.\n         </p>\n         <p>\n         The !guide contains additonal information.\n         </p>\n         <ul>\n           <li>Islandora Solr Search requires a working Solr instance. The !sWiki has full setup instructions</li>\n           <li>Once Solr is running and tested, configure <b>Gsearch</b> to update Solr. Consult the !GSearch for details.</li>\n           <li>Retreive the !client, unzip it, and copy the <b>Solr</b> directory from the archive to the islandora_solr_search module's folder.</li>\n           <li>Go to Administer &gt; Site Configuration &gt; Islandora Solr Client <em>(or click the link below)</em> to configure the module. Set which Solr request handler to use, set the port, host and context for the index to be queried, and select which fields are to be used for filtering. Solr's <b>schema.xml</b> and  <b>solrconfig.xml</b> must be configured for the request handler as well as which  fields to index and return.</li>\n           <li>The module allows custom code to be used to display search results.&nbsp; If custom PHP code is used, the paths to that codes's file and function must be entered here as well.</li>\n           <li>Three different blocks are now available under Administer &gt; Site Building &gt; Blocks:&nbsp; Islandora Solr Simple Search Block, Islandora Solr Facet Block, and Islandora Solr Search Block.&nbsp; The configuration setting for each of these blocks will allow you to control their position on the screen, and on which pages they will be displayed.</li>\n           <li>The Islandora Solr Simple Search Block will use will add  defType=dismax to the configured request handler. The request handler tag in <b>solrconfig.xml</b> must have an attribute of <b>default=\"true\"</b>.</li>\n         </ul>\n        "
+msgstr ""
+
+#: islandora_solr_search.module:34
+msgid "Islandora Solr Client"
+msgstr ""
+
+#: islandora_solr_search.module:35
+msgid "Managing Islandora Solr Searching"
+msgstr ""
+
+#: (duplicate) islandora_solr_search.install:33 
+msgid "Missing Apache Client"
+msgstr ""
+
+#: islandora_solr_search.info:0
+msgid "Islandora Solr Search"
+msgstr "Buscar en Solr con Islandora"
+
+#: islandora_solr_search.info:0
+msgid "searches a solr index"
+msgstr "Buscar en Solr"
+
+#: islandora_solr_search.info:0 islandora_solr_config/islandora_solr_config.info:0
+msgid "Islandora Search"
+msgstr "Buscar con Islandora"
+
+#: includes/common.inc:0
+msgid "1 year"
+msgid_plural "@count years"
+msgstr[0] "1 año"
+msgstr[1] "@count años"
+
+#: includes/common.inc:0
+msgid "1 week"
+msgid_plural "@count weeks"
+msgstr[0] "1 semana"
+msgstr[1] "@count semanas"
+
+#: includes/common.inc:0
+msgid "1 day"
+msgid_plural "@count days"
+msgstr[0] "1 día"
+msgstr[1] "@count días"
+
+#: includes/common.inc:0
+msgid "1 hour"
+msgid_plural "@count hours"
+msgstr[0] "1 hora"
+msgstr[1] "@count horas"
+
+#: includes/common.inc:0
+msgid "1 min"
+msgid_plural "@count min"
+msgstr[0] "1 minuto"
+msgstr[1] "@count minutos"
+
+#: includes/common.inc:0
+msgid "1 sec"
+msgid_plural "@count sec"
+msgstr[0] "1 segundo"
+msgstr[1] "@count segundos"
+
+#: islandora_solr_config/islandora_solr_config.info:0
+msgid "Islandora Solr Sample Configuration"
+msgstr "Ejemplo de personalización del bloque Solr con Islandora"
+
+#: islandora_solr_config/islandora_solr_config.info:0
+msgid "Customizes Islandora solr search"
+msgstr "Permite la personalización del bloque Solr con Islandora"
+

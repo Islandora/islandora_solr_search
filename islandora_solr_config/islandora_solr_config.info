@@ -5,3 +5,4 @@ description = Customizes Islandora solr search
 package = Islandora Search
 version = 11.3.1
 core = 6.x
+
