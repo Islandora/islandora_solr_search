@@ -1,0 +1,216 @@
+<?php
+
+/**
+ * Implementation of hook_menu; needed for AHAH
+ *
+ */
+function islandora_extended_search_form_menu() {
+  return array(
+    'islandora/solr/extended_form_field/add' => array(
+      'page callback' => '_islandora_extended_search_add_field',
+      'access callback' => 'user_access',
+      'access arguments' => array('access content'),
+      'type' => MENU_CALLBACK,
+    ),
+    'islandora/solr/extended_form_field/remove' => array(
+      'page callback' => '_islandora_extended_search_remove_field',
+      'access callback' => 'user_access',
+      'access arguments' => array('access content'),
+      'type' => MENU_CALLBACK,
+    ),
+  );
+}
+
+/**
+ *  Implementation of hook_islandora_solr_query_blocks()
+ */
+function islandora_extended_search_form_islandora_solr_query_blocks() {
+  return array(
+    'extended_advanced' => array(
+      'name' => t('Extended Advanced Search'),
+      'module' => 'islandora_extended_search_form',
+      'file' => 'islandora_extended_search_form.module',
+      'class' => NULL,
+      'function' => NULL,
+      'form' => 'islandora_extended_search_form',
+    ),
+  );
+}
+
+/**
+ * Builds a drupal form for launching a search.
+ * 
+ * @param array $form_state 
+ * 
+ * @return array
+ */
+function islandora_extended_search_form(array &$form_state) {
+  $path = drupal_get_path('module', 'islandora_extended_search_form');
+  
+  //TODO:  Get the JS and CSS into the Solr module
+  drupal_add_js("$path/js/islandora_extended_search_form-ahah.js");
+  drupal_add_css("$path/css/islandora_extended_search_form.css");
+  
+  module_load_include('inc', 'islandora_solr_search', 'includes/common');
+  if (isset($_SESSION['islandora_extended_search']['values'])) {
+    // Handles the changing of URL from the initial search page to the actual search page.
+     
+    $values = $_SESSION['islandora_extended_search']['values'];
+    unset($_SESSION['islandora_extended_search']['values']); //FIXME: This should be done if we navigate away from the results... Or handled a level higher, so that you're passing in the form state.
+  }
+  elseif (!empty($form_state['values'])) {
+    $values = $form_state['values'];
+  }
+  else {
+    $values = array( //Need at least one term to draw the search box.
+      'terms' => array('')
+    );
+  }
+  $terms = array(
+    '#prefix' => '<div id="islandora-extended-search-terms"><h3 class="search-title">' . t('Search') . '</h3>',
+    '#suffix' => '</div>',
+    '#tree' => TRUE,
+  );
+  foreach ($values['terms'] as $i => $value) {
+    $term = array(
+      '#tree' => TRUE,
+      '#prefix' => '<div>',
+      '#suffix' => '</div>',
+      'field' => array(
+        '#title' => t('Field'),
+        '#type' => 'select',
+        '#default_value' => isset($value['field']) ? $value['field'] : 'dc.title',
+        '#options' => islandora_build_substitution_list(variable_get('islandora_solr_searchterms', <<<EOT
+dc.title ~ Title
+dc.description ~ Description
+EOT
+        ))
+      ),
+      'search' => array(
+        '#title' => t('Search terms'),
+        '#type' => 'textfield',
+        '#default_value' => isset($value['search']) ? $value['search'] : '',
+      ),
+      'hidden_submit' => array(// Used for when the user presses enter on the search field.
+        '#type' => 'submit',
+        '#value' => t('Search'),
+        '#attributes' => array('style' => 'visibility:hidden;position:fixed;top:-1000px;right:-1000px;')
+      ),
+      'add' => array(
+        '#type' => 'submit',
+        '#value' => '+',
+        '#attributes' => array('title' => t('Add field')),
+        '#name' => 'add-field-' . $i,
+        '#ahah' => array(
+          'path' => 'islandora/solr/extended_form_field/add',
+          'wrapper' => 'islandora-extended-search-terms',
+          'method' => 'replace',
+          'effect' => 'fade'
+        )
+      ),
+    );
+    if (count($values['terms']) > 1) {
+      $term['remove'] = array(
+        '#type' => 'button',
+        '#field' => $i,
+        '#value' => '-',
+        '#attributes' => array('title' => t('Remove field')),
+        '#name' => 'remove-field-' . $i,
+        '#ahah' => array(
+          'path' => 'islandora/solr/extended_form_field/remove',
+          'wrapper' => 'islandora-extended-search-terms',
+          'method' => 'replace',
+          'effect' => 'fade'
+        )
+      );
+    }
+    $terms[] = $term;
+  }
+  return array(
+    'terms' => $terms,
+    'controls' => array(
+      '#type' => 'markup',
+      '#prefix' => '<div class="islandora-extended-search-controls">',
+      '#suffix' => '</div>',
+      'sort' => array(
+        '#title' => t('Sort By'),
+        '#type' => 'select',
+        '#default_value' => (isset($values['sort']) ? $values['sort'] : 'score'),
+        '#options' => array( //XXX:  Need to make configurable...
+          'score' => t('Relevance'),
+          'mods_title_mlt' => t('Title'),
+          'mods_dateIssued_s' => t('Date Issued'),
+        ),
+      ),
+      'order' => array(
+        '#title' => t('Order'),
+        '#type' => 'select',
+        '#default_value' => (isset($values['order']) ? $values['order'] : 'desc'),
+        '#options' => array(
+          'desc' => t('Descending'),
+          'asc' => t('Ascending'),
+        ),
+      ),
+      'submit' => array(
+        '#type' => 'submit',
+        '#value' => t('Search')
+      )
+    )
+  );
+}
+
+/**
+ * Submit hook for the quick search form.
+ * 
+ * @param array $form
+ * @param array $form_state 
+ */
+function islandora_extended_search_form_submit(array $form, array &$form_state) {
+  $_SESSION['islandora_extended_search']['values'] = $form_state['values'];
+  //$_SESSION['islandora_extended_search']['sort'] = $form_state['values']['sort'];
+  //$_SESSION['islandora_extended_search']['order'] = $form_state['values']['order'];
+  $query = _islandora_extended_search_form_build_query($form_state);
+  $form_state['redirect'] = 'islandora/solr/search/' . urlencode($query) . '/'; // Redirect to the search.
+}
+
+/**
+ *
+ * @param array $form_state 
+ */
+function _islandora_extended_search_form_build_query(array &$form_state) {
+  $statements = array();
+  foreach ($form_state['values']['terms'] as $term) {
+    $field = $term['field'];
+    $search = trim($term['search']);
+    if (!empty($search)) {
+      $statements[] = "$field:($search)";
+    }
+  }
+  $query = !empty($statements) ? implode(' AND ', $statements) : '*:*'; // Empty return all results. 
+  return $query;
+}
+
+/**
+ *  AHAH callback
+ */
+function _islandora_extended_search_add_field() {
+  module_load_include('inc', 'xml_form_elements', 'Ahah');
+  list($form_id, $form_build_id, $form, $form_state) = Ahah::getFormInfo();
+  $form = Ahah::processForm($form_id, $form, $form_state);
+  $form_state['values']['terms'][] = array('');
+  $form = Ahah::rebuildForm($form_id, $form_build_id, $form, $form_state);
+  Ahah::respond($form['terms']);
+}
+
+/**
+ *  AHAH callback
+ */
+function _islandora_extended_search_remove_field() {
+  module_load_include('inc', 'xml_form_elements', 'Ahah');
+  list($form_id, $form_build_id, $form, $form_state) = Ahah::getFormInfo();
+  $form = Ahah::processForm($form_id, $form, $form_state);
+  $field = $form_state['clicked_button']['#field'];
+  array_splice($form_state['values']['terms'], $field, 1);
+  $form = Ahah::rebuildForm($form_id, $form_build_id, $form, $form_state);
+  Ahah::respond($form['terms']);
+}

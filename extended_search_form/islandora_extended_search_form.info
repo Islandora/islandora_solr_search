@@ -1,0 +1,6 @@
+name = Islandora Extended Search
+dependencies[] = islandora_solr_search
+description = An improved 'Advanced Search' form.
+package = Islandora Search
+version = 11.dev
+core = 6.x

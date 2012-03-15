@@ -1,0 +1,17 @@
+
+#islandora-extended-search-form div.form-item { 
+  display: inline-block;
+}
+
+#islandora-extended-search-form .progress-disabled, 
+#islandora-extended-search-form .ahah-progress, 
+#islandora-extended-search-form .ahah-progress throbber {
+  float:none; 
+}
+#islandora-extended-search-form .ahah-progress {
+  display: inline-block;
+}
+
+/*#scholar-search-results-form > div > div {
+  float: left;
+}*/
