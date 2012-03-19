@@ -124,9 +124,14 @@ function islandora_solr_admin_settings(&$form_state) {
       // First sort by value and then sort equal values by key: http://stackoverflow.com/a/6611077/477949
       array_multisort(array_values($weight), SORT_ASC, array_keys($weight), SORT_ASC, $weight);
 
-      // re-order the array
-      foreach ($weight as $key => $value) {
-        $profiles_sorted[$key] = $profiles[$key];
+      // Add all previously existing profiles with a weight...
+      foreach (array_intersect_assoc($profiles, $weight) as $key => $value) {
+        $profiles_sorted[$key] = $value;
+      }
+	  
+      //Account for new profiles.
+      foreach (array_diff_assoc($profiles, $profiles_sorted) as $key => $value) {
+        $profiles_sorted[$key] = $value;
       }
     }
     // or else use the default
