@@ -241,6 +241,7 @@ function islandora_solr_admin_settings(&$form_state) {
     '#default_value' => variable_get('islandora_solr_snippet_field', ''),
     '#description' => t("If a match is found on this field, a snippet of text will be returned, with the search term highlighted.<br />
       An optional friendly label may inserted using the following pattern <strong>dsm.Text ~ Full Text</strong><br />
+      Use an asterisk (<strong>*</strong>) for all fields, leave blank to disable highlighting.<br />
       <strong>Note:</strong><em> This feature is not supported by all display profiles.</em> "),
     '#wysiwyg' => FALSE,
   );
@@ -302,6 +303,24 @@ function islandora_solr_admin_settings(&$form_state) {
     '#size' => 5,
     '#description' => t('The number of results to show per page.'),
     '#default_value' => variable_get('islandora_solr_search_num_of_results', '20'),
+  );
+  $form['islandora_solr_search_base_query'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Solr Default Query'),
+    '#size' => 30,
+    '#description' => t('A default query to use to browse solr results when no explicit user query is set.
+      Setting a useful default query allows users to use solr to browse, without entering a query themselves.
+      May be used in conjunction with a background filter, below.<br>
+      Consider <strong><em>timestamp:[* TO NOW]</em></strong> or <strong><em>*:*</em></strong><br/>'),
+    '#default_value' => variable_get('islandora_solr_search_base_query', 'timestamp:[* TO NOW]'),
+  );
+  $form['islandora_solr_search_base_filter'] = array(
+    '#type' => 'textarea',
+    '#title' => t('Solr Base Filter'),
+    '#description' => t('Some base filters to append to all user queries -- may be used to filter results and to facilitate null-query browsing. Enter one per line. <br/>
+      These filters will be applied to all queries in addition to any user-selected facet filters'),
+    '#default_value' => variable_get('islandora_solr_search_base_filter', ''),
+    '#wysiwyg' => FALSE,
   );
   $form['islandora_solr_search_debug_mode'] = array(
     '#type' => 'checkbox',

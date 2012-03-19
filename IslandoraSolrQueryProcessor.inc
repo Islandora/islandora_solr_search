@@ -6,6 +6,9 @@
  * Depends on Apache_Solr_Php client.
  */
 
+DEFINE('SOLR_SEARCH_PATH','islandora/solr/search');
+DEFINE('SOLR_BASE_QUERY','timestamp:[* TO NOW]');
+
 /**
  * Islandora Solr Query Processor
  * @todo Stop using global vars, start using this object's vars.
@@ -19,12 +22,15 @@ class IslandoraSolrQueryProcessor {
   static $slashReplacement = '~slsh~'; // a pattern used to replace / in url's the slash breaks drupal clean url's
   public static $SEARCH_CLASS_ADVANCED_SEARCH_NUMBER_FIELDS = 5;
   public $solrQuery;
+  public $internalSolrQuery;
   public $solrParams;
   public $solrStart;
   public $solrLimit;
   public $solrDefType;
   public $solrFilters;
   public $solrResult;
+
+  public $different_kinds_of_nothing = array( ' ', '%20', '%252F', '%2F', '%252F-', '' );
 
   /**
    * Constructor
@@ -93,10 +99,10 @@ class IslandoraSolrQueryProcessor {
 
     // -- end cut here --
     //fix the query as some characters will break the search : and / slash are examples
-    $this->solrQuery = restoreSlashes($query);
+    $this->solrQuery = urldecode(restoreSlashes($query));
 
-    if (empty($this->solrQuery)) {
-      // $this->solrQuery = '%20'; //so we can allow empty queries to dismax
+    if (empty($this->solrQuery) || in_array($this->solrQuery,$this->different_kinds_of_nothing)) {
+      $this->solrQuery = ' '; //so we can allow empty queries to dismax
     }
 
     $facetArray = array();
@@ -119,7 +125,7 @@ class IslandoraSolrQueryProcessor {
       'facet.mincount' => $facetMinCount,
       'facet.limit' => $facetlimit,
       'qt' => $requestHandler,
-      'hl' => 'true',
+      'hl' => isset($keys[0]) ? 'true' : NULL,
       'hl.fl' => isset($keys[0]) ? trim($keys[0]) : NULL,
       'hl.fragsize' => 400,
       'facet.field' => explode(',', $facetFields), //comma separated list configured in the block config
@@ -131,12 +137,17 @@ class IslandoraSolrQueryProcessor {
     }
     $debugQuery = (variable_get('islandora_solr_search_debug_mode', 0) ? "TRUE" : NULL ); //any val incl. 'FALSE' is treated as TRUE by Solr
 
+    $base_filters = preg_split("/\\r\\n|\\n|\\r/", variable_get('islandora_solr_search_base_filter', ''), -1, PREG_SPLIT_NO_EMPTY);
+
     if ($fq != NULL && $fq != '-') {
       $fq = restoreSlashes($fq); //put the slash back
 
       $fqs = csv_explode(IslandoraSolrQueryProcessor::$facetSeparator, $fq, '"', TRUE); //to filter by more then one facet we will separate them by~ for nowseparate them by~ for now
+      $fqs = array_merge($fqs,$base_filters);
       $this->solrParams['fq'] = $fqs;
       $islandora_fq = replaceSlashes($fq); //remove the slash here as we will be using this in url's
+    } elseif (!empty($base_filters)) {
+      $this->solrParams['fq'] = $base_filters;
     }
     if (empty($islandora_fq)) {
       $islandora_fq = '-';
@@ -148,7 +159,7 @@ class IslandoraSolrQueryProcessor {
     $this->solrStart = max(0, $startPage) * $this->solrLimit;
 
     // The breadcrumb should go in the display class
-    $queryurl = "islandora/solr/search/" . replaceSlashes($this->solrQuery);
+    $queryurl = SOLR_SEARCH_PATH . "/" . replaceSlashes($this->solrQuery);
     $breadcrumb_fq = $islandora_fq;
     $facet = NULL; // Nigelb, This is being used outside of the for loop where it is being created this is probably incorrect.
     if (strcmp($islandora_fq, "-")) {
@@ -168,8 +179,8 @@ class IslandoraSolrQueryProcessor {
         $breadcrumb_fq = $this->delete_filter($breadcrumb_fq, $facet);
       }
     }
-    if (!empty($this->solrQuery) && strcmp($this->solrQuery, ' ')) {
-      $cutlink = "islandora/solr/search/ /$islandora_fq/dismax/$display_param";
+    if (!in_array($this->solrQuery,$this->different_kinds_of_nothing)) {
+      $cutlink = SOLR_SEARCH_PATH . "/ /" . $islandora_fq . '/-/' . $display_param;
       $queryval = $this->solrQuery;
       $tokens = explode(' ', $queryval);
       foreach ($tokens as $token) {
@@ -190,11 +201,24 @@ class IslandoraSolrQueryProcessor {
     drupal_set_breadcrumb($breadcrumb);
     $this->solrFilters = $islandora_fq;
 
+    $this->internalSolrQuery = $this->solrQuery;
+
+    // replace the various null queries with a sensible catch-all.
+    if(in_array($this->internalSolrQuery,$this->different_kinds_of_nothing)) {
+      $this->internalSolrQuery = variable_get('islandora_solr_search_base_query', SOLR_BASE_QUERY);
+      // we must also undo dismax if it's been set
+      $this->solrDefType = null;
+      $this->solrParams['defType'] = null;
+    } else {
+      // append the catch-all query to any queries which lack it?
+      // No, not under normal circumstances, and it would break dismax.
+    }
     // restrict results based on specified namespace
-    $namespace = variable_get('solr_namespace_restriction', 'null');
+    $namespace = trim(variable_get('solr_namespace_restriction', NULL));
     if ($namespace) {
       $this->solrParams['fq'][] = "PID:$namespace\:*";
     }
+
 
     // if no qf fields are specified in rthe requestHandler a default list is supplied here for dismax searches
     if (!variable_get('dismax_allowed', 0) && $dismax == "dismax") {
@@ -238,7 +262,7 @@ class IslandoraSolrQueryProcessor {
 
     // This is where the query gets executed and output starts being created.
     try {
-      $results = $solr->search($this->solrQuery, $this->solrStart, $this->solrLimit, $this->solrParams);
+      $results = $solr->search($this->internalSolrQuery, $this->solrStart, $this->solrLimit, $this->solrParams);
     } catch (Exception $e) {
       drupal_set_message(check_plain(t('error searching')) . ' ' . $e->getMessage());
     }
