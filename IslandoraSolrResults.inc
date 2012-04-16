@@ -35,7 +35,6 @@ class IslandoraSolrResults {
    * @param type $output
    * @return string
    */
-
   function displayResults($solrQueryProcessor, $title = NULL, $output = '') {
     if (is_null($title)) { //Needed to move this, as default parameters cannot be function calls
       $title = t("Search Results");
@@ -50,8 +49,8 @@ class IslandoraSolrResults {
 
     $output .= $this->addSecondaries();
 
-    $output .= '<h2>'.$title.'</h2>';
-    $output .= '<div id="islandora_solr_result_count">(' . ($solrQueryProcessor->solrStart + ($total > 0?1:0)) . ' - ' . $end . ' of ' . $total . ')</div>';
+    $output .= '<h2>' . $title . '</h2>';
+    $output .= '<div id="islandora_solr_result_count">(' . ($solrQueryProcessor->solrStart + ($total > 0 ? 1 : 0)) . ' - ' . $end . ' of ' . $total . ')</div>';
     $output .= '<div class="content">';
 
 //    drupal_set_message(print_r($secondary_display_profiles,1));
@@ -68,7 +67,7 @@ class IslandoraSolrResults {
      */
     $output .= $this->printResults($apacheSolrResult);
     if (variable_get('islandora_solr_search_debug_mode', FALSE)) {
-        $output .= $this->printDebugOutput($solrResult);
+      $output .= $this->printDebugOutput($solrResult);
     }
 
     // Render Drupal pager (bottom of search results)
@@ -78,7 +77,7 @@ class IslandoraSolrResults {
     $output .= "</div>"; // class = "content"
     return $output;
   }
-  
+
   function addSecondaries() {
     $output = '';
     // Get secondary display profiles
@@ -142,40 +141,23 @@ class IslandoraSolrResults {
    */
   function printResults($results) {
     // Check for empty resultset
-    if( (int)$results->response->numFound === 0 ) {
+    if ((int) $results->response->numFound === 0) {
       $output .= "<p>Sorry, but your search returned no results.</p>";
       return $output;
     }
-
+    $docs = $this->prep_results($results);
     $items = array();
     $type = "ol";
     $title = NULL;
     $recordStart = $results->response->start;
     $limitResults = variable_get('islandora_solr_search_limit_result_fields', 0);
-    $rawResponse = $results->getRawResponse();
-    $responseArray = json_decode($rawResponse, TRUE);
-    $docs = $responseArray['response']['docs'];
-    //retrieve 'highlighing' from resultset.
-    $highlightResults = $responseArray['highlighting'];
-    $highlights = $results->highlighting;
-
-    foreach ($highlights as $highlight) {
-      $fields = get_object_vars($highlight);
-      $keys = array_keys($fields);
-      if (count($keys) > 0) {
-        foreach ($highlight->$keys[0] as $body) {
-          //drupal_set_message("$keys[0]  $body");
-        }
-      }
-      //drupal_set_message($highlight->$keys[0]);
-    }
 
     global $base_url;
     if (empty($results)) {
       return "no results";
     }
 
-    foreach ($results->response->docs as $doc) {
+    foreach ($docs as $doc) {
       $rows = array();
       $row = 0;
       $snippet = NULL;
@@ -198,9 +180,6 @@ class IslandoraSolrResults {
           $pid = $value;
           $l = l($value, 'fedora/repository/' . htmlspecialchars($value, ENT_QUOTES, 'utf-8'));
           $rows[$row][] = $l;
-          if (is_array($keys)) {
-            $snippet = $highlightResults[$value][$keys[0]];
-          }
         }
         else {
           $rows[$row][] = $value;
@@ -216,12 +195,12 @@ class IslandoraSolrResults {
       }
       $items[] = theme_table(NULL, $rows, array('class' => 'islandora_solr_search_results_object'));
     }
+
     $output .= theme_item_list($items, $title, $type, array('class' => 'stuff', 'start' => ($recordStart + 1)));
     return $output;
   }
-  
-  function printDebugOutput($results)
-  {
+
+  function printDebugOutput($results) {
     // debug dump
     $results_r .= "<pre>Results: " . print_r($results, TRUE) . "</pre>";
     $fieldset_r = array(
@@ -232,24 +211,25 @@ class IslandoraSolrResults {
     );
     return theme('fieldset', $fieldset_r);
   }
-  
+
   const FIELD_ALL = 0, FIELD_SEARCH = 1, FIELD_FACET = 2, FIELD_RESULT = 3;
-  
+
   function _make_pattern($string) {
-    return "/^". preg_quote($string, '/') ."/";
+    return "/^" . preg_quote($string, '/') . "/";
   }
+
   function getSubstitutedFields($string_in, $type = FIELD_SEARCH) {
     $replacements = NULL;
-    switch($type) {
+    switch ($type) {
       case FIELD_SEARCH:
         $replacements = $this->searchFieldArray;
-      break;
+        break;
       case FIELD_FACET:
         $replacements = $this->facetFieldArray;
-      break;
+        break;
       case FIELD_RESULT:
         $replacements = $this->resultFieldArray;
-      break;
+        break;
       case FIELD_ALL:
       default:
         $replacements = $this->allSubsArray;
@@ -276,18 +256,17 @@ class IslandoraSolrResults {
         $solrQueryProcessor->solrResult->facet_counts->facet_fields :
         NULL;
     //dsm($islandora_facets);
-
     // set display variable
     $display = $solrQueryProcessor->display;
-    
+
     if ($display == variable_get('islandora_solr_primary_display', 'default')) {
       $display_param = '';
     }
     else {
       $display_param = $display;
     }
-    
-    
+
+
     if (drupal_strlen(trim($solrQueryProcessor->solrQuery))) {
 
       // Variables to build a drupal-ish unordered list
@@ -305,10 +284,10 @@ class IslandoraSolrResults {
       $repr = '-'; //Again, don't explicitly specify an image...
       $link = "islandora/solr/search/$query/$fq/$defType/$display_param";
       $query_list_items[] .= l($repr, $link,
-        array(
-          'attributes' => array(
-            'class' => 'islandora_solr_add_remove_link'))
-      ) . ' ' . $this->getSubstitutedFields(stripslashes($solrQueryProcessor->solrQuery), FIELD_SEARCH);
+              array(
+                'attributes' => array(
+                  'class' => 'islandora_solr_add_remove_link'))
+          ) . ' ' . $this->getSubstitutedFields(stripslashes($solrQueryProcessor->solrQuery), FIELD_SEARCH);
 
       $output .= '<div class="islandora_solr_search_query_wrap">';
 
@@ -346,17 +325,17 @@ class IslandoraSolrResults {
           $exclude = TRUE;
           $filter_name = drupal_substr($filter_name, 1);
         }
-        
-        $query = replaceSlashes($solrQueryProcessor->solrQuery); 
+
+        $query = replaceSlashes($solrQueryProcessor->solrQuery);
         $fq = replaceSlashes($filter_disable);
         $defType = $solrQueryProcessor->solrDefType;
         $repr = '-'; //I know that Kris has complained about the remove image before...  This should allow it to be changed.
         $link = "islandora/solr/search/$query/$fq/$defType/$display_param";
-        $filter_list_items[] = l($repr, $link, 
-          array(
-            'attributes' => array(
-                'class' => 'islandora_solr_add_remove_link'))
-            ) .' '. $this->facetFieldArray[$filter_name] . ($exclude ? ' != ' : ' = ') . $filter_value;
+        $filter_list_items[] = l($repr, $link,
+                array(
+                  'attributes' => array(
+                    'class' => 'islandora_solr_add_remove_link'))
+            ) . ' ' . $this->facetFieldArray[$filter_name] . ($exclude ? ' != ' : ' = ') . $filter_value;
       }
     }
 
@@ -388,20 +367,20 @@ class IslandoraSolrResults {
 
     $this->allSubsArray = array_merge($this->facetFieldArray, $this->searchFieldArray, $this->resultFieldArray);
   }
-  
+
   function _addFacets(&$key, &$name, &$number, &$solrQueryProcessor, &$facet_count, &$list, $display_param) {
     $islandora_fq = $solrQueryProcessor->solrFilters;
     //FIXME:  This isn't quite right...  It can make sense to facet on 
     //  the same field multiple times, provided it is multi-valued...
-    $fq = (array)$solrQueryProcessor->solrParams['fq'];
+    $fq = (array) $solrQueryProcessor->solrParams['fq'];
     //FIXME:  This instance of 't' should be changed to format_string for Drupal 7 (not really translateable)
     $filter = t('!key:"!name"', array(
-      '!key' => $key,
-      '!name' => replaceSlashes($name)
-    ));
-    
+          '!key' => $key,
+          '!name' => replaceSlashes($name)
+        ));
+
     $disable_link = (array_search($filter, $fq) !== FALSE) || $number == $solrQueryProcessor->solrResult->response->numFound;
-    
+
     //$disable_link = strpos($islandora_fq, $key . ':"' .  . '"') !== FALSE; //we don't want a link for this facet as we already used it
     if ($islandora_fq && $islandora_fq != '-') {//there are existing facets in the query
       if ($disable_link) {
@@ -410,10 +389,10 @@ class IslandoraSolrResults {
       else {
         //FIXME:  This instance of 't' should be changed to format_string for Drupal 7 (not really translateable)
         $filter_include = t('!filter!sep!remaining', array(
-          '!filter' => $filter,
-          '!sep' => IslandoraSolrResults::$facetSeparator,
-          '!remaining' => $islandora_fq
-        ));
+              '!filter' => $filter,
+              '!sep' => IslandoraSolrResults::$facetSeparator,
+              '!remaining' => $islandora_fq
+            ));
         $filter_exclude = "-$filter_include";
       }
     }
@@ -431,24 +410,24 @@ class IslandoraSolrResults {
     else {//normal link
       $dt = $solrQueryProcessor->solrDefType;
       $q = $solrQueryProcessor->solrQuery;
-      
+
       $lplus = "islandora/solr/search/$q/$filter_include/$dt/$display_param";
       $lminus = "islandora/solr/search/$q/$filter_exclude/$dt/$display_param";
       $text = $name;
       $attrs = array();
-      
+
       global $current_display;
       $display = isset($_GET['display']) ? $current_display : '';
       if ($display) {
         $attrs['query'] = array('display' => $display);
       }
-      
+
       $list[] = l($text, $lplus, $attrs) . ' (' . $number . ')' .
-          '<span class="plusminus">'. 
-            l('+', $lplus, array_merge($attrs, array('attributes' => array('class' => 'plus')))) 
-              .' '.
-            l('-', $lminus, array_merge($attrs, array('attributes' => array('class' => 'minus')))) 
-          .'</span>';
+          '<span class="plusminus">' .
+          l('+', $lplus, array_merge($attrs, array('attributes' => array('class' => 'plus'))))
+          . ' ' .
+          l('-', $lminus, array_merge($attrs, array('attributes' => array('class' => 'minus'))))
+          . '</span>';
       $facet_count += 1;
     }
   }
@@ -478,7 +457,7 @@ class IslandoraSolrResults {
 
     // set display
     $display = $solrQueryProcessor->display;
-    
+
     if ($display == $default_display) {
       $display_param = '';
     }
@@ -499,7 +478,7 @@ class IslandoraSolrResults {
         foreach ($field as $name => $number) {
           $this->_addFacets($key, $name, $number, $solrQueryProcessor, $facet_count, $list_items, $display_param);
         }
-        
+
         if (count($list_items) > 0) {
           $facet_output .='<div class="islandora_solr_search_facet">';
 
@@ -512,15 +491,15 @@ class IslandoraSolrResults {
           $list_type = "ul";
           $list_attributes = array(
             'class' => implode(' ', array(
-              'islandora_solr_search_facet_list', 
+              'islandora_solr_search_facet_list',
               'facet_list'))
           );
-          
+
           // split the array if shown_limit is between the min and max limits and if the total is larger than the shown_limit.
-          $split_facet = $facet_count > $shown_limit AND 
-            $shown_limit < $facetlimit AND 
-            $shown_limit > $facetMinCount;
-            
+          $split_facet = $facet_count > $shown_limit AND
+              $shown_limit < $facetlimit AND
+              $shown_limit > $facetMinCount;
+
           if ($split_facet) {
             $show_more = TRUE; //There exists a split array...
             $list_items_hidden = array_slice($list_items, $shown_limit);
@@ -537,7 +516,7 @@ class IslandoraSolrResults {
             $facet_output .= theme_item_list($list_items_hidden, NULL, $list_type, $list_attributes);
             $facet_output .= '</div>';
           }
-          
+
           $facet_output .='</div>'; //div.islandora_solr_search_facet
         }
       }
@@ -562,7 +541,7 @@ class IslandoraSolrResults {
 
     return $output;
   }
-  
+
   function _add_field(&$form, &$i, &$unprocessed_contents, &$types) {
     $type = NULL;
     $temp = preg_split('/:/', $unprocessed_contents, 2);
@@ -580,9 +559,9 @@ class IslandoraSolrResults {
       else {
         $type = $temp[0];
         $terms = trim($temp[1], '()');
-      } 
+      }
     }
-    
+
     $form['search_type']["type$i"] = array(
       '#title' => '',
       '#type' => 'select',
@@ -615,7 +594,7 @@ class IslandoraSolrResults {
       }
       $types[trim($vals[0])] = trim($vals[1]);
     }
-    
+
     $queryArray = NULL;
     if (isset($query)) {
       //A regex like '\\) (OR|AND) \\(' should work, right?  Nope.  Seems that 
@@ -732,24 +711,29 @@ class IslandoraSolrResults {
    * @param Apache Solr Object $results
    * @return array
    */
-
   function prep_results($results) {
     $rawResponse = $results->getRawResponse();
     $responseArray = json_decode($rawResponse, TRUE);
     $highlights = $responseArray['highlighting'];
     $docs = $responseArray['response']['docs'];
+
+    if (!is_array($highlights)) {
+       return $docs;
+    }
+
+   // if highights exist, inetegrate them back into the doc array
     $label = variable_get("islandora_solr_snippet_field", "");
     if ($label) {
       $label_parts = explode('~', $label);
-      $field_label = $label_parts[1];
-      $field_text = $label_parts[0];
-
+      $field_label = trim($label_parts[1]);
+      $field_text = trim($label_parts[0]);
     }
     foreach ($docs as &$doc) {
+      $pid = $doc['PID'];
+      unset($doc[$field_text]);
       $snippet = $highlights[$doc['PID']];
       foreach ($snippet as $key => $value) {
-      $identifier = ($key==$field_text)?$field_label:$key;
-        $doc[$identifier] = implode('<br />', $value);
+        $doc[$field_text] = implode('<br />', $value);
       }
     }
     return $docs;
