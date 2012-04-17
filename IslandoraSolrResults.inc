@@ -146,6 +146,7 @@ class IslandoraSolrResults {
       return $output;
     }
     $docs = $this->prep_results($results);
+
     $items = array();
     $type = "ol";
     $title = NULL;
@@ -728,6 +729,8 @@ class IslandoraSolrResults {
       $field_label = trim($label_parts[1]);
       $field_text = trim($label_parts[0]);
     }
+    $this->resultFieldArray[$field_text]= $field_label;
+    $this->allSubsArray[$field_text]= $field_label;
     foreach ($docs as &$doc) {
       $pid = $doc['PID'];
       unset($doc[$field_text]);
