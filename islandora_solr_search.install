@@ -50,8 +50,8 @@ function islandora_solr_search_requirements($phase) {
  */
 
 function islandora_solr_search_install() {
-
-  $message = st("Islandora Solr Search <a href ='!link'>configuration page</a>.", array('!link' => '/admin/settings/islandora_solr_search'));
+  $link = l("Islandora Solr Search", '/admin/settings/islandora_solr_search' );
+  $message = t("Islandora Solr Search !link.", array('!link' => $link));
   drupal_set_message(check_plain($message));
 }
 
