@@ -194,7 +194,7 @@ function _islandora_extended_search_form_build_query(array &$form_state) {
  *  AHAH callback
  */
 function _islandora_extended_search_add_field() {
-  module_load_include('inc', 'xml_form_elements', 'Ahah');
+  module_load_include('inc', 'php_lib', 'Ahah');
   list($form_id, $form_build_id, $form, $form_state) = Ahah::getFormInfo();
   $form = Ahah::processForm($form_id, $form, $form_state);
   $form_state['values']['terms'][] = array('');
@@ -206,7 +206,7 @@ function _islandora_extended_search_add_field() {
  *  AHAH callback
  */
 function _islandora_extended_search_remove_field() {
-  module_load_include('inc', 'xml_form_elements', 'Ahah');
+  module_load_include('inc', 'php_lib', 'Ahah');
   list($form_id, $form_build_id, $form, $form_state) = Ahah::getFormInfo();
   $form = Ahah::processForm($form_id, $form, $form_state);
   $field = $form_state['clicked_button']['#field'];
