@@ -36,7 +36,12 @@ class IslandoraSolrQueryProcessor {
    * Constructor
    */
   function IslandoraSolrQueryProcessor() {
-    module_load_include('php', 'islandora_solr_search', 'SolrPhpClient/Apache/Solr/Service');
+    if (module_exists('apachesolr')) {
+      module_load_include('php', 'apachesolr', 'SolrPhpClient/Apache/Solr/Service');
+    }
+    else {
+      module_load_include('php', 'islandora_solr_search', 'SolrPhpClient/Apache/Solr/Service');
+    }
     module_load_include('inc', 'islandora_solr_search', 'includes/common');
   }
 

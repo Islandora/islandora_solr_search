@@ -14,8 +14,13 @@
 function islandora_solr_admin_settings(&$form_state) {
 
   //checks for existence of PHP Solr client.
-  module_load_include('php', 'islandora_solr_search', 'SolrPhpClient/Apache/Solr/Service');
-  if (!class_exists('Apache_Solr_Service')) {
+    if (module_exists('apachesolr')) {
+      module_load_include('php', 'apachesolr', 'SolrPhpClient/Apache/Solr/Service');
+    }
+    else {
+      module_load_include('php', 'islandora_solr_search', 'SolrPhpClient/Apache/Solr/Service');
+    }
+    if (!class_exists('Apache_Solr_Service')) {
     $message = t('This module requires the !url. Please install the client directory in the root directory of this module before continuing.', array('!url' => l(t('Apache Solr php client'), 'http://code.google.com/p/solr-php-client')));
     drupal_set_message(check_plain($message));
     return;
@@ -327,7 +332,7 @@ function islandora_solr_admin_settings(&$form_state) {
     '#title' => t('Debug Mode?'),
     '#return_value' => 1,
     '#default_value' => variable_get('islandora_solr_search_debug_mode', 0),
-    '#description' => t('Dumps solr query to the screen for testing'),
+    '#description' => t('Dumps solr query to the screen for testing. Warning: if you have the Drupal Apache Solr module enabled alongside this one then the debug function will not work.'),
   );
 
   $form['buttons']['submit'] = array(
