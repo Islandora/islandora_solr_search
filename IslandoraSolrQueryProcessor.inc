@@ -219,7 +219,7 @@ class IslandoraSolrQueryProcessor {
       // No, not under normal circumstances, and it would break dismax.
     }
     // restrict results based on specified namespace
-    $namespace = trim(variable_get('solr_namespace_restriction', NULL));
+    $namespace = trim(variable_get('islandora_solr_search_namespace_restriction', NULL));
     if ($namespace) {
       $this->solrParams['fq'][] = "PID:$namespace\:*";
     }

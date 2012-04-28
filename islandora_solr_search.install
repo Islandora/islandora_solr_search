@@ -55,9 +55,8 @@ function islandora_solr_search_requirements($phase) {
  */
 
 function islandora_solr_search_install() {
-  $link = l("Islandora Solr Search", '/admin/settings/islandora_solr_search' );
-  $message = t("Islandora Solr Search !link.", array('!link' => $link));
-  drupal_set_message(check_plain($message));
+  $message = t('Islandora Solr Search <a href="!link">configuration page</a>.', array('!link' => url('admin/settings/islandora_solr_search')));
+  drupal_set_message(filter_xss($message));
 }
 
 /**
@@ -73,6 +72,8 @@ function islandora_solr_search_uninstall() {
     'islandora_solr_primary_display_table',
     'islandora_solr_secondary_display',
     'islandora_solr_searchterms',
+    'islandora_solr_search_base_filter',
+    'islandora_solr_search_base_query',
     'islandora_solr_search_block_facets',
     'islandora_solr_search_block_facet_limit',
     'islandora_solr_search_block_facet_min_count',
@@ -87,8 +88,27 @@ function islandora_solr_search_uninstall() {
     'islandora_solr_search_sort_field',
     'islandora_solr_search_sort_order',
     'islandora_solr_snippet_field',
+    'islandora_solr_search_namespace_restriction',
   );
   foreach ($variables as $variable) {
     variable_del($variable);
   }
+}
+
+/**
+ * Variable name change. Catch old value.
+ */
+function islandora_solr_search_update_6000() {
+  $ret = array();
+  // check for old variable. Return FALSE if it does not exist.
+  if ($old_val = variable_get('solr_namespace_restriction', FALSE)) {
+    // set new value
+    variable_set('islandora_solr_search_namespace_restriction', $old_val);
+    // remove old variable
+    variable_del('solr_namespace_restriction');
+    // set messages
+      $ret[] = array('success' => TRUE, 'query' => 'variable_set("islandora_solr_search_namespace_restriction")');
+      $ret[] = array('success' => TRUE, 'query' => 'variable_del("solr_namespace_restriction")');
+  }
+  return $ret;
 }

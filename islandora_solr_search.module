@@ -88,84 +88,6 @@ function islandora_solr_search_menu() {
 }
 
 /**
- * Implementation of hook_block().
- */
-function islandora_solr_search_block($op = 'list', $delta = 0, $edit = array()) {
-  global $queryClass;
-
-  /*
-   * Here I need to call a hook which will return module/file/class/method/name/description
-   * for blocks which need a queryClass to render.
-   */
-  $solr_blocks = module_invoke_all("islandora_solr_query_blocks");
-
-  // The $op parameter determines what piece of information is being requested.
-  switch ($op) {
-    case 'list':
-      // If $op is "list", we just need to return a list of block descriptions.
-      // This is used to provide a list of possible blocks to the administrator,
-      // end users will not see these descriptions.
-
-      foreach ($solr_blocks as $name => $block) {
-        $blocks[$name] = array(
-          'info' => $block['name'],
-        );
-      }
-
-      return $blocks;
-    case 'configure':
-      // If $op is "configure", we need to provide the administrator with a
-      // configuration form. The $delta parameter tells us which block is being
-      // configured. In this example, we'll allow the administrator to customize
-      // the text of the first block.
-      $form = array();
-
-      return $form;
-    case 'save':
-    // If $op is "save", we need to save settings from the configuration form.
-    // Since the first block is the only one that allows configuration, we
-    // need to check $delta to make sure we only save it.
-
-    case 'view': default:
-      // If $op is "view", then we need to generate the block for display
-      // purposes. The $delta parameter tells us which block is being requested.
-
-      if (!empty($solr_blocks[$delta])) {
-
-        // First we'll set the block title.
-        $block['subject'] = $solr_blocks[$delta]['name'];
-
-        // Include the file from which the block originates.
-        require_once( drupal_get_path('module', $solr_blocks[$delta]['module']) . '/' . $solr_blocks[$delta]['file'] );
-
-        // If a class is present, instantiate it and proceed from there.
-        // The variable $queryClass (the IslandoraSolrQueryProcessor, containing
-        // the Solr search result), is fed as an argument.
-        if (!empty($solr_blocks[$delta]['class'])) {
-          $displayClass = new $solr_blocks[$delta]['class']();
-          $block_function = $solr_blocks[$delta]['function'];
-          if (method_exists($displayClass, $block_function)) {
-            $content = $displayClass->$block_function($queryClass);
-            $block['content'] = !empty($content) ? $content : NULL;
-          }
-
-          // Otherwise, simply load the form.
-        }
-        elseif (!empty($solr_blocks[$delta]['form'])) {
-          $block['content'] = drupal_get_form($solr_blocks[$delta]['form']);
-        }
-        // else if only a function is given (no class, no form)
-        elseif (!empty($solr_blocks[$delta]['function'])) {
-          $function = $solr_blocks[$delta]['function'];
-          $block['content'] = $function();
-        }
-      }
-
-      return $block;
-  }
-}
-
-/**
  * Implementation of hook_theme().
  */
 function islandora_solr_search_theme() {
@@ -278,6 +200,84 @@ function islandora_solr_search_islandora_solr_query_blocks() {
 }
 
 /**
+ * Implementation of hook_block().
+ */
+function islandora_solr_search_block($op = 'list', $delta = 0, $edit = array()) {
+  global $queryClass;
+
+  /*
+   * Here I need to call a hook which will return module/file/class/method/name/description
+   * for blocks which need a queryClass to render.
+   */
+  $solr_blocks = module_invoke_all("islandora_solr_query_blocks");
+
+  // The $op parameter determines what piece of information is being requested.
+  switch ($op) {
+    case 'list':
+      // If $op is "list", we just need to return a list of block descriptions.
+      // This is used to provide a list of possible blocks to the administrator,
+      // end users will not see these descriptions.
+
+      foreach ($solr_blocks as $name => $block) {
+        $blocks[$name] = array(
+          'info' => $block['name'],
+        );
+      }
+
+      return $blocks;
+    case 'configure':
+      // If $op is "configure", we need to provide the administrator with a
+      // configuration form. The $delta parameter tells us which block is being
+      // configured. In this example, we'll allow the administrator to customize
+      // the text of the first block.
+      $form = array();
+
+      return $form;
+    case 'save':
+    // If $op is "save", we need to save settings from the configuration form.
+    // Since the first block is the only one that allows configuration, we
+    // need to check $delta to make sure we only save it.
+
+    case 'view': default:
+      // If $op is "view", then we need to generate the block for display
+      // purposes. The $delta parameter tells us which block is being requested.
+
+      if (!empty($solr_blocks[$delta])) {
+
+        // First we'll set the block title.
+        $block['subject'] = $solr_blocks[$delta]['name'];
+
+        // Include the file from which the block originates.
+        require_once( drupal_get_path('module', $solr_blocks[$delta]['module']) . '/' . $solr_blocks[$delta]['file'] );
+
+        // If a class is present, instantiate it and proceed from there.
+        // The variable $queryClass (the IslandoraSolrQueryProcessor, containing
+        // the Solr search result), is fed as an argument.
+        if (!empty($solr_blocks[$delta]['class'])) {
+          $displayClass = new $solr_blocks[$delta]['class']();
+          $block_function = $solr_blocks[$delta]['function'];
+          if (method_exists($displayClass, $block_function)) {
+            $content = $displayClass->$block_function($queryClass);
+            $block['content'] = !empty($content) ? $content : NULL;
+          }
+
+          // Otherwise, simply load the form.
+        }
+        elseif (!empty($solr_blocks[$delta]['form'])) {
+          $block['content'] = drupal_get_form($solr_blocks[$delta]['form']);
+        }
+        // else if only a function is given (no class, no form)
+        elseif (!empty($solr_blocks[$delta]['function'])) {
+          $function = $solr_blocks[$delta]['function'];
+          $block['content'] = $function();
+        }
+      }
+
+      return $block;
+  }
+}
+
+/**
  * islandora solr simple search form
  * @return type
  */
@@ -285,29 +285,6 @@ function islandora_solr_simple_search_form() {
   module_load_include('inc', 'islandora_solr_search', 'IslandoraSolrResults');
   $resultsClass = new IslandoraSolrResults();
   return $resultsClass->build_simple_solr_form();
-}
-
-/**
- * islandora solr search block form validate
- * @param type $form
- * @param type $form_state
- */
-function islandora_solr_search_block_form_validate($form, &$form_state) {
-
-  $repeat = variable_get('islandora_solr_search_block_repeat', '3');
-  $found = FALSE;
-  for ($fieldNum = 1; $fieldNum <= $repeat; $fieldNum++) {
-    if (!empty($form_state['values']["fedora_terms$fieldNum"])) {
-      if($form_state['values']["fedora_terms$fieldNum"]== '*'){
-       unset($form_state['values']["fedora_terms$fieldNum"]);
-       continue;
-      }
-      $found = TRUE;
-    }
-  }
-  if (!$found) {
-    form_set_error('edit_fedora_terms1', t('Please enter search term.'));
-  }
 }
 
 /**
@@ -351,6 +328,71 @@ function theme_islandora_solr_search_block_form($form) {
   module_load_include('inc', 'islandora_solr_search', 'IslandoraSolrResults');
   $resultsClass = new IslandoraSolrResults();
   return $resultsClass->theme_solr_search_form($form);
+}
+
+/**
+ * islandora solr search block form validate
+ * @param type $form
+ * @param type $form_state
+ */
+function islandora_solr_search_block_form_validate($form, &$form_state) {
+
+  $repeat = variable_get('islandora_solr_search_block_repeat', '3');
+  $found = FALSE;
+  for ($fieldNum = 1; $fieldNum <= $repeat; $fieldNum++) {
+    if (!empty($form_state['values']["fedora_terms$fieldNum"])) {
+      if($form_state['values']["fedora_terms$fieldNum"]== '*'){
+       unset($form_state['values']["fedora_terms$fieldNum"]);
+       continue;
+      }
+      $found = TRUE;
+    }
+  }
+  if (!$found) {
+    form_set_error('edit_fedora_terms1', t('Please enter search term.'));
+  }
+}
+
+/**
+ * islandora solr search block form submit
+ * @global type $queryClass
+ * @param type $form
+ * @param type $form_state
+ */
+function islandora_solr_search_block_form_submit($form, &$form_state) {
+  $form_state['rebuild'] = TRUE;
+  global $queryClass;
+
+  $type_id = trim($form_state['values']['type']);
+  $repeat = variable_get('islandora_solr_search_block_repeat', '3');
+  $fedora_terms = array();
+  $types = array();
+  $booleans = array();
+
+  for ($fieldNum = 1; $fieldNum <= $repeat; $fieldNum++) {
+    if ($form_state['values']["fedora_terms$fieldNum"]) {
+      $types[] = trim($form_state['values']["type$fieldNum"]);
+      $fedora_terms[] = lesser_escape(trim($form_state['values']["fedora_terms$fieldNum"]));
+    }
+    $next = $fieldNum + 1;
+    if ($form_state['values']["fedora_terms$next"] && $form_state['values']["fedora_terms$fieldNum"]) {
+      $booleans[] = trim($form_state['values']["andor$fieldNum"]);
+    }
+  }
+
+  for ($iteration = 0; $iteration < count($fedora_terms); $iteration++) {
+    //FIXME (minor): t() should be changed to format_string() in this instance, in Drupal 7
+    //  The string isn't really translatable, just templated.
+    $searchString .= t("!field:(!query) !bool ", array(
+        '!field' => $types[$iteration], 
+        '!query' => $fedora_terms[$iteration],
+        '!bool' => $booleans[$iteration]
+    ));
+  }
+  $searchString = trim($searchString);
+  $searchString = drupal_urlencode($searchString);
+  $searchString = str_replace('/', '~slsh~', $searchString); //replace the slash so url doesn't break
+  drupal_goto("islandora/solr/search/$searchString/-/-");
 }
 
 /**
@@ -521,48 +563,6 @@ function islandora_solr_search($query, $fq = NULL, $dismax = NULL, $display = NU
 
 
 //  return $queryResult;
-}
-
-/**
- * islandora solr search block form submit
- * @global type $queryClass
- * @param type $form
- * @param type $form_state
- */
-function islandora_solr_search_block_form_submit($form, &$form_state) {
-  $form_state['rebuild'] = TRUE;
-  global $queryClass;
-
-  $type_id = trim($form_state['values']['type']);
-  $repeat = variable_get('islandora_solr_search_block_repeat', '3');
-  $fedora_terms = array();
-  $types = array();
-  $booleans = array();
-
-  for ($fieldNum = 1; $fieldNum <= $repeat; $fieldNum++) {
-    if ($form_state['values']["fedora_terms$fieldNum"]) {
-      $types[] = trim($form_state['values']["type$fieldNum"]);
-      $fedora_terms[] = lesser_escape(trim($form_state['values']["fedora_terms$fieldNum"]));
-    }
-    $next = $fieldNum + 1;
-    if ($form_state['values']["fedora_terms$next"] && $form_state['values']["fedora_terms$fieldNum"]) {
-      $booleans[] = trim($form_state['values']["andor$fieldNum"]);
-    }
-  }
-
-  for ($iteration = 0; $iteration < count($fedora_terms); $iteration++) {
-    //FIXME (minor): t() should be changed to format_string() in this instance, in Drupal 7
-    //  The string isn't really translatable, just templated.
-    $searchString .= t("!field:(!query) !bool ", array(
-        '!field' => $types[$iteration], 
-        '!query' => $fedora_terms[$iteration],
-        '!bool' => $booleans[$iteration]
-    ));
-  }
-  $searchString = trim($searchString);
-  $searchString = drupal_urlencode($searchString);
-  $searchString = str_replace('/', '~slsh~', $searchString); //replace the slash so url doesn't break
-  drupal_goto("islandora/solr/search/$searchString/-/-");
 }
 
 /**
