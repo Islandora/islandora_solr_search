@@ -41,46 +41,50 @@ class IslandoraSolrResults {
    * @return string
    */
   function displayResults($solrQueryProcessor, $title = NULL, $output = '') {
-    if (is_null($title)) { //Needed to move this, as default parameters cannot be function calls
-      $title = t("Search Results");
+    
+    // set variables to collect returned data.
+    $results = NULL;
+    $secondary_profiles = NULL;
+    $elements = array();
+
+    // set title
+    if (!is_null($title)) {
+      drupal_set_title($title);
     }
+    
+    // raw solr results
     $apacheSolrResult = $solrQueryProcessor->solrResult;
+    
+    // solr results count
+    // total solr results
     $total = (int) $apacheSolrResult->response->numFound;
+    $elements['solr_total'] = $total;
 
+    // solr start
+    // to display: $solrQueryProcessor->solrStart + ($total > 0 ? 1 : 0)
+    $elements['solr_start'] = $solrQueryProcessor->solrStart;
+
+    // solr results end
     $end = min(($solrQueryProcessor->solrLimit + $solrQueryProcessor->solrStart), $total);
+    $elements['solr_end'] = $end;
 
-    // Initialize drupal-style pager
+    // pager
     islandora_solr_search_pager_init($total, $solrQueryProcessor->solrLimit);
+    $elements['solr_pager'] = theme('pager', NULL, $solrQueryProcessor->solrLimit, 0, NULL, 5);
 
-    $output .= $this->addSecondaries();
-
-    $output .= '<h2>' . $title . '</h2>';
-    $output .= '<div id="islandora_solr_result_count">(' . ($solrQueryProcessor->solrStart + ($total > 0 ? 1 : 0)) . ' - ' . $end . ' of ' . $total . ')</div>';
-    $output .= '<div class="content">';
-
-//    drupal_set_message(print_r($secondary_display_profiles,1));
-    // Render Drupal pager (top of search results)
-    $output .= theme('pager', NULL, $solrQueryProcessor->solrLimit, 0, NULL, 5);
-
-    /*
-     * Then, here, we need to build links to the current query under the secondary query display
-     * profile for each such profile which uses the hook.
-     *
-     * The link should basically be $theCurrentURL with &proile=<profile_name> tacked on.
-     *
-     * Also, perhaps there's no difference between primary and secondary profiles?
-     */
-    $output .= $this->printResults($apacheSolrResult);
+    // debug (will be removed)
     if (variable_get('islandora_solr_search_debug_mode', FALSE)) {
-      $output .= $this->printDebugOutput($solrResult);
+      $elements['solr_debug'] = $this->printDebugOutput($solrResult);
     }
 
-    // Render Drupal pager (bottom of search results)
-    $output .= theme('pager', NULL, $solrQueryProcessor->solrLimit, 0, NULL, 5);
-
-
-    $output .= "</div>"; // class = "content"
-    return $output;
+    // rendered secondary display profiles
+    $secondary_profiles = $this->addSecondaries();
+    
+    // rendered results
+    $results = $this->printResults($apacheSolrResult);
+        
+    // return themed layout
+    return theme('islandora_solr_wrapper', $results, $secondary_profiles, $elements);
   }
 
   function addSecondaries() {
@@ -117,8 +121,6 @@ class IslandoraSolrResults {
     // this means that there are no displays enabled.
     if ($array_count != $i) {
 
-      $output .= "<div id='islandora_solr_secondary_display_profiles'>";
-
       foreach ($secondary_array as $name => $status) {
         if ($status === $name) {
 
@@ -132,7 +134,6 @@ class IslandoraSolrResults {
         }
       }
 
-      $output .= "</div>";
     }
     return $output;
   }
@@ -145,53 +146,55 @@ class IslandoraSolrResults {
    * @param Apache_Solr_Object $results
    */
   function printResults($results) {
-    // Check for empty resultset
-    if ((int) $results->response->numFound === 0) {
-      $output .= "<p>Sorry, but your search returned no results.</p>";
-      return $output;
-    }
+    // set variables
+    $results_array = array();
+    $elements = array();
+    
+    // total
+    $elements['solr_total'] = $results->response->numFound;
+
+    // start
+    $elements['solr_start'] = $results->response->start;
+    
+    // get prepared search results
     $docs = $this->prep_results($results);
 
-    $items = array();
-    $type = "ol";
-    $title = NULL;
-    $recordStart = $results->response->start;
+    // optionally limit results to values given
     $limitResults = variable_get('islandora_solr_search_limit_result_fields', 0);
 
-    global $base_url;
-    if (empty($results)) {
-      return "no results";
-    }
-
+    // loop over results array
     foreach ($docs as $doc) {
       $rows = array();
-      $row = 0;
-      $snippet = NULL;
+      $row = 0; // keeping $row in there for now until the snippet issue is cleared out
+      $snippet = NULL; // @TODO: how is this suposed to work if the $snippet always is set to NULL ?
+
+      // loop over individual results to process fields
       foreach ($doc as $field => $value) {
 
+        // check if this field should be included
         if ($limitResults && empty($this->resultFieldArray[$field])) {
           continue;
         }
 
+        // check for field label substitutions
         $translated_field_name = isset($this->allSubsArray[$field]) ? $this->allSubsArray[$field] : $field;
-        $rows[$row][] = array(
-          'data' => $translated_field_name,
-          'header' => TRUE,
-        );
+
+        // add label
+        $rows[$field]['label'] = $translated_field_name;
+
+        // add class: render solr field name to string that can be used as class name
+        $rows[$field]['class'] = strtolower( preg_replace('/[^A-Za-z0-9]/', '-', $field));
+
+        // split value if the result value is an array
         if (is_array($value)) {
           $value = implode(", ", $value);
         }
+        // add value
+        $rows[$field]['value'] = $value;
 
-        if ($field == 'PID') {
-          $pid = $value;
-          $l = l($value, 'fedora/repository/' . htmlspecialchars($value, ENT_QUOTES, 'utf-8'));
-          $rows[$row][] = $l;
-        }
-        else {
-          $rows[$row][] = $value;
-        }
-        $row++;
+        $row++; // keeping $row in there for now until the snippet issue is cleared out
       }
+      // @TODO: how is this suposed to work if the $snippet always is set to NULL ?
       if ($snippet) {
         $rows[$row][] = array(
           'data' => 'Full Text',
@@ -199,12 +202,17 @@ class IslandoraSolrResults {
         );
         $rows[$row][] = $snippet[0];
       }
-      $items[] = theme_table(NULL, $rows, array('class' => 'islandora_solr_search_results_object'));
+      // append array to results array
+      $results_array[] = $rows;
     }
 
-    $output .= theme_item_list($items, $title, $type, array('class' => 'stuff', 'start' => ($recordStart + 1)));
-    return $output;
+    // return themed search results
+    return theme('islandora_solr_search', $results_array, $elements);
   }
+  
+  
+  
+  
 
   function printDebugOutput($results) {
     // debug dump

@@ -375,7 +375,11 @@ function islandora_solr_admin_settings(&$form_state) {
     '#value' => t('Save Solr Configuration'),
     '#weight' => 50,
   );
-  $form['buttons']['reset'] = array('#type' => 'submit', '#value' => t('Reset to defaults'));
+  $form['buttons']['reset'] = array(
+    '#type' => 'submit',
+    '#value' => t('Reset to defaults'),
+    '#weight' => 51,
+  );
 
   if (!empty($_POST) && form_get_errors()) {
     drupal_set_message(t('The settings have not been saved because of the errors.'), 'error');

@@ -93,6 +93,7 @@ function islandora_solr_search_menu() {
 function islandora_solr_search_theme() {
   // set path
   $path = drupal_get_path('module', 'islandora_solr_search');
+  $file = 'islandora_solr_search.theme.inc';
 
   return array(
     'islandora_solr_search_block_form' => array(
@@ -105,6 +106,20 @@ function islandora_solr_search_theme() {
       'path' => $path,
       'file' => 'islandora_solr_search.admin.inc',
       'arguments' => array('form' => NULL),
+    ),
+    // results page
+    'islandora_solr_wrapper' => array(
+      'path' => $path . '/theme',
+      'file' => $file,
+      'template' => 'islandora-solr-wrapper',
+      'arguments' => array('results' => NULL, 'secondary_profiles' => NULL,  'elements' => array()),
+    ),
+    // default results display
+    'islandora_solr_search' => array(
+      'path' => $path . '/theme',
+      'file' => $file,
+      'template' => 'islandora-solr-search',
+      'arguments' => array('results' => NULL, 'elements' => array()),
     ),
   );
 }
@@ -476,6 +491,9 @@ function islandora_solr_search_display() {
 function islandora_solr_search($query, $fq = NULL, $dismax = NULL, $display = NULL) {
   global $queryClass;
 
+  // set title
+  drupal_set_title(t('Search Results'));
+  
   if ($dismax == '-') {
     $dismax = NULL;
   }

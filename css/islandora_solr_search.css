@@ -93,6 +93,11 @@ html.js .refresh-button {
   text-decoration: line-through !important;
 }
 
+#islandora-solr-top
+{
+  min-height: 25px;
+}
+
 /* hide the 2nd list if a facet list is split in two */
 .islandora_solr_search_facet .hidden
 {
