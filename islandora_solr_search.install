@@ -112,6 +112,3 @@ function islandora_solr_search_update_6000() {
   }
   return $ret;
 }
-
-// renamed #islandora_solr_result_count to #islandora-solr-result-count
-// renamed .content to .islandora-solr-content

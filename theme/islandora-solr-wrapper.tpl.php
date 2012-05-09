@@ -20,9 +20,9 @@
 
 <div id="islandora-solr-top">
   <div id='islandora_solr_secondary_display_profiles'><?php print $secondary_profiles; ?></div>
-  <div id="islandora-solr-result-count"><?php print $islandora_solr_result_count; ?></div>
+  <div id="islandora_solr_result_count"><?php print $islandora_solr_result_count; ?></div>
 </div>
-<div class="islandora-solr-content">
+<div class="islandora-solr-content content">
   <?php print $solr_pager; ?>
   <?php print $results; ?>
   <?php print $solr_debug; ?>
