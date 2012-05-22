@@ -10,8 +10,6 @@
  */
 class IslandoraSolrResults {
 
-  static $facetSeparator = '~'; //used to separate facets in url
-  static $slashReplacement = '~slsh~'; // a pattern used to replace / in url's the slash breaks drupal clean url's
   public static $SEARCH_CLASS_ADVANCED_SEARCH_NUMBER_FIELDS = 5;
   public $facetFieldArray = array();
   public $searchFieldArray = array();
@@ -52,6 +50,9 @@ class IslandoraSolrResults {
       drupal_set_title($title);
     }
     
+    // set breadcrumbs
+    $this->setBreadcrumbs($solrQueryProcessor);
+    
     // raw solr results
     $apacheSolrResult = $solrQueryProcessor->solrResult;
     
@@ -78,7 +79,7 @@ class IslandoraSolrResults {
     }
 
     // rendered secondary display profiles
-    $secondary_profiles = $this->addSecondaries();
+    $secondary_profiles = $this->addSecondaries($solrQueryProcessor);
     
     // rendered results
     $results = $this->printResults($apacheSolrResult);
@@ -87,11 +88,19 @@ class IslandoraSolrResults {
     return theme('islandora_solr_wrapper', $results, $secondary_profiles, $elements);
   }
 
-  function addSecondaries() {
-    $output = '';
+  function addSecondaries($solrQueryProcessor) {
+    $query_list = array();
     // Get secondary display profiles
     $secondary_display_profiles = module_invoke_all('islandora_solr_secondary_display');
-    // How about this for an expected return?
+    
+    // set path
+    $path = SOLR_SEARCH_PATH . '/' . $solrQueryProcessor->solrQuery; // $_GET['q'] didn't seem to work here
+    
+    // parameters set in url
+    $params = $solrQueryProcessor->internalSolrParams;
+    
+    // Expected return:
+    // 
     // return array(
     // 'machine-name' = array(
     //   'name' => 'Human Readable Name',
@@ -102,40 +111,31 @@ class IslandoraSolrResults {
     //   'description' => 'A description of the display profile',
     //   'logo' => 'Some text, some <html>, an <img>, etc used to link to this output,
     // );
-    // check if
-    // if the islandora_solr_search admin form has never been saved, then
-    // the variable 'islandora_solr_secondary_display' won't be set yet.
+
     $secondary_array = variable_get('islandora_solr_secondary_display', array());
+    
+    foreach ($secondary_array as $name => $status) {
+      if ($status === $name) {
+        // generate url
+        $query_secondary = array_merge($params, array('solr_profile' => $name));
 
-    // count number of elements in array
-    $array_count = count($secondary_array);
-    // count number of disabled displays
-    $i = 0;
-    foreach ($secondary_array as $key => $value) {
-      if ($value === 0) {
-        $i++;
+        // set attributes variable for remove link
+        $attr = array();
+        // set title
+        $attr['title'] = $secondary_display_profiles[$name]['description'];
+        // set rel
+        $attr['rel'] = 'nofollow';      
+        // set url
+        $attr['href'] = url($path, array('query' => $query_secondary));
+        // logo
+        $logo = $secondary_display_profiles[$name]['logo'];
+        // create link
+        // we're not using l() because of active classes: http://drupal.org/node/41595
+        $query_list[] = '<a' . drupal_attributes($attr) . '>' . $logo . '</a>';
       }
     }
 
-    // if number of elements is the same as the number of disabled displays,
-    // this means that there are no displays enabled.
-    if ($array_count != $i) {
-
-      foreach ($secondary_array as $name => $status) {
-        if ($status === $name) {
-
-          $description = $secondary_display_profiles[$name]['description'];
-          $logo = $secondary_display_profiles[$name]['logo'];
-
-          $attributes = array('title' => $description);
-          $query = array();
-          $query[] = drupal_query_string_encode(array('solr_profile' => $name));
-          $output .= l($logo, $_GET['q'], array('attributes' => $attributes, 'html' => TRUE, 'query' => count($query) ? implode('&', $query) : NULL));
-        }
-      }
-
-    }
-    return $output;
+    return theme('item_list', $query_list, NULL, "ul", array('class' => 'islandora-solr-search-secondary'));
   }
 
   /**
@@ -262,107 +262,266 @@ class IslandoraSolrResults {
    * @param IslandoraSolrQueryProcessor $solrQueryProcessor
    */
   function currentQuery($solrQueryProcessor) {
-    //dsm($solrQueryProcessor);
-    global $base_url;
+    
+    // set path
+    $path = SOLR_SEARCH_PATH . '/' . $solrQueryProcessor->solrQuery; // $_GET['q'] didn't seem to work here
+    
+    // set output variable
     $output = '';
-    $islandora_fq = restoreSlashes($solrQueryProcessor->solrFilters);
-    $islandora_facets = isset($solrQueryProcessor->solrResult->facet_counts->facet_fields) ?
-        $solrQueryProcessor->solrResult->facet_counts->facet_fields :
-        NULL;
-    //dsm($islandora_facets);
-    // set display variable
-    $display = $solrQueryProcessor->display;
-
-    if ($display == variable_get('islandora_solr_primary_display', 'default')) {
-      $display_param = '';
+    
+    // get user provided filter parameters
+    $fq = $solrQueryProcessor->internalSolrParams['f'];
+    
+    // parameters set in url
+    $params = $solrQueryProcessor->internalSolrParams;
+    // set filter key if there are no filters included
+    if (empty($params['f'])) {
+      $params['f'] = array();
     }
-    else {
-      $display_param = $display;
-    }
+    
+    // Get Query values
+    if (!in_array($solrQueryProcessor->solrQuery, $solrQueryProcessor->different_kinds_of_nothing)) {
+      // get query value
+      $query_value = $solrQueryProcessor->solrQuery;
+      
+      // set list variables
+      $query_list = array();
+      
+      // remove link keeps all parameters (query gets removed instead)
+      $query_minus = array();
+      $query_minus = $params;
 
-
-    if (drupal_strlen(trim($solrQueryProcessor->solrQuery))) {
-
-      // Variables to build a drupal-ish unordered list
-      $query_list_title = t('Query');
-      $query_list_items = array();
-      $query_list_type = "ul";
-      $query_list_attributes = array('class' => 'islandora_solr_search_query_list query_list');
-
-      // OK, so it's a list of one.
-      // In the future, we could reasonably break the query on boolean operators
-      // and allow one part to be removed at a time.
-      $query = " ";
-      $fq = replaceSlashes($islandora_fq);
-      $defType = $solrQueryProcessor->solrDefType;
-      $repr = '-'; //Again, don't explicitly specify an image...
-      $link = "islandora/solr/search/$query/$fq/$defType/$display_param";
-      $query_list_items[] .= l($repr, $link,
-              array(
-                'attributes' => array(
-                  'class' => 'islandora_solr_add_remove_link'))
-          ) . ' ' . $this->getSubstitutedFields(stripslashes($solrQueryProcessor->solrQuery), FIELD_SEARCH);
-
+      // remove query from path
+      $path_minus = implode('/', explode('/', $path, -1)) . '/ ';
+      
+      // set attributes variable for remove link
+      $attr_minus = array();
+      // set title
+      $attr_minus['title'] = t('Remove') . ' ' . $query_value;
+      // set rel
+      $attr_minus['rel'] = 'nofollow';      
+      // set url
+      $attr_minus['href'] = url($path_minus, array('query' => $query_minus));
+      
+      // create link
+      // we're not using l() because of active classes: http://drupal.org/node/41595
+      $query_list[] = '[<a' . drupal_attributes($attr_minus) . '>-</a>] ' . $query_value;
+      
+      // add wrap and list
       $output .= '<div class="islandora_solr_search_query_wrap">';
-
-      $output .= theme_item_list($query_list_items, $query_list_title, $query_list_type, $query_list_attributes);
+      $output .= theme_item_list($query_list, t('Query'), "ul", array('class' => 'islandora_solr_search_query_list query_list'));
       $output .= '</div>'; // 'islandora_solr_search_query_wrap'
+      
     }
+    
+    
+    // Get Filter values
+    if (!empty($fq)) {
+      
+      // set list variables
+      $filter_list = array();
+      
+      // loop over filters
+      foreach ($fq as $key => $filter) {
 
-    //////////////////////////////////////////////////////////////////////////////
-    // Here we will build links to remove currently enforced facet filters ...  //
-    //////////////////////////////////////////////////////////////////////////////
-    $filters = empty($islandora_fq) ? NULL : explode(IslandoraSolrResults::$facetSeparator, $islandora_fq);
-
-    if (!empty($filters) && $islandora_fq != '-') {
-//      $filter_output = NULL;
-      // Variables to build a drupal-ish unordered list, which will be rendered
-      // a little bit farther down
-      $filter_list_title = t("Enabled Filters");
-      $filter_list_items = array();
-      $filter_list_type = "ul";
-      $filter_list_attributes = array('class' => 'islandora_solr_search_filter_list filter_list');
-
-      foreach ($filters as $key => $filter) {
-        $edit_filters = $filters;
-        unset($edit_filters[$key]);
-        $filter_disable = implode(IslandoraSolrResults::$facetSeparator, $edit_filters);
-        if (empty($filter_disable)) {
-          $filter_disable = '-';
+        // check for exclude filter
+        if ($filter[0] == '-') {
+//          $symbol = '&#2260;';
+          $symbol = '&ne;';
         }
-        $filter_name_and_value = explode(":", $filter, 2);
-        $filter_name = $filter_name_and_value[0];
-        $filter_value = $filter_name_and_value[1];
-        if (strncmp($filter_name, '-', 1))
-          $exclude = FALSE;
         else {
-          $exclude = TRUE;
-          $filter_name = drupal_substr($filter_name, 1);
+          $symbol = '=';
         }
 
-        $query = replaceSlashes($solrQueryProcessor->solrQuery);
-        $fq = replaceSlashes($filter_disable);
-        $defType = $solrQueryProcessor->solrDefType;
-        $repr = '-'; //I know that Kris has complained about the remove image before...  This should allow it to be changed.
-        $link = "islandora/solr/search/$query/$fq/$defType/$display_param";
-        $filter_list_items[] = l($repr, $link,
-                array(
-                  'attributes' => array(
-                    'class' => 'islandora_solr_add_remove_link'))
-            ) . ' ' . $this->facetFieldArray[$filter_name] . ($exclude ? ' != ' : ' = ') . $filter_value;
-      }
-    }
+        // split the filter into field and value
+        $filter_split = explode(':', $filter, 2);
+        // trim brackets
+        $filter_split[1] = trim($filter_split[1], "\"");
 
-    if (!empty($filter_list_items)) {
-//      $filter_output = str_replace('%2B','%252B',$filter_output);
+        // pull out filter (for exclude link)
+        $query_minus = array();
+        $f_x['f'] = array_diff($params['f'], array($filter));
+        $query_minus = array_merge($params, $f_x);
+        // resetting the filter key's order // @TODO find a cleaner way to do this.
+        if ($query_minus['f']) {
+          $query_minus['f'] = array_merge(array(), $query_minus['f']);
+        }
+
+        // set attributes variable for remove link
+        $attr_minus = array();
+        // set title
+        $attr_minus['title'] = t('Remove') . ' ' . $filter;
+        // set rel
+        $attr_minus['rel'] = 'nofollow';      
+        // set url
+        $attr_minus['href'] = url($path, array('query' => $query_minus));
+
+        // create link
+        // we're not using l() because of active classes: http://drupal.org/node/41595
+        $filter_list[] = '[<a' . drupal_attributes($attr_minus) . '>-</a>] ' . $symbol . ' ' . $filter_split[1];
+      }
+      // return filter list
       $output .= '<div class="islandora_solr_search_filter_wrap">';
-      $output .= theme_item_list($filter_list_items, $filter_list_title, $filter_list_type, $filter_list_attributes);
+      $output .= theme_item_list($filter_list, t("Enabled Filters"), "ul", array('class' => 'islandora_solr_search_filter_list filter_list'));
       $output .= '</div>'; // 'islandora_solr_search_filter_wrap'
     }
-
+    
     return $output;
   }
 
+  /**
+   * Function: setBreadcrumbs
+   * 
+   * Description: sets the drupal breadcrumbs based on the current query and filters. 
+   */
+  function setBreadcrumbs($solrQueryProcessor) {
+    
+    // set path
+    $path = SOLR_SEARCH_PATH . '/' . $solrQueryProcessor->solrQuery; // $_GET['q'] didn't seem to work here
+    
+    // set breadcrumb variable
+    $breadcrumb = array();
+    
+    // get user provided filter parameters
+    $fq = $solrQueryProcessor->internalSolrParams['f'];
+    
+    // parameters set in url
+    $params = $solrQueryProcessor->internalSolrParams;
+    // set filter key if there are no filters included
+    if (empty($params['f'])) {
+      $params['f'] = array();
+    }
+    
+    // loop to create filter breadcrumbs if available
+    if (!empty($fq)) {
+      // set var
+      $f['f'] = array();
+      foreach ($fq as $key => $filter) {
+
+        // check for exclude filter
+        $exclude = FALSE;
+        if ($filter[0] == '-') {
+          $exclude = TRUE;
+        }
+
+        // split the filter into field and value
+        $filter_split = explode(':', $filter, 2);
+        // trim brackets
+        $filter_split[1] = trim($filter_split[1], "\"");
+
+       
+        // increment filter array with current filter (for breadcrumb link)
+        $query = array();
+        $query_diff = array_diff($params, array('f' => array()));
+        $f = array_merge_recursive($f, array('f' => array($filter)));
+        $query = array_merge($query_diff, $f);
+
+        // pull out filter (for x link)
+        $query_x = array();
+        $f_x['f'] = array_diff($params['f'], array($filter));
+        $query_x = array_merge($params, $f_x);
+        // resetting the filter key's order // @TODO find a cleaner way to do this.
+        if ($query_x['f']) {
+          $query_x['f'] = array_merge(array(), $query_x['f']);
+        }
+
+        // set attributes variable
+        $attr = array();
+        // set title
+        $attr['title'] = $filter;
+        // set rel
+        $attr['rel'] = 'nofollow';
+        // exclude filter: add class "strikethrough"
+        if ($exclude) {
+          $attr['class'] = 'strikethrough';
+        }
+        // set url
+        $attr['href'] = url($path, array('query' => $query));
+
+        // set attributes variable for remove link
+        $attr_x = array();
+        // set title
+        $attr_x['title'] = t('Remove') . ' ' . $filter;
+        // set rel
+        $attr_x['rel'] = 'nofollow';      
+        // set url
+        $attr_x['href'] = url($path, array('query' => $query_x));
+
+        // create links
+        // we're not using l() because of active classes: http://drupal.org/node/41595
+        $breadcrumb[] = '<a' . drupal_attributes($attr) . '>' . $filter_split[1] . '</a>'
+              . '<span class="islandora_solr_search_breadcrumb_super">(<a' . drupal_attributes($attr_x) . '>' . t('x') . '</a>)</span>';
+
+      }
+
+      // at this point reverse the breadcrumbs array (only contains filters)
+      $breadcrumb = array_reverse($breadcrumb);
+    }
+    
+    // create Query breadcrumb
+    if (!in_array($solrQueryProcessor->solrQuery, $solrQueryProcessor->different_kinds_of_nothing)) {
+      // get query value
+      $query_value = $solrQueryProcessor->solrQuery;
+      
+      // remove all filters for this breadcrumb
+      $query = array();
+      $query = array_diff($params, array('f' => array()));
+      
+      // remove button keeps all parameters (query gets removed instead)
+      $query_x = array();
+      $query_x = $params;
+
+      // remove query from path
+      $path_x = implode('/', explode('/', $path, -1)) . '/ ';
+      
+      // set attributes variable
+      $attr = array();
+      // set title
+      $attr['title'] = $query_value;
+      // set rel
+      $attr['rel'] = 'nofollow';
+      // set url
+      $attr['href'] = url($path, array('query' => $query));
+
+      // set attributes variable for remove link
+      $attr_x = array();
+      // set title
+      $attr_x['title'] = t('Remove') . ' ' . $query_value;
+      // set rel
+      $attr_x['rel'] = 'nofollow';      
+      // set url
+      $attr_x['href'] = url($path_x, array('query' => $query_x));
+
+      // remove solr fields from breadcrumb value
+      $query_explode = explode(' ', $query_value);
+      $query_implode = array();
+      foreach ($query_explode as $value) {
+        // check for first colon to split the string
+        if (strpos($value, ':') != FALSE) {
+          // split the filter into field and value
+          $value_split = explode(':', $value, 2);
+          // trim whitespace, brackets and then quotes
+          $value_split[1] = trim($value_split[1]);
+          $value_split[1] = ltrim($value_split[1], "(");
+          $value_split[1] = rtrim($value_split[1], ")");
+          $value = trim($value_split[1], "\"");
+        }
+        $query_implode[] = $value;
+      }
+      $query_value = implode(" ", $query_implode);
+      // create links
+      // we're not using l() because of active classes: http://drupal.org/node/41595
+      $breadcrumb[] = '<a' . drupal_attributes($attr) . '>' . $query_value . '</a>'
+            . '<span class="islandora_solr_search_breadcrumb_super">(<a' . drupal_attributes($attr_x) . '>' . t('x') . '</a>)</span>';
+    }
+    
+    $breadcrumb[] = l(t('Home'), '<front>', array('attributes' => array('title' => t('Home'))));
+    if (!empty($breadcrumb))
+      $breadcrumb = array_reverse($breadcrumb);
+    drupal_set_breadcrumb($breadcrumb);
+    
+  }
+  
   /**
    * Function: prepFieldSubstitutions
    *
@@ -382,69 +541,6 @@ class IslandoraSolrResults {
     $this->allSubsArray = array_merge($this->facetFieldArray, $this->searchFieldArray, $this->resultFieldArray);
   }
 
-  function _addFacets(&$key, &$name, &$number, &$solrQueryProcessor, &$facet_count, &$list, $display_param) {
-    $islandora_fq = $solrQueryProcessor->solrFilters;
-    //FIXME:  This isn't quite right...  It can make sense to facet on 
-    //  the same field multiple times, provided it is multi-valued...
-    $fq = (array) $solrQueryProcessor->solrParams['fq'];
-    //FIXME:  This instance of 't' should be changed to format_string for Drupal 7 (not really translateable)
-    $filter = t('!key:"!name"', array(
-          '!key' => $key,
-          '!name' => replaceSlashes($name)
-        ));
-
-    $disable_link = (array_search($filter, $fq) !== FALSE) || $number == $solrQueryProcessor->solrResult->response->numFound;
-
-    //$disable_link = strpos($islandora_fq, $key . ':"' .  . '"') !== FALSE; //we don't want a link for this facet as we already used it
-    if ($islandora_fq && $islandora_fq != '-') {//there are existing facets in the query
-      if ($disable_link) {
-        //don't show link to this facet but include a link to remove it
-      }
-      else {
-        //FIXME:  This instance of 't' should be changed to format_string for Drupal 7 (not really translateable)
-        $filter_include = t('!filter!sep!remaining', array(
-              '!filter' => $filter,
-              '!sep' => IslandoraSolrResults::$facetSeparator,
-              '!remaining' => $islandora_fq
-            ));
-        $filter_exclude = "-$filter_include";
-      }
-    }
-    else { //no existing facets chosen
-      $filter_include = $filter;
-      $filter_exclude = "-$filter_include";
-    }
-
-    $filter_include = replaceSlashes($filter_include); //replace the slash so url does not break
-    $filter_exclude = replaceSlashes($filter_exclude); //replace the slash so url does not break
-    if ($disable_link) {
-      // we don't want to create a link, because we're already filtering on this value.
-      // Links to remove enabled facet filters are created down below.
-    }
-    else {//normal link
-      $dt = $solrQueryProcessor->solrDefType;
-      $q = $solrQueryProcessor->solrQuery;
-
-      $lplus = "islandora/solr/search/$q/$filter_include/$dt/$display_param";
-      $lminus = "islandora/solr/search/$q/$filter_exclude/$dt/$display_param";
-      $text = $name;
-      $attrs = array();
-
-      global $current_display;
-      $display = isset($_GET['display']) ? $current_display : '';
-      if ($display) {
-        $attrs['query'] = array('display' => $display);
-      }
-
-      $list[] = l($text, $lplus, $attrs) . ' (' . $number . ')' .
-          '<span class="plusminus">' .
-          l('+', $lplus, array_merge($attrs, array('attributes' => array('class' => 'plus'))))
-          . ' ' .
-          l('-', $lminus, array_merge($attrs, array('attributes' => array('class' => 'minus'))))
-          . '</span>';
-      $facet_count += 1;
-    }
-  }
 
   /**
    * Function: displayFacets
@@ -457,77 +553,77 @@ class IslandoraSolrResults {
    * @return string
    */
   function displayFacets($solrQueryProcessor) {
-    global $base_url;
-    $default_display = variable_get('islandora_solr_primary_display', 'default');
+    // set variables
     $facet_output = $output = '';
-    $islandora_facets = isset($solrQueryProcessor->solrResult->facet_counts->facet_fields) ? $solrQueryProcessor->solrResult->facet_counts->facet_fields : array();
+    
+    // shown limit
+    $facet_min_count = variable_get('islandora_solr_search_block_facet_min_count', '2');
+    $initial_limit = variable_get('islandora_solr_search_block_facet_shown_limit', '0');
+    $facet_limit = variable_get('islandora_solr_search_block_facet_limit', '20');
+    
+    // get facet values returned from solr
+    $facets = isset($solrQueryProcessor->solrResult->facet_counts->facet_fields) ? $solrQueryProcessor->solrResult->facet_counts->facet_fields : array();
 
-    if (empty($islandora_facets)) {
-      return $output; //no facets to show
+    // return if no facets are available
+    if (empty($facets)) {
+      return $output;
     }
 
     // set show more variable
     $show_more = FALSE;
 
-    // set display
-    $display = $solrQueryProcessor->display;
-
-    if ($display == $default_display) {
-      $display_param = '';
-    }
-    else {
-      $display_param = $display;
-    }
-
-    foreach ($islandora_facets as $key => $field) {
+    // loop over returned facet objects
+    foreach ($facets as $facet_key => $facet) {
       $list_items = array();
       $list_type = "ul";
       $list_title = NULL;
 
-      $test = get_object_vars($field); //get the number of fields if there aren't any don't show the key
-      if (count($test) > 0) {
+      // convert to array
+      $facet = get_object_vars($facet);
+      
+      // if the facet contains the minimum amount of values
+      if (count($facet) >= $facet_min_count) {
+        // set facet count
         $facet_count = 0;
-        unset($normal_facet_output);
 
-        foreach ($field as $name => $number) {
-          $this->_addFacets($key, $name, $number, $solrQueryProcessor, $facet_count, $list_items, $display_param);
+        // render facet values
+        foreach ($facet as $value => $number) {
+          // add facet
+          $this->_addFacets($facet_key, $value, $number, $solrQueryProcessor, $facet_count, $list_items);
         }
 
-        if (count($list_items) > 0) {
+        // check for minumum returned values again, because some might have been disabled
+        if (count($list_items) >= $facet_min_count) {
+          
+          // opening facet div // @TODO: this should go in theme function
           $facet_output .='<div class="islandora_solr_search_facet">';
+          
+          // set title
+          $list_title = $this->facetFieldArray[$facet_key];
 
-          // shown limit
-          $shown_limit = variable_get('islandora_solr_search_block_facet_shown_limit', 0);
-          $facetlimit = variable_get('islandora_solr_search_block_facet_limit', '12');
-          $facetMinCount = variable_get('islandora_solr_search_block_facet_min_count', '2');
+          // set attributes
+          $list_attributes = array('class' => 'islandora_solr_search_facet_list facet_list');
 
-          $list_title = $this->facetFieldArray[$key];
-          $list_type = "ul";
-          $list_attributes = array(
-            'class' => implode(' ', array(
-              'islandora_solr_search_facet_list',
-              'facet_list'))
-          );
-
-          // split the array if shown_limit is between the min and max limits and if the total is larger than the shown_limit.
-          $split_facet = $facet_count > $shown_limit AND
-              $shown_limit < $facetlimit AND
-              $shown_limit > $facetMinCount;
+          // check if facet value amount is larger than the initial limit
+          $split_facet = $facet_count > $initial_limit AND
+              $initial_limit < $facet_limit AND
+              $initial_limit > $facet_min_count;
 
           if ($split_facet) {
             $show_more = TRUE; //There exists a split array...
-            $list_items_hidden = array_slice($list_items, $shown_limit);
-            $list_items = array_slice($list_items, 0, $shown_limit);
+            $list_items_hidden = array_slice($list_items, $initial_limit);
+            $list_items = array_slice($list_items, 0, $initial_limit);
           }
 
-          $facet_output .= theme_item_list($list_items, $list_title, $list_type, $list_attributes);
+          // theme the facet as a list
+          $facet_output .= theme('item_list', $list_items, $list_title, $list_type, $list_attributes);
 
           // render the hidden facets
           if ($split_facet) {
             $facet_output .= '<a href="#" class="shown-toggle">' . t('Show more') . '</a>';
             $facet_output .= '<a href="#" class="shown-toggle hidden">' . t('Show less') . '</a>';
             $facet_output .= '<div class="toggle-wrapper hidden">';
-            $facet_output .= theme_item_list($list_items_hidden, NULL, $list_type, $list_attributes);
+            $facet_output .= theme('item_list', $list_items_hidden, NULL, $list_type, $list_attributes);
             $facet_output .= '</div>';
           }
 
@@ -556,6 +652,78 @@ class IslandoraSolrResults {
     return $output;
   }
 
+  
+  /**
+   * Add facet callback
+   * @param type $key
+   * @param type $name
+   * @param type $number
+   * @param type $solrQueryProcessor
+   * @param int $facet_count
+   * @param string $list 
+   */
+  function _addFacets(&$key, &$value, &$number, &$solrQueryProcessor, &$facet_count, &$list) {
+    
+    //FIXME:  This isn't quite right...  It can make sense to facet on 
+    //  the same field multiple times, provided it is multi-valued...
+    $fq = (array) $solrQueryProcessor->solrParams['fq'];
+    
+    // @TODO: Should be changed to format_string for Drupal 7
+    // @TODO: does this check for exclude filters? -PID:"foo"
+    $filter = $key . ':"' . replaceSlashes($value) . '"'; // PID:"foo"
+
+    // check if item should show up
+    $disable_link = (array_search($filter, $fq) !== FALSE) || $number == $solrQueryProcessor->solrResult->response->numFound;
+
+    // if link isn't disabled
+    if (!$disable_link) {
+
+      // set variables
+      $path = SOLR_SEARCH_PATH . '/' . $solrQueryProcessor->solrQuery; // $_GET['q'] didn't seem to work here
+
+      $query_plus = array();
+      $query_minus = array();
+      
+      // parameters set in url
+      $params = $solrQueryProcessor->internalSolrParams;
+      // set filter key if there are no filters included
+      if (empty($params['f'])) {
+        $params['f'] = array();
+      }
+      
+      // merge recursively to add new filter parameter
+      $query_plus = array_merge_recursive($params, array('f' => array($filter)));
+      $query_minus = array_merge_recursive($params, array('f' => array('-' . $filter)));
+
+      // set basic attributes
+      $attr = array('rel' => 'nofollow');
+
+      $attr_plus = $attr_minus = $attr;
+      
+      // add url
+      $attr['href'] = url($path, array('query' => $query_plus));
+      $attr_plus['href'] = url($path, array('query' => $query_plus));
+      $attr_minus['href'] = url($path, array('query' => $query_minus));
+      
+      // add classes
+      $attr_plus['class'] = 'plus';
+      $attr_minus['class'] = 'minus';
+      
+      // create links
+      // we're not using l() because of active classes: http://drupal.org/node/41595
+      $list[] = '<a' . drupal_attributes($attr) . '>' . $value . '</a>' . ' (' . $number . ')' .
+          '<span class="plusminus">' .
+          '<a' . drupal_attributes($attr_plus) . '>+</a>'
+          . ' ' .
+          '<a' . drupal_attributes($attr_minus) . '>-</a>'
+          . '</span>';
+      
+      $facet_count++;
+    }
+  }
+  
+  
+  
   function _add_field(&$form, &$i, &$unprocessed_contents, &$types) {
     $type = NULL;
     $temp = preg_split('/:/', $unprocessed_contents, 2);

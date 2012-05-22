@@ -5,8 +5,6 @@
  * Contains some non-class-specific methods and things I'm not sure where to put.
  */
 
-$facetSeparator = '~';
-$replacements = array("~slsh~", "~plus~");
 $values = array("/", "+");
 
 
@@ -101,26 +99,6 @@ function solr_escape($facets) {
   return $returnFacets;
 }
 
-function get_search_terms_array($path = NULL, $file = NULL) {
-  if (!isset($path)) {
-    $path = drupal_get_path('module', 'islandora_solr_search');
-  }
-  $xmlDoc = new DomDocument();
-  if (!isset($file)) {
-    $file = 'searchTerms.xml';
-  }
-  $xmlDoc->load($path . '/' . $file);
-  $nodeList = $xmlDoc->getElementsByTagName('term');
-  $types = array();
-  for ($i = 0; $i < $nodeList->length; $i++) {
-    $field = $nodeList->item($i)->getElementsByTagName('field');
-    $value = $nodeList->item($i)->getElementsByTagName('value');
-    $fieldValue = $field->item(0)->nodeValue;
-    $valueValue = $value->item(0)->nodeValue;
-    $types["$fieldValue"] = "$valueValue";
-  }
-  return $types;
-}
 
 function islandora_build_substitution_list($rawFieldList) {
   $facetArray = array();

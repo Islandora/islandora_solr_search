@@ -253,7 +253,7 @@ function islandora_solr_admin_settings(&$form_state) {
       Enter terms on separate lines using the following pattern: field [tilde] preferred label. ie <strong>dc.title ~ Title</strong> "),
     '#default_value' => variable_get('islandora_solr_search_block_facets', 'dc.subject ~ Subject,dc.type ~ Type'),
     '#wysiwyg' => FALSE,
-    '#default_value' => variable_get('islandora_solr_search_block_facets', t('dc.subject ~ Subject,dc.type ~ Type'))
+    '#default_value' => variable_get('islandora_solr_search_block_facets', 'dc.subject ~ Subject,dc.type ~ Type')
   );
   $form['facet_settings']['islandora_solr_search_block_facet_min_count'] = array(
     '#type' => 'textfield',
