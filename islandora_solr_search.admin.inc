@@ -339,25 +339,6 @@ function islandora_solr_admin_settings(&$form_state) {
     '#default_value' => variable_get('islandora_solr_search_base_filter', ''),
     '#wysiwyg' => FALSE,
   );
-  $form['query_defaults']['sort_fields'] = array(
-    '#type' => 'fieldset',
-    '#collapsible' => FALSE,
-    '#collapsed' => FALSE,
-  );
-
-  $form['query_defaults']['sort_fields']['islandora_solr_search_sort_field'] = array(
-    '#type' => 'textfield', '#title' => t('Sort field'),
-    '#size' => 20,
-    '#description' => t('Results will be sorted on this field. If left blank will default to <em>score</em>.'),
-    '#default_value' => variable_get('islandora_solr_search_sort_field', ''),
-  );
-
-  $form['query_defaults']['sort_fields']['islandora_solr_search_sort_order'] = array(
-    '#type' => 'radios',
-    '#title' => t('Sort Order'),
-    '#options' => array('asc' => t('Ascending'), 'desc' => t('Decending')),
-    '#default_value' => 'desc',
-  );
   
   
   

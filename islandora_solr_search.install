@@ -85,8 +85,6 @@ function islandora_solr_search_uninstall() {
     'islandora_solr_search_limit_result_fields',
     'islandora_solr_search_num_of_results',
     'islandora_solr_search_result_fields',
-    'islandora_solr_search_sort_field',
-    'islandora_solr_search_sort_order',
     'islandora_solr_snippet_field',
     'islandora_solr_search_namespace_restriction',
   );

@@ -235,6 +235,7 @@ function islandora_solr_search_block($op = 'list', $delta = 0, $edit = array()) 
       foreach ($solr_blocks as $name => $block) {
         $blocks[$name] = array(
           'info' => $block['name'],
+          'cache' => BLOCK_NO_CACHE,
         );
       }
 
