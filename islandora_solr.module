@@ -396,9 +396,11 @@ function islandora_solr_check_http($url) {
 /**
  * Function to get Solr luke as a php array.
  *
- * @param type $solr_url
+ * @param string $solr_url
  *   url which points to solr
- * @param type $num_terms
+ * @param string $field
+ *   limit luke results by entering a single solr field
+ * @param int $num_terms
  *   number of terms to include per solr field. Terms are indexed strings which
  *   include the number of occurrences in the solr index. Higher occurrences are
  *   listed first. Defaults to 0 because including this can add a siginificant
@@ -407,7 +409,7 @@ function islandora_solr_check_http($url) {
  *   if solr is available it returns Solr Luke data as a php array, if not it
  *   returns FALSE.
  */
-function islandora_solr_get_luke($solr_url = NULL, $num_terms = 0) {
+function islandora_solr_get_luke($solr_url = NULL, $field = NULL, $num_terms = 0) {
 
   if (!$solr_url) {
     // create url
@@ -416,10 +418,23 @@ function islandora_solr_get_luke($solr_url = NULL, $num_terms = 0) {
 
   // if solr is available get luke
   if (islandora_solr_ping($solr_url)) {
+
     // create url
-    $luke_url = $solr_url . '/admin/luke?wt=json&numTerms=' . $num_terms; //?wt=json
+    $luke_url = $solr_url . '/admin/luke';
     // check for http://
     $luke_url = islandora_solr_check_http($luke_url);
+    
+    $luke_query = array(
+      'wt' => 'json',
+      'numTerms' => $num_terms,
+    );
+    if ($field) {
+      $luke_query['fl'] = $field;
+    }
+
+    // generate nice url
+    $luke_url = url($luke_url, array('absolute' => TRUE, 'query' => $luke_query));
+
     // get file content (= json string)
     $luke_json = file_get_contents($luke_url, 0, NULL, NULL);
 
@@ -432,6 +447,78 @@ function islandora_solr_get_luke($solr_url = NULL, $num_terms = 0) {
     return FALSE;
   }
 }
+
+
+/**
+ * Returns an array containing all fields in Luke that are sortable.
+ *
+ * @param string $solr_url
+ *   url which points to solr
+ * @return boolean
+ *   returns an array containing all fields in Luke that are sortable. If no
+ *   fields are sortable, it returns FALSE
+ */
+function islandora_solr_get_sortable($solr_url = NULL) {
+  // set variable
+  $sortable = array();
+  
+  $luke = islandora_solr_get_luke($solr_url);
+  
+  // check if fields are available
+  if (isset($luke['fields']) AND !empty($luke['fields'])) {
+    // loop over fields
+    foreach ($luke['fields'] as $field => $value) {
+      // scheck if field is sortable
+      // must be indexed and can't be multivalued
+      // http://wiki.apache.org/solr/CommonQueryParameters#sort
+      if (strstr($value['schema'], "I") != FALSE AND strstr($value['schema'], "M") == FALSE) {
+        // add field
+        $sortable[] = $field;
+      }
+
+    }
+  }
+  
+  // return FALSE if no sortable fields are returned
+  if (empty($sortable)) {
+    return  FALSE;
+  }
+  
+  return $sortable; 
+}
+
+/**
+ * Checks a single solr field if it's sortable.
+ *
+ * @param string $solr_url
+ *   url which points to solr
+ * @param string $field
+ *   solr field to be checked for being sortable
+ * @return boolean
+ *   Returns TRUE if the given field is sortable, returns FALSE if the field is
+ *   not sortable or if field is not set.
+ */
+function islandora_solr_check_sortable($solr_url = NULL, $field = NULL) {
+  // set variable
+  $sortable = FALSE;
+  
+  if ($field) {
+    $luke = islandora_solr_get_luke($solr_url, $field);
+    // check if fields are available
+    if (!empty($luke['fields'])) {
+      $schema = $luke['fields'][$field]['schema'];
+
+      // scheck if field is sortable
+      // must be indexed and can't be multivalued
+      // http://wiki.apache.org/solr/CommonQueryParameters#sort
+      if (strstr($schema, "I") != FALSE AND strstr($schema, "M") == FALSE) {
+        $sortable = TRUE;
+      }
+    }
+  }
+  return $sortable;
+}
+
 
 
 
