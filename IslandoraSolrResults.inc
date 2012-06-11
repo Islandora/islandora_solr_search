@@ -75,7 +75,7 @@ class IslandoraSolrResults {
 
     // debug (will be removed)
     if (variable_get('islandora_solr_search_debug_mode', FALSE)) {
-      $elements['solr_debug'] = $this->printDebugOutput($solrResult);
+      $elements['solr_debug'] = $this->printDebugOutput($apacheSolrResult);
     }
 
     // rendered secondary display profiles
@@ -158,7 +158,7 @@ class IslandoraSolrResults {
     
     // get prepared search results
     $docs = $this->prep_results($results);
-
+    
     // optionally limit results to values given
     $limitResults = variable_get('islandora_solr_search_limit_result_fields', 0);
 

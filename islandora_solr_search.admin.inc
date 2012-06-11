@@ -465,7 +465,7 @@ function theme_islandora_solr_search_admin_settings($form) {
  *
  */
 function solr_available($solr_url) {
-  $handle = curl_init($solr_url);
+  $handle = curl_init($solr_url . '/admin/ping');
   curl_setopt($handle, CURLOPT_RETURNTRANSFER, TRUE);
   $response = curl_exec($handle);
   $httpCode = curl_getinfo($handle, CURLINFO_HTTP_CODE);
