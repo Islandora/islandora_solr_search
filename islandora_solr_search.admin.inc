@@ -31,11 +31,12 @@ function islandora_solr_admin_settings(&$form_state) {
   $handler = !empty($form_state['values']['islandora_solr_search_block_request_handler']) ? $form_state['values']['islandora_solr_search_block_request_handler'] : variable_get('islandora_solr_search_block_request_handler', 'standard');
   $solr_url = !empty($form_state['values']['islandora_solr_search_block_url']) ? $form_state['values']['islandora_solr_search_block_url'] : variable_get('islandora_solr_search_block_url', 'localhost:8080/solr');
   $solr_avail = solr_available($solr_url);
+  $dismax_allowed = FALSE;
   if ($solr_avail) {
     $handlers = get_handlers($solr_url);
+    $dismax_allowed = check_dismax($solr_url, $handler);
   }
 
-  $dismax_allowed = check_dismax($solr_url, $handler);
   $confirmation_message = ($solr_avail ? '<img src="' . url('misc/watchdog-ok.png') . '"/>'
           . t('Successfully connected to Solr server at !islandora_solr_search_block_url', array('!islandora_solr_search_block_url' => $solr_url)) : '<img src="'
           . url('misc/watchdog-error.png') . '"/> '
@@ -469,10 +470,7 @@ function solr_available($solr_url) {
   curl_setopt($handle, CURLOPT_RETURNTRANSFER, TRUE);
   $response = curl_exec($handle);
   $httpCode = curl_getinfo($handle, CURLINFO_HTTP_CODE);
-  $retval = TRUE;
-  if ($httpCode % 100 == 4) { //FIXME:  Should probably deal with 500 errors as well?
-    $retval = FALSE;
-  }
+  $retval = ((int)($httpCode / 100) === 2);
   curl_close($handle);
   return $retval;
 }
