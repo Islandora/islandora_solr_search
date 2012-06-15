@@ -238,10 +238,6 @@ class IslandoraSolrResults {
 
     // parameters set in url
     $params = $islandoraSolrQuery->internalSolrParams;
-    // set filter key if there are no filters included
-    if (empty($params['f'])) {
-      $params['f'] = array();
-    }
 
     // Get Query values
     if (!in_array($islandoraSolrQuery->solrQuery, $islandoraSolrQuery->different_kinds_of_nothing)) {
@@ -313,7 +309,7 @@ class IslandoraSolrResults {
           $filter_array = explode(' TO ', $filter_str);
           $filter_split[1] = date($format, strtotime(trim($filter_array[0])) + (60 * 60 * 24)) . ' - ' . date($format, strtotime(trim($filter_array[1])) + (60 * 60 * 24));
         }
-        
+
         // pull out filter (for exclude link)
         $query_minus = array();
         $f_x['f'] = array_diff($params['f'], array($filter));
@@ -321,6 +317,10 @@ class IslandoraSolrResults {
         // resetting the filter key's order // @TODO find a cleaner way to do this.
         if ($query_minus['f']) {
           $query_minus['f'] = array_merge(array(), $query_minus['f']);
+        }
+        // remove 'f' if empty
+        if (empty($query_minus['f'])) {
+          unset($query_minus['f']);
         }
 
         // set attributes variable for remove link
@@ -420,6 +420,10 @@ class IslandoraSolrResults {
         // resetting the filter key's order // @TODO find a cleaner way to do this.
         if ($query_x['f']) {
           $query_x['f'] = array_merge(array(), $query_x['f']);
+        }
+        // remove 'f' if empty
+        if (empty($query_x['f'])) {
+          unset($query_x['f']);
         }
 
         // set attributes variable
