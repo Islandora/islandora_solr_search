@@ -277,10 +277,7 @@ class IslandoraSolrResults {
     
     // parameters set in url
     $params = $solrQueryProcessor->internalSolrParams;
-    // set filter key if there are no filters included
-    if (empty($params['f'])) {
-      $params['f'] = array();
-    }
+
     
     // Get Query values
     if (!in_array($solrQueryProcessor->solrQuery, $solrQueryProcessor->different_kinds_of_nothing)) {
@@ -358,6 +355,10 @@ class IslandoraSolrResults {
         // resetting the filter key's order // @TODO find a cleaner way to do this.
         if ($query_minus['f']) {
           $query_minus['f'] = array_merge(array(), $query_minus['f']);
+        }
+        // remove 'f' if empty
+        if (empty($query_minus['f'])) {
+          unset($query_minus['f']);
         }
 
         // set attributes variable for remove link
@@ -449,7 +450,11 @@ class IslandoraSolrResults {
         if ($query_x['f']) {
           $query_x['f'] = array_merge(array(), $query_x['f']);
         }
-
+        // remove 'f' if empty
+        if (empty($query_x['f'])) {
+          unset($query_x['f']);
+        }
+        
         // set attributes variable
         $attr = array();
         // set title
@@ -495,7 +500,10 @@ class IslandoraSolrResults {
       // remove button keeps all parameters (query gets removed instead)
       $query_x = array();
       $query_x = $params;
-
+      if (empty($params['f'])) {
+        unset($query_x['f']);
+      }
+      
       // remove query from path
       $path_x = implode('/', explode('/', $path, -1)) . '/ ';
       
