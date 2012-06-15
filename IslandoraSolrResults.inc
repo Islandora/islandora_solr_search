@@ -308,7 +308,7 @@ class IslandoraSolrResults {
       
       // create link
       // we're not using l() because of active classes: http://drupal.org/node/41595
-      $query_list[] = '[<a' . drupal_attributes($attr_minus) . '>-</a>] ' . $query_value;
+      $query_list[] = '<a' . drupal_attributes($attr_minus) . '>(-)</a> ' . $query_value;
       
       // add wrap and list
       $output .= '<div class="islandora_solr_search_query_wrap">';
@@ -371,7 +371,7 @@ class IslandoraSolrResults {
 
         // create link
         // we're not using l() because of active classes: http://drupal.org/node/41595
-        $filter_list[] = '[<a' . drupal_attributes($attr_minus) . '>-</a>] ' . $symbol . ' ' . $filter_split[1];
+        $filter_list[] = '<a' . drupal_attributes($attr_minus) . '>(-)</a> ' . $symbol . ' ' . $filter_split[1];
       }
       // return filter list
       $output .= '<div class="islandora_solr_search_filter_wrap">';
@@ -525,11 +525,16 @@ class IslandoraSolrResults {
         if (strpos($value, ':') != FALSE) {
           // split the filter into field and value
           $value_split = explode(':', $value, 2);
-          // trim whitespace, brackets and then quotes
+          // trim whitespace
           $value_split[1] = trim($value_split[1]);
-          $value_split[1] = ltrim($value_split[1], "(");
-          $value_split[1] = rtrim($value_split[1], ")");
-          $value = trim($value_split[1], "\"");
+          // trim brackets
+          $value = str_replace(array('(', ')'), '', $value_split[1]);
+        }
+        // no colon is found
+        else {
+          $value = trim($value);
+          // strip brackets
+          $value = str_replace(array('(', ')'), '', $value);
         }
         $query_implode[] = $value;
       }
@@ -537,7 +542,7 @@ class IslandoraSolrResults {
       // create links
       // we're not using l() because of active classes: http://drupal.org/node/41595
       $breadcrumb[] = '<a' . drupal_attributes($attr) . '>' . $query_value . '</a>'
-            . '<span class="islandora_solr_search_breadcrumb_super">(<a' . drupal_attributes($attr_x) . '>' . t('x') . '</a>)</span>';
+            . '<span class="islandora_solr_search_breadcrumb_super"> <a' . drupal_attributes($attr_x) . '>(' . t('x') . ')</a></span>';
     }
     
     $breadcrumb[] = l(t('Home'), '<front>', array('attributes' => array('title' => t('Home'))));
