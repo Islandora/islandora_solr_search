@@ -32,6 +32,7 @@ class IslandoraSolrQueryProcessor {
 
   public $solrResult;
 
+  public $display;
   public $different_kinds_of_nothing = array( ' ', '%20', '%252F', '%2F', '%252F-', ''); 
 
   /**
@@ -101,6 +102,7 @@ class IslandoraSolrQueryProcessor {
     // Set display variable
     if (isset($this->internalSolrParams['display'])) {
       $display = $this->internalSolrParams['display'];
+      $this->display = $display;
       // if current display is default, unset display key.
       if ($display == variable_get('islandora_solr_primary_display', 'default') ) {
         unset($this->internalSolrParams['display']);
@@ -108,6 +110,7 @@ class IslandoraSolrQueryProcessor {
     }
     else {
       $display = variable_get('islandora_solr_primary_display', 'default');
+      $this->display = $display;
       unset($this->internalSolrParams['display']);
     }
    
