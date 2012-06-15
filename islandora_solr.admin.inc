@@ -320,8 +320,46 @@ function islandora_solr_admin_settings($form, &$form_state) {
       For example, if there are 100 possible subjects in a faceted result, you may wish to return only the top 10.'),
     '#default_value' => variable_get('islandora_solr_facet_max_limit', '20'),
   );
-  $form['facet_settings']['islandora_facet_display_table'] = array();
 
+  $form['facet_settings']['facet_dates'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Date facets'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+  );
+  $form['facet_settings']['facet_dates']['islandora_solr_facet_date'] = array(
+    '#type' => 'textarea',
+    '#title' => t('Date field'),
+    '#description' => t("Indicate which date field will appear in the <strong>Islandora Facet Block</strong>.<br />
+      Enter terms on separate lines using the following pattern: field [tilde] preferred label. ie <strong>dc.date ~ Date</strong> "),
+    '#default_value' => variable_get('islandora_solr_facet_date' , NULL),
+  );
+  $form['facet_settings']['facet_dates']['islandora_solr_facet_date_start'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Date start'),
+    '#description' => t('The lower bound for the first date range for all Date Faceting on this field. This should be a single date expression which may use the <a href="!url">DateMathParser</a> syntax.', array('!url' => 'http://lucene.apache.org/solr/api/org/apache/solr/util/DateMathParser.html')),
+    '#default_value' => variable_get('islandora_solr_facet_date_start' , 'NOW/YEAR-20YEARS'),
+  );
+  $form['facet_settings']['facet_dates']['islandora_solr_facet_date_end'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Date end'),
+    '#description' => t('The minimum upper bound for the last date range for all Date Faceting on this field. This should be a single date expression which may use the <a href="!url">DateMathParser</a> syntax.', array('!url' => 'http://lucene.apache.org/solr/api/org/apache/solr/util/DateMathParser.html')),
+    '#default_value' => variable_get('islandora_solr_facet_date_end' , 'NOW'),
+  );
+  $form['facet_settings']['facet_dates']['islandora_solr_facet_date_gap'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Date gap'),
+    '#description' => t('The size of each date range expressed as an interval to be added to the lower bound using the <a href="!url">DateMathParser</a> syntax.', array('!url' => 'http://lucene.apache.org/solr/api/org/apache/solr/util/DateMathParser.html')),
+    '#default_value' => variable_get('islandora_solr_facet_date_gap' , '+1YEAR'),
+  );
+  $form['facet_settings']['facet_dates']['islandora_solr_facet_date_format'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Date format'),
+    '#description' => t('The format of the date as it will be displayed in the facet block. Use the <a href="!url">PHP date()</a> formatting.', array('!url' => 'http://lucene.apache.org/solr/api/org/apache/solr/util/DateMathParser.html')),
+    '#default_value' => variable_get('islandora_solr_facet_date_format' , 'Y'),
+  );
+  
+  
 
 
   // advanced search block

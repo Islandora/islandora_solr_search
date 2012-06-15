@@ -227,6 +227,9 @@ class IslandoraSolrResults {
     // set path
     $path = SOLR_SEARCH_PATH . '/' . $islandoraSolrQuery->solrQuery; // $_GET['q'] didn't seem to work here
 
+    // get date format
+    $format = variable_get('islandora_solr_facet_date_format', 'Y');
+    
     // set output variable
     $output = '';
 
@@ -301,6 +304,16 @@ class IslandoraSolrResults {
         // trim brackets
         $filter_split[1] = trim($filter_split[1], "\"");
 
+        // if value is date
+        if (isset($islandoraSolrQuery->solrParams['facet.date']) AND in_array(ltrim($filter_split[0], '-'), $islandoraSolrQuery->solrParams['facet.date'])) {
+          // split range filter string to return formatted date values
+          $filter_str = $filter_split[1];
+          $filter_str = trim($filter_str, '[');
+          $filter_str = trim($filter_str, ']');
+          $filter_array = explode(' TO ', $filter_str);
+          $filter_split[1] = date($format, strtotime(trim($filter_array[0])) + (60 * 60 * 24)) . ' - ' . date($format, strtotime(trim($filter_array[1])) + (60 * 60 * 24));
+        }
+        
         // pull out filter (for exclude link)
         $query_minus = array();
         $f_x['f'] = array_diff($params['f'], array($filter));
@@ -346,6 +359,9 @@ class IslandoraSolrResults {
     // set path
     $path = SOLR_SEARCH_PATH . '/' . $islandoraSolrQuery->solrQuery; // $_GET['q'] didn't seem to work here
 
+    // get date format
+    $format = variable_get('islandora_solr_facet_date_format', 'Y');
+    
     // set breadcrumb variable
     $breadcrumb = array();
 
@@ -381,6 +397,15 @@ class IslandoraSolrResults {
         // trim brackets
         $filter_split[1] = trim($filter_split[1], "\"");
 
+        // if value is date
+        if (isset($islandoraSolrQuery->solrParams['facet.date']) AND in_array(ltrim($filter_split[0], '-'), $islandoraSolrQuery->solrParams['facet.date'])) {
+          // split range filter string to return formatted date values
+          $filter_str = $filter_split[1];
+          $filter_str = trim($filter_str, '[');
+          $filter_str = trim($filter_str, ']');
+          $filter_array = explode(' TO ', $filter_str);
+          $filter_split[1] = date($format, strtotime(trim($filter_array[0])) + (60 * 60 * 24)) . ' - ' . date($format, strtotime(trim($filter_array[1])) + (60 * 60 * 24));
+        }
 
         // increment filter array with current filter (for breadcrumb link)
         $query = array();
@@ -523,13 +548,55 @@ class IslandoraSolrResults {
     $facet_output = $output = '';
 
     // limits
-    $facet_min_count = variable_get('islandora_solr_facet_min_limit', '2');
+    $facet_min_count = 1;
+    $min_result = variable_get('islandora_solr_facet_min_limit', '2');
     $initial_limit = variable_get('islandora_solr_facet_soft_limit', '10');
     $facet_limit = variable_get('islandora_solr_facet_max_limit', '20');
 
     // get facet values returned from solr
     $facets = isset($islandoraSolrQuery->solrResult->facet_counts->facet_fields) ? $islandoraSolrQuery->solrResult->facet_counts->facet_fields : array();
+    // object to json
+    $facets_json  = json_encode($facets);
+    // json  to array
+    $facets = json_decode($facets_json, true);
+    
+    // get date facet values
+    $date_facets = isset($islandoraSolrQuery->solrResult->facet_counts->facet_dates) ? $islandoraSolrQuery->solrResult->facet_counts->facet_dates : array();
+    // object to json
+    $date_facets_json  = json_encode($date_facets);
+    // json to array
+    $date_facets_arr = json_decode($date_facets_json, true);
+    // clean up facet dates array
+    $format = variable_get('islandora_solr_facet_date_format' , 'Y');
+    // set variable
+    $date_facets = array();
+    // loop over each date field
+    foreach ($date_facets_arr as $key => $fields) {
+      // loop over each field
+      $date_facets[$key] = array();
+      foreach ($fields as $date => $number) {
+        // facet.date includes other values in the facet results - excluding these
+        // we're turning the facet results in an array with multiple values
+        if (!in_array($date, array('gap', 'end', 'other', 'hardend', 'include'))) {
+          // set number or documents
+          $date_facets[$key][$date]['number'] = $number;
+          // logic to get the next range key (next date)
+          $field_keys = array_keys($fields);
+          $field_key = array_search($date, $field_keys);
+          $field_key++;
+          $date_next = (!in_array($field_keys[$field_key], array('gap', 'end', 'other', 'hardend', 'include'))) ? $field_keys[$field_key] : $fields['end'];
+          // set date range filter for facet url
+          $date_facets[$key][$date]['range'] = '[' . $date . ' TO ' . $date_next . ']';
+          // set formatted value for facet link
+          $date_facets[$key][$date]['value'] = date($format, strtotime($date) + (60 * 60 * 24)) . ' - ' . date($format, strtotime($date_next) + (60 * 60 * 24));
+        }
+      }
+    }
 
+    // merge facet fields with date facets
+    $facets = array_merge($date_facets, $facets);
+    
+    
     // return if no facets are available
     if (empty($facets)) {
       return $output;
@@ -543,18 +610,15 @@ class IslandoraSolrResults {
       $list_items = array();
       $list_title = NULL;
 
-      // convert to array
-      $facet = get_object_vars($facet);
-
       // if the facet contains the minimum amount of values
       if (count($facet) >= $facet_min_count) {
         // set facet count
         $facet_count = 0;
 
         // render facet values
-        foreach ($facet as $value => $number) {
+        foreach ($facet as $value => $data) {
           // add facet
-          $this->_addFacets($facet_key, $value, $number, $islandoraSolrQuery, $facet_count, $list_items);
+          $this->_addFacets($facet_key, $value, $data, $islandoraSolrQuery, $facet_count, $list_items, $min_result);
         }
 
         // check for minumum returned values again, because some might have been disabled
@@ -599,7 +663,6 @@ class IslandoraSolrResults {
       drupal_add_js(drupal_get_path('module', 'islandora_solr') . '/js/islandora_solr_soft_limit.js');
     }
 
-
     // As we add additional facets, we're repeatedly URL-encoding old facet
     // strings. when we double-encode quotation marks they're incomprehensible
     // to solr. This is a quick workaround:                                                      //
@@ -636,19 +699,36 @@ class IslandoraSolrResults {
    *
    * @see IslandoraSolrResults::addFacets()
    */
-  function _addFacets(&$key, &$value, &$number, &$islandoraSolrQuery, &$facet_count, &$list) {
+  function _addFacets(&$key, &$value, &$data, &$islandoraSolrQuery, &$facet_count, &$list, $min_result) {
 
+    // value of date facet is an array, normal facets is a string.
+    if (is_array($data)) {
+      // set value
+      $value = $data['value'];
+      // set filter to include in url
+      $filter = $key . ':' . $data['range'];
+      // set number of found solr documents
+      $data = $data['number'];
+      // don't include facet fields with a document count lower than the configured minimum
+      if ($data < $min_result) {
+        return;
+      } 
+    }
+    else {
+      // @TODO: Should be changed to format_string for Drupal 7
+      // @TODO: does this check for exclude filters? -PID:"foo"
+      $filter = $key . ':"' . replace_slashes($value) . '"'; // PID:"foo"
+    }
+    
     //FIXME:  This isn't quite right...  It can make sense to facet on
     //  the same field multiple times, provided it is multi-valued...
 
     $fq = isset($islandoraSolrQuery->solrParams['fq']) ? $islandoraSolrQuery->solrParams['fq'] : array();
 
-    // @TODO: Should be changed to format_string for Drupal 7
-    // @TODO: does this check for exclude filters? -PID:"foo"
-    $filter = $key . ':"' . replace_slashes($value) . '"'; // PID:"foo"
-
     // check if item should show up
-    $disable_link = (array_search($filter, $fq) !== FALSE) || $number == $islandoraSolrQuery->solrResult->response->numFound;
+    // 1. check if the filter isn't active
+    // 2. if the results of the facet items equals the total of current returned results, that means it's useless to include or exclude the filter.
+    $disable_link = (array_search($filter, $fq) !== FALSE) || $data == $islandoraSolrQuery->solrResult->response->numFound;
 
     // if link isn't disabled
     if (!$disable_link) {
@@ -686,7 +766,7 @@ class IslandoraSolrResults {
 
       // create links
       // we're not using l() because of active classes: http://drupal.org/node/41595
-      $list[] = '<a' . drupal_attributes($attr) . '>' . $value . '</a>' . ' (' . $number . ')' .
+      $list[] = '<a' . drupal_attributes($attr) . '>' . $value . '</a>' . ' (' . $data . ')' .
           '<span class="plusminus">' .
           '<a' . drupal_attributes($attr_plus) . '>+</a>'
           . ' ' .
@@ -735,6 +815,13 @@ class IslandoraSolrResults {
     $rawFacetVals = variable_get("islandora_solr_facets", 'dc.subject ~ Subject,dc.type ~ Type');
     $this->facetFieldArray = islandora_build_substitution_list($rawFacetVals);
 
+    // populate with date facet readable names
+    $rawDateFacetVals = variable_get('islandora_solr_facet_date' , NULL);
+    $rawDateFacetVals = islandora_build_substitution_list($rawDateFacetVals);
+    if ($rawDateFacetVals != NULL) {
+      $this->facetFieldArray = array_merge($this->facetFieldArray, $rawDateFacetVals);
+    }
+    
     $rawSearchTerms = variable_get('islandora_solr_searchterms', 'dc.title ~ Title');
     $this->searchFieldArray = islandora_build_substitution_list($rawSearchTerms);
 
