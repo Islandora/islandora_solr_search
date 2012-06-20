@@ -166,7 +166,7 @@ function islandora_solr_block_view($block_name = '') {
 function islandora_solr_simple_search_form($form, &$form_state) {
 
   $form["islandora_simple_search_query"] = array(
-    '#size' => '20',
+    '#size' => '15',
     '#type' => 'textfield',
     '#title' => '',
     '#default_value' => '', // @TODO: should this be the searched value?
