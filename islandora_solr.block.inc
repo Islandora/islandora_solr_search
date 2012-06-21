@@ -168,17 +168,21 @@ function islandora_solr_block_view($block_name = '') {
  */
 function islandora_solr_simple_search_form($form, &$form_state) {
 
-  $form["islandora_simple_search_query"] = array(
-    '#size' => '20',
-    '#type' => 'textfield',
-    '#title' => '',
-    '#default_value' => '', // @TODO: should this be the searched value?
-  );
-  $form['submit'] = array(
-    '#type' => 'submit',
-    '#value' => t('search')
-  );
-  return $form;
+ $form['simple'] = array(
+    '#type' => 'container',
+    '#attributes' => array('class' => array('container-inline')),
+  );
+  $form['simple']["islandora_simple_search_query"] = array(
+    '#size' => '15',
+    '#type' => 'textfield',
+    '#title' => '',
+    '#default_value' => '', // @TODO: should this be the searched value?
+  );
+  $form['simple']['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('search')
+  );
+  return $form;
 }
 
 
