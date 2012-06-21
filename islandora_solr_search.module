@@ -39,6 +39,9 @@ function islandora_solr_search_init() {
 function islandora_solr_search_boot() {
   global $conf;
 
+  // set timezone to suppress strototime strict errors
+  ini_set('date.timezone', @date_default_timezone_get());
+
   // Allow i18n, by using multilingual variables.
   if (module_exists('i18n')) {
     $vars = array(
