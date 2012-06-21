@@ -358,8 +358,8 @@ function islandora_solr_admin_settings($form, &$form_state) {
     '#description' => t('The format of the date as it will be displayed in the facet block. Use the <a href="!url">PHP date()</a> formatting.', array('!url' => 'http://lucene.apache.org/solr/api/org/apache/solr/util/DateMathParser.html')),
     '#default_value' => variable_get('islandora_solr_facet_date_format' , 'Y'),
   );
-  
-  
+
+
 
 
   // advanced search block

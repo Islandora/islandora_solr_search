@@ -229,7 +229,7 @@ class IslandoraSolrResults {
 
     // get date format
     $format = variable_get('islandora_solr_facet_date_format', 'Y');
-    
+
     // set output variable
     $output = '';
 
@@ -307,7 +307,7 @@ class IslandoraSolrResults {
           $filter_str = trim($filter_str, '[');
           $filter_str = trim($filter_str, ']');
           $filter_array = explode(' TO ', $filter_str);
-          $filter_split[1] = date($format, strtotime(trim($filter_array[0])) + (60 * 60 * 24)) . ' - ' . date($format, strtotime(trim($filter_array[1])) + (60 * 60 * 24));
+          $filter_split[1] = format_date(strtotime(trim($filter_array[0])) + (60 * 60 * 24), 'custom', $format) . ' - ' . format_date(strtotime(trim($filter_array[1])) + (60 * 60 * 24), 'custom', $format);
         }
 
         // pull out filter (for exclude link)
@@ -361,7 +361,7 @@ class IslandoraSolrResults {
 
     // get date format
     $format = variable_get('islandora_solr_facet_date_format', 'Y');
-    
+
     // set breadcrumb variable
     $breadcrumb = array();
 
@@ -404,7 +404,7 @@ class IslandoraSolrResults {
           $filter_str = trim($filter_str, '[');
           $filter_str = trim($filter_str, ']');
           $filter_array = explode(' TO ', $filter_str);
-          $filter_split[1] = date($format, strtotime(trim($filter_array[0])) + (60 * 60 * 24)) . ' - ' . date($format, strtotime(trim($filter_array[1])) + (60 * 60 * 24));
+          $filter_split[1] = format_date(strtotime(trim($filter_array[0])) + (60 * 60 * 24), 'custom', $format) . ' - ' . format_date(strtotime(trim($filter_array[1])) + (60 * 60 * 24), 'custom', $format);
         }
 
         // increment filter array with current filter (for breadcrumb link)
@@ -562,14 +562,14 @@ class IslandoraSolrResults {
     // object to json
     $facets_json  = json_encode($facets);
     // json  to array
-    $facets = json_decode($facets_json, true);
-    
+    $facets = json_decode($facets_json, TRUE);
+
     // get date facet values
     $date_facets = isset($islandoraSolrQuery->solrResult->facet_counts->facet_dates) ? $islandoraSolrQuery->solrResult->facet_counts->facet_dates : array();
     // object to json
     $date_facets_json  = json_encode($date_facets);
     // json to array
-    $date_facets_arr = json_decode($date_facets_json, true);
+    $date_facets_arr = json_decode($date_facets_json, TRUE);
     // clean up facet dates array
     $format = variable_get('islandora_solr_facet_date_format' , 'Y');
     // set variable
@@ -592,15 +592,15 @@ class IslandoraSolrResults {
           // set date range filter for facet url
           $date_facets[$key][$date]['range'] = '[' . $date . ' TO ' . $date_next . ']';
           // set formatted value for facet link
-          $date_facets[$key][$date]['value'] = date($format, strtotime($date) + (60 * 60 * 24)) . ' - ' . date($format, strtotime($date_next) + (60 * 60 * 24));
+          $date_facets[$key][$date]['value'] = format_date(strtotime($date) + (60 * 60 * 24), 'custom', $format) . ' - ' . format_date(strtotime($date_next) + (60 * 60 * 24), 'custom', $format);
         }
       }
     }
 
     // merge facet fields with date facets
     $facets = array_merge($date_facets, $facets);
-    
-    
+
+
     // return if no facets are available
     if (empty($facets)) {
       return $output;
@@ -716,14 +716,14 @@ class IslandoraSolrResults {
       // don't include facet fields with a document count lower than the configured minimum
       if ($data < $min_result) {
         return;
-      } 
+      }
     }
     else {
       // @TODO: Should be changed to format_string for Drupal 7
       // @TODO: does this check for exclude filters? -PID:"foo"
       $filter = $key . ':"' . replace_slashes($value) . '"'; // PID:"foo"
     }
-    
+
     //FIXME:  This isn't quite right...  It can make sense to facet on
     //  the same field multiple times, provided it is multi-valued...
 
@@ -825,7 +825,7 @@ class IslandoraSolrResults {
     if ($rawDateFacetVals != NULL) {
       $this->facetFieldArray = array_merge($this->facetFieldArray, $rawDateFacetVals);
     }
-    
+
     $rawSearchTerms = variable_get('islandora_solr_searchterms', 'dc.title ~ Title');
     $this->searchFieldArray = islandora_build_substitution_list($rawSearchTerms);
 

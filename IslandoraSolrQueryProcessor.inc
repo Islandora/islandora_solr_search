@@ -162,7 +162,7 @@ class IslandoraSolrQueryProcessor {
       'hl.fragsize' => 400,
       'facet.field' => explode(',', $facet_fields), //comma separated list configured in the block config
     );
-    
+
     // check for date facets
     if (variable_get('islandora_solr_facet_date' , NULL) != NULL) {
       // set variables
@@ -177,7 +177,7 @@ class IslandoraSolrQueryProcessor {
       );
       $params_array = array_merge($params_array, $params_date_facets);
     }
-    
+
     // add parameters
     $this->solrParams = array_merge($this->solrParams, $params_array);
 

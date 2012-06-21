@@ -42,7 +42,7 @@ function islandora_solr_config_preprocess_islandora_solr_grid(&$variables) {
     $variables[$key] = $value;
   }
 
-  foreach($variables['results'] as $key => $value) {
+  foreach ($variables['results'] as $key => $value) {
     $object = islandora_object_load($value['PID']['value']);
     if ($object) {
       if (isset($object['TN'])) {

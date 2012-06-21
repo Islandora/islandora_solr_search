@@ -423,7 +423,7 @@ function islandora_solr_get_luke($solr_url = NULL, $field = NULL, $num_terms = 0
     $luke_url = $solr_url . '/admin/luke';
     // check for http://
     $luke_url = islandora_solr_check_http($luke_url);
-    
+
     $luke_query = array(
       'wt' => 'json',
       'numTerms' => $num_terms,
@@ -461,9 +461,9 @@ function islandora_solr_get_luke($solr_url = NULL, $field = NULL, $num_terms = 0
 function islandora_solr_get_sortable($solr_url = NULL) {
   // set variable
   $sortable = array();
-  
+
   $luke = islandora_solr_get_luke($solr_url);
-  
+
   // check if fields are available
   if (isset($luke['fields']) AND !empty($luke['fields'])) {
     // loop over fields
@@ -478,13 +478,13 @@ function islandora_solr_get_sortable($solr_url = NULL) {
 
     }
   }
-  
+
   // return FALSE if no sortable fields are returned
   if (empty($sortable)) {
     return  FALSE;
   }
-  
-  return $sortable; 
+
+  return $sortable;
 }
 
 /**
@@ -501,7 +501,7 @@ function islandora_solr_get_sortable($solr_url = NULL) {
 function islandora_solr_check_sortable($solr_url = NULL, $field = NULL) {
   // set variable
   $sortable = FALSE;
-  
+
   if ($field) {
     $luke = islandora_solr_get_luke($solr_url, $field);
     // check if fields are available
@@ -527,7 +527,7 @@ function islandora_solr_check_sortable($solr_url = NULL, $field = NULL) {
  *
  * @TODO: checking for display might not be the best way to do this. Need to
  * review the way blocks are created.
- * 
+ *
  * @param object $islandora_solr_query
  *   The IslandoraSolrQueryProcessor object which includes the current query
  *   settings but at the beginning of IslandoraSolrQueryProcessor::executeQuery().
@@ -535,7 +535,7 @@ function islandora_solr_check_sortable($solr_url = NULL, $field = NULL) {
  *   Returns TRUE if the context is the search results page. FALSE if not.
  */
 function islandora_solr_results_page($islandora_solr_query) {
-  
+
   if (isset($islandora_solr_query->display)) {
     return TRUE;
   }
