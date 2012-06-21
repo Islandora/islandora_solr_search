@@ -7,23 +7,34 @@ High priority
 
 - update README.txt
 - update hook_help functions
-- create islandora_solr.api.php
 - check if islandora_solr.install is doing the right things.
+- add a check to see if the context is the search results page. Currently we
+check if IslandoraSolrQueryProcessor::display is set, which is not ideal.
+
+- port date faceting from D6
+- add luke check for date fields (breaks if not)
+- more user friendly controls + advanced option
+- settings per date field (now same settings for all fields)
+- revert order of date facet fields?
 
 Normal Priority
 ---------------
 
+- add a parameter to the luke function to return a single document.
+- check if spaces could be replaced by + or %20 , which would simplify some functions (splitting strings)
+http://wiki.apache.org/solr/CommonQueryParameters#sort
 - don't hardcode php solr library, instead override it.
 - table display works but should be rendered through a template file.
 
-- check luke for multivalue on sort
-
+- add watchdog messages on error.
+- on query without filter parameters the delete link adds a ? or &
+- some snippets of markup could go in theme functions
 
 Low Priority
 ------------
 
 - expose result limit controls
-- put object url's in a global variable?
+- put object url's in one variable?
 - Boolean operators as query seem to choke
 
 - when changing primary display, keep &limit in the url or should it show the default? Displays can override this though.

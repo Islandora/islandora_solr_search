@@ -91,4 +91,20 @@ function islandora_solr_preprocess_islandora_solr(&$variables) {
     $variables[$key] = $value;
   }
 
+  foreach ($variables['results'] as $key => $value) {
+    $object = islandora_object_load($value['PID']['value']);
+    if ($object) {
+      if (isset($object['TN'])) {
+        $pid = $variables['results'][$key]['PID']['value'];
+        $variables['thumbnail_path'][$key] = url('islandora/object/' . $pid . '/datastream/TN');
+      }
+      else {
+        $variables['thumbnail_path'][$key] = $path . '/images/defaultimg.png';
+      }
+    }
+    else {
+      $variables['thumbnail_path'][$key] = $path . '/images/defaultimg.png';
+    }
+  }
+
 }

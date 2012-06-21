@@ -131,12 +131,15 @@ function islandora_solr_block_view($block_name = '') {
     // if a class is present, instantiate it and proceed.
     // The variable $_islandora_solr_queryclass (the IslandoraSolrQueryProcessor, containing
     // the Solr search result), is fed as an argument.
-    if (!empty($solr_blocks[$block_name]['class'])) {
-      $display_class = new $solr_blocks[$block_name]['class']();
-      $block_function = $solr_blocks[$block_name]['function'];
-      if (method_exists($display_class, $block_function)) {
-        // set content
-        $block['content'] = $display_class->$block_function($_islandora_solr_queryclass);
+    if (!empty($solr_blocks[$block_name]['class']) AND !empty($solr_blocks[$block_name]['function'])) {
+      // check if we're on a search results page
+      if (islandora_solr_results_page($_islandora_solr_queryclass)) {
+        $display_class = new $solr_blocks[$block_name]['class']();
+        $block_function = $solr_blocks[$block_name]['function'];
+        if (method_exists($display_class, $block_function)) {
+          // set content
+          $block['content'] = $display_class->$block_function($_islandora_solr_queryclass);
+        }
       }
       // otherwise, simply load the form.
     }
@@ -239,7 +242,7 @@ function islandora_solr_advanced_search_form($form, &$form_state) {
     $values = $form_state['values'];
   }
   // 2. populate with current query on search results page
-  elseif (class_exists('IslandoraSolrResults') AND (!isset($_islandora_solr_queryclass->internalSolrParams['type']) OR $_islandora_solr_queryclass->internalSolrParams['type'] != 'dismax')) {
+  elseif (islandora_solr_results_page($_islandora_solr_queryclass) == TRUE AND (!isset($_islandora_solr_queryclass->internalSolrParams['type']) OR $_islandora_solr_queryclass->internalSolrParams['type'] != 'dismax')) {
 
     // get current query
     $query = $_islandora_solr_queryclass->solrQuery;
@@ -477,7 +480,7 @@ function islandora_solr_display() {
   $output = '';
 
   // check if the page is dealing with search results
-  if (class_exists('IslandoraSolrResults')) {
+  if (islandora_solr_results_page($_islandora_solr_queryclass)) {
 
     // parameters set in url
     $params = isset($_islandora_solr_queryclass->internalSolrParams) ? $_islandora_solr_queryclass->internalSolrParams : array();
@@ -570,7 +573,7 @@ function islandora_solr_sort() {
   $output = '';
 
   // check if the page is dealing with search results
-  if (class_exists('IslandoraSolrResults')) {
+  if (islandora_solr_results_page($_islandora_solr_queryclass)) {
 
     // parameters set in url
     $params = isset($_islandora_solr_queryclass->internalSolrParams) ? $_islandora_solr_queryclass->internalSolrParams : array();

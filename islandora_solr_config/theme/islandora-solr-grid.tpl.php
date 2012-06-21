@@ -20,10 +20,11 @@
 <?php else: ?>
   <div class="islandora-solr-search-results">
     <div class="islandora-solr-grid clearfix">
+    <?php $row_result = 0; ?>
     <?php foreach($results as $result): ?>
       <dl class="solr-grid-field">
         <dt class="solr-grid-thumb">
-          <?php $image = '<img src="' . $base_url . '/islandora/object/' . $result['PID']['value'] . '/datastream/TN"' . ' onerror="this.src=\'' . $solr_default_img . '\'" />'; ?>
+          <?php $image = '<img src="' . $thumbnail_path[$row_result] . '" />'; ?>
           <?php print l($image, 'islandora/object/' . $result['PID']['value'], array('html' => TRUE)); ?>
         </dt>
         <dd class="solr-grid-caption">
@@ -31,6 +32,7 @@
           <?php print l($title, 'islandora/object/' . htmlspecialchars($result['PID']['value'], ENT_QUOTES, 'utf-8')); ?>
         </dd>
       </dl>
+    <?php $row_result++; ?>
     <?php endforeach; ?>
     </div>
   </div>

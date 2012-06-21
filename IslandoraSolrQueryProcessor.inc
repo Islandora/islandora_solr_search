@@ -162,6 +162,22 @@ class IslandoraSolrQueryProcessor {
       'hl.fragsize' => 400,
       'facet.field' => explode(',', $facet_fields), //comma separated list configured in the block config
     );
+
+    // check for date facets
+    if (variable_get('islandora_solr_facet_date' , NULL) != NULL) {
+      // set variables
+      $facet_date = variable_get('islandora_solr_facet_date' , NULL);
+      $facet_date = islandora_build_substitution_list($facet_date);
+      $facet_date = implode(",", array_keys($facet_date));
+      $params_date_facets = array(
+        'facet.date' => explode(',', $facet_date),
+        'facet.date.start' => variable_get('islandora_solr_facet_date_start' , 'NOW/YEAR-20YEARS'),
+        'facet.date.end' => variable_get('islandora_solr_facet_date_end' , 'NOW'),
+        'facet.date.gap' => variable_get('islandora_solr_facet_date_gap' , '+1YEAR'),
+      );
+      $params_array = array_merge($params_array, $params_date_facets);
+    }
+
     // add parameters
     $this->solrParams = array_merge($this->solrParams, $params_array);
 

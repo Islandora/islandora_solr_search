@@ -109,7 +109,7 @@ function islandora_solr_config_help($path, $arg) {
  * sized down in a responsive layout, the last row of results won't show
  * 'trailing' results.
  *
- * @param type $islandora_solr_query
+ * @param object $islandora_solr_query
  *   The IslandoraSolrQueryProcessor object which includes the current query
  *   settings but at the beginning of IslandoraSolrQueryProcessor::executeQuery().
  */

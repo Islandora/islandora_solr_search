@@ -53,12 +53,12 @@ function hook_islandora_solr_secondary_display() {
 }
 
 /**
- * Hook which passes the IslandoraSolrQuery object right before it
+ * Hook which passes the IslandoraSolrQueryProcessor object right before it
  * connects to Solr and executes it. This is a hook to call when you want to
  * make 'last minute' changes.
  *
  * @param type $islandora_solr_query
- *   The IslandoraSolrQuery object which includes the current query
+ *   The IslandoraSolrQueryProcessor object which includes the current query
  *   settings but at the beginning of IslandoraSolrQuery::executeQuery().
  */
 function hook_islandora_solr_query($islandora_solr_query) {
