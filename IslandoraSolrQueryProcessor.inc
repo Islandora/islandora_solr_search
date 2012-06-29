@@ -7,7 +7,7 @@
  */
 
 DEFINE('SOLR_SEARCH_PATH','islandora/solr/search');
-DEFINE('SOLR_BASE_QUERY','timestamp:[* TO NOW]');
+DEFINE('SOLR_BASE_QUERY','*:*');
 
 /**
  * Islandora Solr Query Processor
