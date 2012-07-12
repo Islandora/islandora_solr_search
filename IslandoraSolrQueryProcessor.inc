@@ -195,6 +195,9 @@ class IslandoraSolrQueryProcessor {
     
     // set filter parameters - both from url and admin settings.
     if (is_array($this->internalSolrParams['f'])) {
+      foreach ($this->internalSolrParams['f'] as $key => $value) {
+        $this->internalSolrParams['f'][$key] = urldecode(restoreSlashes($value));
+      }
       $this->solrParams['fq'] = $this->internalSolrParams['f'];
       if (!empty($base_filters)) {
         $this->solrParams['fq'] = array_merge($this->internalSolrParams['f'], $base_filters);
