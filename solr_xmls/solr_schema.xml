@@ -466,7 +466,7 @@
             multiValued="false"/>     
 
         <field name="yearPublished" type="text" indexed="true" stored="true" multiValued="true"/>
-        <field name="OCR.OCR" type="text" indexed="true" stored="false" multiValued="true"/>
+        <field name="OCR.OCR" type="text" indexed="true" stored="true" multiValued="true"/>
         
         <field name="author" type="string" maxChars="300" indexed="true" stored="true"
             multiValued="true"/>

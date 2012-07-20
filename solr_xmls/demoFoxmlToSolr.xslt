@@ -124,15 +124,138 @@
             </field>
         </xsl:for-each>
 
+        <!-- FIX RDF required for searching within books in the bookviewer
+        and more consitent rels indexing-->
+                
         <xsl:for-each
-            select="foxml:datastream[@ID='RELS-EXT']/foxml:datastreamVersion[last()]/foxml:xmlContent//rdf:description/*">
+            select="foxml:datastream[@ID='RELS-EXT']/foxml:datastreamVersion[last()]/foxml:xmlContent//rdf:Description/*">
+            <xsl:variable name="fieldName" select="local-name()"/><!--get the fieldname minus the namespace and colon-->
             <field>
                 <xsl:attribute name="name">
-                    <xsl:value-of select="concat('rels.', substring-after(name(),':'))"/>
+                    <xsl:value-of select="concat('rels.', $fieldName)"/>
                 </xsl:attribute>
-                <xsl:value-of select="@rdf:resource"/>
+                <xsl:value-of select="@rdf:resource"/><xsl:value-of select="text()"/><!--we shouldn't have an element that is both rdf resource and text so we just ask for both, one should be empty-->
             </field>
         </xsl:for-each>
+        
+        <!-- if you have migrated content from Fedora 2 you may need to uncomment this to index fedora 2 rdf-->
+        <!--<xsl:for-each
+            select="foxml:datastream[@ID='RELS-EXT']/foxml:datastreamVersion[last()]/foxml:xmlContent//rdf:description/*">
+            <xsl:variable name="fieldName" select="local-name()"/>
+            <field>
+                <xsl:attribute name="name">
+                    <xsl:value-of select="concat('rels.', $fieldName)"/>
+                </xsl:attribute>
+                <xsl:value-of select="@rdf:resource"/><xsl:value-of select="text()"/>
+            </field>
+        </xsl:for-each>-->
+        
+         <!-- get the mods of the parent book if this object is a pageCmodel object.
+         This is only required if you are using the iaBookviewer and want to index
+         the book mods at the page level for searching This does not affect searching from
+         within the bookviewer itself ********************************-->
+        
+        <xsl:variable name="thisCurrentCModel">
+            <xsl:value-of select="foxml:datastream[@ID='RELS-EXT']/foxml:datastreamVersion[last()]/foxml:xmlContent//rdf:Description/fedora-model:hasModel/@rdf:resource"/>
+        </xsl:variable>
+        <xsl:if test="$thisCurrentCModel = 'info:fedora/islandora:pageCModel'">
+            <!-- get the parent pid-->
+            <xsl:variable name="Book_Pid">
+                <xsl:value-of select="foxml:datastream[@ID='RELS-EXT']/foxml:datastreamVersion[last()]/foxml:xmlContent//rdf:Description/rel:isMemberOf/@rdf:resource"/>
+            </xsl:variable>
+            <field>
+                <xsl:attribute name="name">PARENT_pid</xsl:attribute>
+                <xsl:value-of select="substring($Book_Pid,13)"/>
+            </field>
+            <xsl:variable name="PARENT_MODS"
+                select="islandora-exts:getXMLDatastreamASNodeList(substring($Book_Pid,13), $REPOSITORYNAME, 'MODS', $FEDORASOAP, $FEDORAUSER, $FEDORAPASS, $TRUSTSTOREPATH, $TRUSTSTOREPASS)"/>
+            
+            <!--<xsl:variable name="PARENT_MODS" select="document(concat($PROT, '://', $LOCALFEDORAUSERNAME, ':', $LOCALFEDORAPASSWORD, '@',
+                $HOST, ':', $PORT, '/fedora/objects/', substring($Book_Pid,13), '/datastreams/', 'MODS', '/content'))"/>-->
+            <xsl:for-each select="$PARENT_MODS//mods:title">
+                <field>
+                    <xsl:attribute name="name">
+                        <xsl:value-of select="concat('PARENT_', local-name())"/>
+                    </xsl:attribute>
+                    <xsl:value-of select="normalize-space(text())"/>
+                </field>
+            </xsl:for-each>   
+            <xsl:for-each select="$PARENT_MODS//mods:originInfo/mods:dateIssued">
+                <field>
+                    <xsl:attribute name="name">
+                        <xsl:value-of select="concat('PARENT_', local-name())"/>
+                    </xsl:attribute>
+                    <xsl:value-of select="normalize-space(text())"/>
+                </field>
+            </xsl:for-each>   
+            <xsl:for-each select="$PARENT_MODS//mods:genre">
+                <field>
+                    <xsl:attribute name="name">
+                        <xsl:value-of select="concat('PARENT_', local-name())"/>
+                    </xsl:attribute>
+                    <xsl:value-of select="normalize-space(text())"/>
+                </field>
+            </xsl:for-each>   
+            <xsl:for-each select="$PARENT_MODS//mods:subject/mods:name/mods:namePart/*">
+                <xsl:if test="text() [normalize-space(.) ]">
+                    <!--don't bother with empty space-->
+                    <field>
+                        <xsl:attribute name="name">
+                            <xsl:value-of select="concat('PARENT_', 'subject')"/>
+                        </xsl:attribute>
+                        <xsl:value-of select="normalize-space(text())"/>
+                    </field>
+                </xsl:if>                
+            </xsl:for-each>
+            <xsl:for-each select="$PARENT_MODS//mods:topic">
+                <xsl:if test="text() [normalize-space(.) ]">
+                    <!--don't bother with empty space-->
+                    <field>
+                        <xsl:attribute name="name">
+                            <xsl:value-of select="concat('PARENT_', 'topic')"/>
+                        </xsl:attribute>
+                        <xsl:value-of select="normalize-space(text())"/>
+                    </field>
+                </xsl:if>                
+            </xsl:for-each>
+            
+            <xsl:for-each select="$PARENT_MODS//mods:geographic">
+                <xsl:if test="text() [normalize-space(.) ]">
+                    <!--don't bother with empty space-->
+                    <field>
+                        <xsl:attribute name="name">
+                            <xsl:value-of select="concat('PARENT_', 'geographic')"/>
+                        </xsl:attribute>
+                        <xsl:value-of select="normalize-space(text())"/>
+                    </field>
+                </xsl:if>                
+            </xsl:for-each>
+            <xsl:for-each select="$PARENT_MODS//mods:subject/mods:name/mods:namePart/*">
+                <xsl:if test="text() [normalize-space(.) ]">
+                    <!--don't bother with empty space-->
+                    <field>
+                        <xsl:attribute name="name">
+                            <xsl:value-of select="concat('PARENT_', 'subject')"/>
+                        </xsl:attribute>
+                        <xsl:value-of select="normalize-space(text())"/>
+                    </field>
+                </xsl:if>
+                
+            </xsl:for-each>
+            <xsl:for-each select="$PARENT_MODS//mods:part/mods:detail/*">
+                <xsl:variable name="TYPE">
+                    <xsl:value-of select="../@type"/>
+                </xsl:variable>
+                <field>
+                    <xsl:attribute name="name">
+                        <xsl:value-of select="concat('PARENT_', $TYPE)"/>
+                    </xsl:attribute>
+                    <xsl:value-of select="."/>
+                </field>
+            </xsl:for-each>   
+        </xsl:if>
+            
+            <!--************************END PAGE PARENT MODS ***********************************************************-->
 
         <!--*************************************************************full text************************************************************************************-->
 
