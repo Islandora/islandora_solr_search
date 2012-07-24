@@ -635,10 +635,13 @@ class IslandoraSolrResults {
           $list_title = $this->facetFieldArray[$facet_key];
 
           // check if facet value amount is larger than the initial limit
-          $split_facet = $facet_count > $initial_limit AND
-              $initial_limit < $facet_limit AND
-              $initial_limit > $facet_min_count;
-
+          if ($facet_count > $initial_limit AND $initial_limit < $facet_limit AND $initial_limit > $facet_min_count) {
+            $split_facet = TRUE;
+          }
+          else {
+            $split_facet = FALSE;
+          }
+          
           if ($split_facet) {
             $show_more = TRUE; //There exists a split array...
             $list_items_hidden = array_slice($list_items, $initial_limit);
@@ -721,7 +724,7 @@ class IslandoraSolrResults {
     else {
       // @TODO: Should be changed to format_string for Drupal 7
       // @TODO: does this check for exclude filters? -PID:"foo"
-      $filter = $key . ':"' . replace_slashes($value) . '"'; // PID:"foo"
+      $filter = $key . ':"' . $value . '"'; // PID:"foo"
     }
 
     //FIXME:  This isn't quite right...  It can make sense to facet on
