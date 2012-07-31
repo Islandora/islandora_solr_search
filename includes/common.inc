@@ -7,7 +7,6 @@
 
 $values = array("/", "+");
 
-
 /**
  * Initialize a pager for theme('pager') without running an SQL query.
  *
@@ -36,7 +35,7 @@ function islandora_solr_pager_init($total, $limit = 10, $element = 0) {
   // We calculate the total of pages as ceil(items / limit).
   $pager_total_items[$element] = $total;
   $pager_total[$element] = ceil($pager_total_items[$element] / $limit);
-  $pager_page_array[$element] = max(0, min((int)$pager_page_array[$element], ((int)$pager_total[$element]) - 1));
+  $pager_page_array[$element] = max(0, min((int) $pager_page_array[$element], ((int) $pager_total[$element]) - 1));
 
   // return the current position
   return $pager_page_array[$element];
@@ -65,7 +64,6 @@ function replace_slashes($str) {
   $values = array("/", "+");
   return str_replace($values, $replacements, $str); // reverse of above
 }
-
 
 /**
  * A better explode method allows quotes in the returned strings. Taken from
@@ -107,7 +105,7 @@ function lesser_escape($value) {
   // Zac removed the quotation mark and whitespace from this list.
   // a) Spaces in our search strings don't need escaping
   // b) We want to allow users to use quotation marks to indicate multi-word phrases
- //  (alan) pulled the asterisk from excaping to allow wild cards
+  //  (alan) pulled the asterisk from excaping to allow wild cards
   $pattern = '/(\+|-|&&|\|\||!|\(|\)|\{|}|\[|]|\^|~|\?|:|\\\)/';
   $replace = '\\\$1';
 
@@ -122,7 +120,6 @@ function solr_escape($facets) {
     $tmp = lesser_escape(trim($tmp));
 
     $return_facets[] = $tmp . drupal_substr($facet, strpos($facet, ':"'), drupal_strlen($facet));
-
   }
   return $return_facets;
 }
@@ -142,8 +139,10 @@ function islandora_build_substitution_list($raw_field_list) {
     if ($line) {
       $line_array = explode('~', $line);
       $key = trim($line_array[0]);
-      $value = trim($line_array[1]);
-      if (!$value) {
+      if (count($line_array) > 1) {
+        $value = trim($line_array[1]);
+      }
+      else {
         $value = $key;
       }
       $facet_array[$key] = $value;

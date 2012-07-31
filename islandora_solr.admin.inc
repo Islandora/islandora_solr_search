@@ -404,10 +404,10 @@ function islandora_solr_admin_settings($form, &$form_state) {
   );
   $form['query_defaults']['islandora_solr_namespace_restriction'] = array(
     '#type' => 'textfield',
-    '#title' => t('Limit results to namespace'),
-    '#size' => 5,
+    '#title' => t('Limit results to specific namespaces'),
+    '#size' => 30,
     '#default_value' => variable_get('islandora_solr_namespace_restriction', ''),
-    '#description' => t("Enter a namespace ie 'demo' to restrict results to PIDs within that namespace."),
+    '#description' => t("Enter a space or comma-separated list of namespaces ie 'demo, default' to restrict results to PIDs within those namespaces."),
   );
   $form['query_defaults']['islandora_solr_base_query'] = array(
     '#type' => 'textfield',

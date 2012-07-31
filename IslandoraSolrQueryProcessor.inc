@@ -199,10 +199,15 @@ class IslandoraSolrQueryProcessor {
     }
 
 
-    // restrict results based on specified namespace
-    $namespace = trim(variable_get('islandora_solr_namespace_restriction', ''));
-    if ($namespace) {
-      $this->solrParams['fq'][] = "PID:$namespace\:*";
+    // restrict results based on specified namespaces
+    $namespace_list = trim(variable_get('islandora_solr_namespace_restriction', ''));
+    if ($namespace_list) {
+      $namespaces = preg_split('/[,|\s]/', $namespace_list);
+      $namespace_array = array();
+      foreach (array_filter($namespaces) as $namespace) {
+        $namespace_array[] = "PID:$namespace\:*";
+      }
+      $this->solrParams['fq'][] = implode(' OR ', $namespace_array);
     }
 
     // if no qf fields are specified in the requestHandler a default list is supplied here for dismax searches
