@@ -546,7 +546,7 @@ function islandora_solr_search($query = NULL) {
     unset($params['display']);
   }
   
-
+  
   // Build and execute Apache Solr query
   $queryResult = $queryClass->buildAndExecuteQuery($query, $params);
 
