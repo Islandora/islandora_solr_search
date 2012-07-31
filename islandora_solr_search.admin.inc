@@ -195,6 +195,7 @@ function islandora_solr_admin_settings(&$form_state) {
   );
 
 
+  // Display settings
   $form['default_display_settings'] = array(
     '#type' => 'fieldset',
     '#title' => t('Default display settings'),
@@ -231,14 +232,51 @@ function islandora_solr_admin_settings(&$form_state) {
     '#title' => t('Results per page'),
     '#size' => 5,
     '#description' => t('The number of results to show per page.'),
-    '#default_value' => variable_get('islandora_solr_search_num_of_results', '20'),
+    '#default_value' => variable_get('islandora_solr_search_num_of_results', '25'),
   );
+  $form['default_display_settings']['exposed_limit'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Exposed results per page'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+  );
+  $form['default_display_settings']['exposed_limit']['islandora_solr_search_limit_results_exposed'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Exposed results per page'),
+    '#default_value' => variable_get('islandora_solr_search_limit_results_exposed', '10, 25, 50, 100'),
+    '#description' => t("Comma separated values (integers) to expose links in a block which provides the user the ability to limit search results manually.<br />
+    <strong>Note:</strong><em> Some display profiles might override this value.</em> "),
+    '#wysiwyg' => FALSE,
+  );
+  $form['default_display_settings']['exposed_limit']['islandora_solr_search_limit_results_exposed_styling'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Horizontal styling'),
+    '#return_value' => 1,
+    '#default_value' => variable_get('islandora_solr_search_limit_results_exposed_styling', 0),
+    '#description' => t('Styles the exposed result limit links horizontally with separators.'),
+  );
+  
+  
+  // Sort
+  $form['sort'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Sort'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+  );
+  $form['sort']['islandora_solr_search_sort_terms'] = array(
+    '#type' => 'textarea',
+    '#title' => t('Sort terms'),
+    '#description' => t("Indicate what fields should appear in the <strong>Islandora sort block</strong>.<br />
+      Enter terms on separate lines using the following pattern: field [tilde] preferred label. ie <strong>dc.title ~ Title</strong><br />
+      Review the schema.xml to see what terms are available. A list of the fields available when using the schema.xml packaged with the Islandora Solr
+      module is available in Islandora's online documentation. <br /><strong>Important:</strong> Not all solr fields can be used for sorting. For more info, check the <a href='!sorturl' target='_blank'>solr documentation</a> on sorting.", array('!sorturl' => 'http://wiki.apache.org/solr/CommonQueryParameters#sort')),
+    '#default_value' => variable_get('islandora_solr_search_sort_terms', 'score ~ Relevance, PID ~ PID'),
+    '#wysiwyg' => FALSE,
+  );
+  
 
-  
-  
-  
-
-  
+  // Facets
   $form['facet_settings'] = array(
     '#type' => 'fieldset',
     '#title' => t('Facet settings'),
@@ -283,7 +321,7 @@ function islandora_solr_admin_settings(&$form_state) {
     '#type' => 'fieldset',
     '#title' => t('Date facets'),
     '#collapsible' => TRUE,
-    '#collapsed' => TRUE,
+    '#collapsed' => FALSE,
   );
   $form['facet_settings']['facet_dates']['islandora_solr_facet_date'] = array(
     '#type' => 'textarea',
@@ -291,6 +329,13 @@ function islandora_solr_admin_settings(&$form_state) {
     '#description' => t("Indicate which date field will appear in the <strong>Islandora Facet Block</strong>.<br />
       Enter terms on separate lines using the following pattern: field [tilde] preferred label. ie <strong>dc.date ~ Date</strong> "),
     '#default_value' => variable_get('islandora_solr_facet_date' , NULL),
+  );
+  $form['facet_settings']['facet_dates']['islandora_solr_facet_date_gap_variable'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Variable range gap'),
+    '#return_value' => 1,
+    '#default_value' => variable_get('islandora_solr_facet_date_gap_variable', 0),
+    '#description' => t('When checked, the following date range settings will be used as a default. If a date range is filtered down, a new date range gap will be calculated and applied. When unchecked the following settings provide fixed range gaps.'),
   );
   $form['facet_settings']['facet_dates']['islandora_solr_facet_date_start'] = array(
     '#type' => 'textfield',
@@ -317,10 +362,80 @@ function islandora_solr_admin_settings(&$form_state) {
     '#default_value' => variable_get('islandora_solr_facet_date_format' , 'Y'),
   );
   
+  // Range slider
+  $form['facet_settings']['facet_dates']['range_slider'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Date range slider'),
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
+  );
+  // only expose when jquery_ui is installed
+  if (module_exists('jquery_ui') AND jquery_ui_get_version() >= 1.7) {
+    $form['facet_settings']['facet_dates']['range_slider']['islandora_solr_range_slider_enabled'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Enable range slider'),
+      '#return_value' => 1,
+      '#default_value' => variable_get('islandora_solr_range_slider_enabled', 0),
+      '#description' => t('When checked, the normal range facet will be replaced by a date slider widget.'),
+    );
+    $form['facet_settings']['facet_dates']['range_slider']['islandora_solr_range_slider_color'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Slider color'),
+      '#description' => t('A color for the range slider. Defaults to #edc240'),
+      '#default_value' => variable_get('islandora_solr_range_slider_color' , '#edc240'),
+    );
+  }
+  else {
+    $form['facet_settings']['facet_dates']['range_slider']['islandora_solr_date_filter_not_available'] = array(
+      '#type' => 'markup',
+      '#value' => t('The date range slider requires jQuery UI 1.7.3 or higher. Please download and enable the <a href="!jqueryupdate">jQuery Update</a> and <a href="!jqueryui">jQuery UI</a> modules and include jQuery UI 1.7.3.', array('!jqueryupdate' => 'http://drupal.org/project/jquery_update', '!jqueryui' => 'http://drupal.org/project/jquery_ui')),
+      '#prefix' => '<p>',
+      '#suffix' => '</p>',
+    );
+  }
+
+
+  // Date filter
+  $form['facet_settings']['facet_dates']['date_filter'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Date filter'),
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
+  );
+  $form['facet_settings']['facet_dates']['date_filter']['islandora_solr_date_filter_enabled'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Enable date range filter'),
+    '#return_value' => 1,
+    '#default_value' => variable_get('islandora_solr_date_filter_enabled', 0),
+    '#description' => t('When checked, a date range filter will become available underneath the date range facets. The date range filter includes a <em>from date</em> and a <em>to date</em> textfield. If the jquery ui module is installed and enabled, it will provide a calendar widget.'),
+  );
+  // only expose when jquery_ui is installed
+  if (module_exists('jquery_ui')) {
+    $form['facet_settings']['facet_dates']['date_filter']['islandora_solr_search_datepicker_range'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Years back and forward'),
+      '#default_value' => variable_get('islandora_solr_search_datepicker_range', '-100:+3'),
+      '#size' => 10,
+      '#maxsize' => 10,
+      // @TODO: in D7 more options are possible because of jquery ui 1.8 in D7 vs 1.6 in D6
+      '#description' => t('Number of years to go back and forward in the datepicker popup dropdown. Values: either relative to today\'s year (-nn:+nn) or absolute (nnnn:nnnn).'),
+    );
+  }
+  else {
+    $form['facet_settings']['facet_dates']['date_filter']['islandora_solr_date_filter_not_available'] = array(
+      '#type' => 'markup',
+      '#value' => t('In order to use a calendar popup with the date filter you need to install the <a href="!jqueryui">jQuery UI</a> module.', array('!jqueryui', 'http://drupal.org/project/jquery_ui')),
+      '#prefix' => '<p>',
+      '#suffix' => '</p>',
+    );
+  }
+  
+
   
   
   
   
+  // Advanced search block
   $form['advanced_search_block'] = array(
     '#type' => 'fieldset',
     '#title' => t('Advanced search block'),
@@ -348,6 +463,7 @@ function islandora_solr_admin_settings(&$form_state) {
 
   
   
+  // Query defaults
   $form['query_defaults'] = array(
     '#type' => 'fieldset',
     '#title' => t('Query defaults'),
@@ -381,7 +497,7 @@ function islandora_solr_admin_settings(&$form_state) {
   );
   
   
-  
+  // Debug
   $form['islandora_solr_search_debug_mode'] = array(
     '#type' => 'checkbox',
     '#title' => t('Debug Mode?'),
@@ -578,6 +694,18 @@ function callback_prep() {
  */
 function islandora_solr_admin_settings_validate($form, &$form_state) {
   $form_state['values']['islandora_solr_search_namespace_restriction'] = preg_replace('/:$/', '', $form_state['values']['islandora_solr_search_namespace_restriction']);
+  
+  $limit_results_exposed = explode(',', $form_state['values']['islandora_solr_search_limit_results_exposed']);
+
+  foreach ($limit_results_exposed as $limit) {
+    $limit = trim($limit);
+    if (!is_numeric($limit)) {
+      form_set_error('islandora_solr_search_limit_results_exposed', t('Exposed results must be numeric.'));
+    }
+    if (strpos($limit, '.') OR strpos($limit, ',')) {
+      form_set_error('islandora_solr_search_limit_results_exposed', t('Exposed results cannot be decimals.'));
+    }
+  }
 }
 
 /**

@@ -336,16 +336,27 @@ class IslandoraSolrResults {
         // split the filter into field and value
         $filter_split = explode(':', $filter, 2);
         // trim brackets
-        $filter_split[1] = trim($filter_split[1], "\"");
-
+//        $filter_split[1] = trim($filter_split[1], "\"");
+        $filter_value = trim($filter_split[1], "\"");
+        
+        
         // if value is date
         if (isset($solrQueryProcessor->solrParams['facet.date']) AND in_array(ltrim($filter_split[0], '-'), $solrQueryProcessor->solrParams['facet.date'])) {
           // split range filter string to return formatted date values
-          $filter_str = $filter_split[1];
+          $filter_str = $filter_value;
           $filter_str = trim($filter_str, '[');
           $filter_str = trim($filter_str, ']');
           $filter_array = explode(' TO ', $filter_str);
-          $filter_split[1] = format_date(strtotime(trim($filter_array[0])) + (60 * 60 * 24), 'custom', $format) . ' - ' . format_date(strtotime(trim($filter_array[1])) + (60 * 60 * 24), 'custom', $format);
+          
+          $from_str = (strpos($filter_array[0], '*') !== FALSE) ? '*' : format_date(strtotime(trim($filter_array[0])) + 1, 'custom', $format, 0);
+          $to_str = (strpos($filter_array[1], '*') !== FALSE) ? '*' : format_date(strtotime(trim($filter_array[1])), 'custom', $format, 0);
+          
+          if ($from_str == $to_str) {
+            $filter_value = $from_str;
+          }
+          else {
+            $filter_value = $from_str . ' - ' . $to_str;
+          }
         }
 
         // pull out filter (for exclude link)
@@ -372,7 +383,7 @@ class IslandoraSolrResults {
 
         // create link
         // we're not using l() because of active classes: http://drupal.org/node/41595
-        $filter_list[] = '<a' . drupal_attributes($attr_minus) . '>(-)</a> ' . $symbol . ' ' . $filter_split[1];
+        $filter_list[] = '<a' . drupal_attributes($attr_minus) . '>(-)</a> ' . $symbol . ' ' . $filter_value;
       }
       // return filter list
       $output .= '<div class="islandora_solr_search_filter_wrap">';
@@ -424,16 +435,25 @@ class IslandoraSolrResults {
         // split the filter into field and value
         $filter_split = explode(':', $filter, 2);
         // trim brackets
-        $filter_split[1] = trim($filter_split[1], "\"");
+        $filter_value = trim($filter_split[1], "\"");
 
         // if value is date
         if (isset($solrQueryProcessor->solrParams['facet.date']) AND in_array(ltrim($filter_split[0], '-'), $solrQueryProcessor->solrParams['facet.date'])) {
           // split range filter string to return formatted date values
-          $filter_str = $filter_split[1];
+          $filter_str = $filter_value;
           $filter_str = trim($filter_str, '[');
           $filter_str = trim($filter_str, ']');
           $filter_array = explode(' TO ', $filter_str);
-          $filter_split[1] = format_date(strtotime(trim($filter_array[0])) + (60 * 60 * 24), 'custom', $format) . ' - ' . format_date(strtotime(trim($filter_array[1])) + (60 * 60 * 24), 'custom', $format);
+          
+          $from_str = (strpos($filter_array[0], '*') !== FALSE) ? '*' : format_date(strtotime(trim($filter_array[0])) + 1, 'custom', $format, 0);
+          $to_str = (strpos($filter_array[1], '*') !== FALSE) ? '*' : format_date(strtotime(trim($filter_array[1])), 'custom', $format, 0);
+          
+          if ($from_str == $to_str) {
+            $filter_value = $from_str;
+          }
+          else {
+            $filter_value = $from_str . ' - ' . $to_str;
+          }
         }
 
         // increment filter array with current filter (for breadcrumb link)
@@ -479,7 +499,7 @@ class IslandoraSolrResults {
 
         // create links
         // we're not using l() because of active classes: http://drupal.org/node/41595
-        $breadcrumb[] = '<a' . drupal_attributes($attr) . '>' . $filter_split[1] . '</a>'
+        $breadcrumb[] = '<a' . drupal_attributes($attr) . '>' . $filter_value . '</a>'
               . '<span class="islandora_solr_search_breadcrumb_super"> <a' . drupal_attributes($attr_x) . '>(' . t('x') . ')</a></span>';
 
       }
@@ -598,9 +618,11 @@ class IslandoraSolrResults {
    * @return string
    */
   function displayFacets($solrQueryProcessor) {
+
     // set variables
     $facet_output = $output = '';
-
+    $range_slider_key = 0;
+    $date_filter_key = 0;
     // shown limit
     $facet_min_count = 1;
     $min_result = variable_get('islandora_solr_search_block_facet_min_count', '2');
@@ -616,11 +638,20 @@ class IslandoraSolrResults {
     
     // get date facet values
     $date_facets = isset($solrQueryProcessor->solrResult->facet_counts->facet_dates) ? $solrQueryProcessor->solrResult->facet_counts->facet_dates : array();
+
+    // check if we need to set a variable range gap
+    if (variable_get('islandora_solr_facet_date_gap_variable', 0) == 1 AND isset($solrQueryProcessor->solrResult->facet_counts->facet_dates)) {
+      $variable_range_data = $this->variableRangeGap($solrQueryProcessor);
+      $date_facets = $variable_range_data['date_facets'];
+      $solr_call = $variable_range_data['solr_call'];
+    }
+    
     // object to json
     $date_facets_json  = json_encode($date_facets);
     // json to array
     $date_facets_arr = json_decode($date_facets_json, true);
-    // clean up facet dates array
+
+    // get date format
     $format = variable_get('islandora_solr_facet_date_format' , 'Y');
     // set variable
     $date_facets = array();
@@ -628,12 +659,12 @@ class IslandoraSolrResults {
     foreach ($date_facets_arr as $key => $fields) {
       // loop over each field
       $date_facets[$key] = array();
-      foreach ($fields as $date => $number) {
+      foreach ($fields as $date => $bucket_size) {
         // facet.date includes other values in the facet results - excluding these
         // we're turning the facet results in an array with multiple values
         if (!in_array($date, array('gap', 'end', 'other', 'hardend', 'include'))) {
-          // set number or documents
-          $date_facets[$key][$date]['number'] = $number;
+          // set bucket size or documents
+          $date_facets[$key][$date]['bucket_size'] = $bucket_size;
           // logic to get the next range key (next date)
           $field_keys = array_keys($fields);
           $field_key = array_search($date, $field_keys);
@@ -642,7 +673,15 @@ class IslandoraSolrResults {
           // set date range filter for facet url
           $date_facets[$key][$date]['range'] = '[' . $date . ' TO ' . $date_next . ']';
           // set formatted value for facet link
-          $date_facets[$key][$date]['value'] = format_date(strtotime(trim($date)) + (60 * 60 * 24), 'custom', $format) . ' - ' . format_date(strtotime(trim($date_next)) + (60 * 60 * 24), 'custom', $format);
+          $from_str = format_date(strtotime(trim($date)) + 1, 'custom', $format, 0);
+          $to_str = format_date(strtotime(trim($date_next)), 'custom', $format, 0);
+          if ($from_str == $to_str) {
+            $filter_value = $from_str;
+          }
+          else {
+            $filter_value = $from_str . ' - ' . $to_str;
+          }
+          $date_facets[$key][$date]['value'] = $filter_value;
         }
       }
     }
@@ -665,7 +704,8 @@ class IslandoraSolrResults {
       $list_title = NULL;
 
       // if the facet contains the minimum amount of values
-      if (count($facet) >= $facet_min_count) {
+      // @TODO: added the range slider rule, but should be solved more elegantly
+      if (count($facet) >= $facet_min_count AND !(variable_get('islandora_solr_range_slider_enabled', 0) == 1 AND array_key_exists($facet_key, $date_facets_arr))) {
         // set facet count
         $facet_count = 0;
 
@@ -712,15 +752,173 @@ class IslandoraSolrResults {
             $facet_output .= theme('item_list', $list_items_hidden, NULL, $list_type, $list_attributes);
             $facet_output .= '</div>';
           }
-
+          
           $facet_output .='</div>'; //div.islandora_solr_search_facet
         }
       }
+
+      // check if we need range slider.
+      if (variable_get('islandora_solr_range_slider_enabled', 0) == 1 AND array_key_exists($facet_key, $date_facets_arr) AND $solrQueryProcessor->solrResult->response->numFound > 0 AND module_exists('jquery_ui')  AND jquery_ui_get_version() >= 1.7) {
+        // opening facet div // @TODO: this should go in theme function
+        $facet_output .='<div class="islandora_solr_search_range_slider">';
+        // add title
+        $facet_output .='<h3>' . $this->facetFieldArray[$facet_key] . '</h3>';
+        
+        // facet data
+        // @TODO: this is pretty bad code. Clean this up.
+        // From here
+        $facet_data = $date_facets_arr[$facet_key];
+        $facet_gap = $facet_data['gap'];
+        $facet_end = $facet_data['end'];
+        unset($facet_data['gap']);
+        unset($facet_data['end']); // 'gap', 'end', 'other', 'hardend', 'include'
+        unset($facet_data['other']);
+        unset($facet_data['hardend']);
+        unset($facet_data['include']);
+        
+        // strip empty buckets left and right when no date filters are set
+        if (isset($solr_call) AND !in_array($facet_key, $solr_call)) {
+          foreach ($facet_data as $key => $value) {
+            if ($value == 0) {
+              unset($facet_data[$key]);
+            }
+            else {
+              break;
+            }
+          }
+          $facet_data = array_reverse($facet_data);
+          $end = array();
+
+          foreach ($facet_data as $date => $bucket_size) {
+            if ($bucket_size == 0) {
+              unset($facet_data[$date]);
+              $end = array('date' => $date, 'bucket_size' => $bucket_size);
+            }
+            else {
+              break;
+            }
+          }
+          $facet_data = array_reverse($facet_data);
+
+          // add end date
+          if (isset($end['bucket_size']) AND $end['bucket_size'] == 0) {
+            $end_date = $end['date'];
+            $facet_data[$end_date] = NULL;
+          }
+          else {
+            $facet_data[$facet_end] = NULL;
+          }
+        }
+        // do not strip empty buckets left and right when filters are set
+        else {
+          // add end date
+          $facet_data[$facet_end] = NULL;
+        }
+
+        // calculate gap
+        $calc_from = strtotime(key($facet_data));
+        next($facet_data);
+        $calc_to = strtotime(key($facet_data));
+        
+        // calculate difference between from and to date
+        $calc_diff = abs($calc_from - $calc_to);
+
+        // total difference in days
+        $calc_total_days = floor($calc_diff / 60 / 60 / 24);
+        
+        $gap = NULL;
+        if ($calc_total_days == 1) {
+          $gap = t('days');
+        }
+        elseif ($calc_total_days == 7) {
+          $gap = t('weeks');
+        }
+        elseif ($calc_total_days >= 28 AND $calc_total_days <= 32) {
+          $gap = t('months');
+        }
+        elseif ($calc_total_days >= 360 AND $calc_total_days <= 370) {
+          $gap = t('years');
+        }
+        elseif ($calc_total_days >= 720 AND $calc_total_days <= 740) {
+          $gap = t('2 years');
+        }
+        elseif ($calc_total_days >= 1800 AND $calc_total_days <= 1850) {
+          $gap = t('5 years');
+        }
+        elseif ($calc_total_days >= 3600 AND $calc_total_days <= 3700) {
+          $gap = t('decades');
+        }
+        elseif ($calc_total_days >= 36000 AND $calc_total_days <= 37000) {
+          $gap = t('centuries');
+        }
+        elseif ($calc_total_days >= 360000 AND $calc_total_days <= 370000) {
+          $gap = t('millennia');
+        }
+        
+        if (strpos($gap, t('year')) !== FALSE OR strpos($gap, t('decades')) !== FALSE OR strpos($gap, t('centuries')) !== FALSE OR strpos($gap, t('millennia')) !== FALSE) {
+          $date_format = 'Y';
+        }
+        elseif (strpos($gap, t('months')) !== FALSE) {
+          $date_format = 'M Y';
+        }
+        else {
+          $date_format = 'M j, Y';
+        }
+        
+        // create a nice array with our data
+        $data = array();
+        foreach ($facet_data as $date => $bucket_size) {
+          $format_date_str = format_date(strtotime(trim($date)) + 1, 'custom', $date_format, 0);
+          $format_date_str = str_replace(' ', '&nbsp;', $format_date_str);
+          $data[] = array(
+            'date' => $date,
+            'format_date' => $format_date_str,
+            'bucket_size' => $bucket_size,
+          );
+        }
+        
+        // add range slider color
+        $slider_color = variable_get('islandora_solr_range_slider_color', '#edc240');
+        // To here
+
+        // render form
+        $facet_output .= drupal_get_form('islandora_solr_search_range_slider_form_' . $range_slider_key, $range_slider_key, $facet_key, $data, $slider_color, $gap, $date_format);
+        $range_slider_key++;
+        $facet_output .='</div>';
+      }
+      
+      // add datefilter
+      if (variable_get('islandora_solr_date_filter_enabled', 0) == 1 AND array_key_exists($facet_key, $date_facets_arr) AND module_exists('jquery_ui') AND $solrQueryProcessor->solrResult->response->numFound > 0) {
+        // opening facet div // @TODO: this should go in theme function
+        $facet_output .='<div class="islandora_solr_search_date_filter">';
+
+        // @TODO: set title when the range slider isn't active
+        if (count($list_items) < $facet_min_count AND !(variable_get('islandora_solr_range_slider_enabled', 0) == 1 AND array_key_exists($facet_key, $date_facets_arr))) {
+          // add title
+          $facet_output .='<h3>' . $this->facetFieldArray[$facet_key] . '</h3>';
+        }
+
+        $facet_output .= drupal_get_form('islandora_solr_search_date_filter_form_' . $date_filter_key, $date_filter_key, $facet_key);
+        $date_filter_key++;
+        $facet_output .='</div>';
+      }
     }
 
-    if ($show_more) {
+    // include jquery ui datepicker
+    if ($date_filter_key > 0 AND module_exists('jquery_ui')) {
+      // include datepicker js
+      jquery_ui_add(array('ui.datepicker'));
+      // add datepicker css
+      drupal_add_css('sites/all/libraries/jquery.ui/themes/base/ui.all.css');
+      $date_range = variable_get('islandora_solr_search_datepicker_range', '-100:+3');
+      // add js settings
+      drupal_add_js(array('islandora_solr_search_datepicker_range' => trim($date_range)), 'setting');
+    }
+    
+    // add js for facets
+    if ($show_more OR $date_filter_key > 0) {
       // if there is at least one occurence of a split array, we add js to the page.
-      drupal_add_js(drupal_get_path('module', 'islandora_solr_search') . '/js/islandora_solr_search_shown_limit.js');
+      drupal_add_js(drupal_get_path('module', 'islandora_solr_search') . '/js/islandora_solr_search_facets.js');
     }
 
     //////////////////////////////////////////////////////////////////////////////////////
@@ -757,7 +955,7 @@ class IslandoraSolrResults {
       // set filter to include in url
       $filter = $key . ':' . $data['range'];
       // set number of found solr documents
-      $data = $data['number'];
+      $data = $data['bucket_size'];
       // don't include facet fields with a document count lower than the configured minimum
       if ($data < $min_result) {
         return;
@@ -824,6 +1022,229 @@ class IslandoraSolrResults {
       $facet_count++;
     }
   }
+
+  
+  
+  /**
+   * Calculates date ranges based on enabled date range filters. Based on the
+   * range it recalculates date range gaps and from/to dates.
+   * 
+   * @param object $solrQueryProcessor
+   *   current query object.
+   * @return array $date_facets
+   *   An array with the recalculated date range facets. If no filters are
+   *   present, this will return the default date range results.
+   */
+  function variableRangeGap($solrQueryProcessor) {
+    
+    // 1. gather info
+    // 2. calculate and render range gap
+    // 3. execute
+    // 4. prepare for return
+    // 5. return
+
+    // 1. gather info
+    $fq = isset($solrQueryProcessor->solrParams['fq']) ? $solrQueryProcessor->solrParams['fq'] : array();    
+    // get date facet values
+    $date_facets = isset($solrQueryProcessor->solrResult->facet_counts->facet_dates) ? $solrQueryProcessor->solrResult->facet_counts->facet_dates : array();
+    // object to json
+    $date_facets_json = json_encode($date_facets);
+    // json to array
+    $date_facets_arr = json_decode($date_facets_json, true);
+
+    // populate with terms that needed a second solr call to update facets
+    $solr_call = array();
+    
+    // loop over all date facets
+    foreach ($date_facets_arr as $term => $buckets) {
+        
+      $values = array();
+      // loop over all filters
+      foreach ($fq as $key => $filter) {
+        // check for enabled range filters
+        if (strpos($filter, $term) !== FALSE) {
+          // split the filter into field and value
+          $filter_split = explode(':', $filter, 2);
+          // trim brackets
+          $filter_split[1] = trim($filter_split[1], "\"");
+          // split range filter string to return formatted date values
+          $filter_str = $filter_split[1];
+          $filter_str = trim($filter_str, '[');
+          $filter_str = trim($filter_str, ']');
+          $filter_array = explode(' TO ', $filter_str);
+          // collect values in array: timestamp => ISO8601
+          $from_str = trim($filter_array[0]);
+          $to_str = trim($filter_array[1]);
+          $field = trim($filter_split[0], ' -');
+          
+          // if a star is given, we need to perform an extra query to find out
+          // what the minimum or maximum value is that 'star' would return.
+          if (strpos($from_str, '*') !== FALSE) {
+            $from_str = $this->findMinMaxValue($solrQueryProcessor, $field, 'asc');
+          }
+          if (strpos($to_str, '*') !== FALSE) {
+            $to_str = $this->findMinMaxValue($solrQueryProcessor, $field, 'desc');
+          }
+
+          $values['from'][strtotime(strtolower($from_str))] = $from_str;
+          $values['to'][strtotime(strtolower($to_str))] = $to_str;
+        }
+      }
+
+      // if the date facet field is found as at least one range filter, calculate gap
+      if (!empty($values)) {
+
+        // from max value & to min value
+        $from_unix = max(array_keys($values['from']));
+        $to_unix = min(array_keys($values['to']));
+
+        // if the from date is bigger than the to date, abort.
+        if ($from_unix >= $to_unix) {
+          continue;
+        }
+        
+        // get ISO8601 values
+        $from = $values['from'][$from_unix];
+        // if the hour is 00:00:00, subtract one second. If we always subtract
+        // one second we keep eating away seconds after every filter
+        if (strpos($from, '00:00:00') !== FALSE) {
+          $from .= '-1SECOND';
+        }
+        $to = $values['to'][$to_unix];
+        
+        // 2. calculate and render range gap
+        // calculate difference between from and to date
+        $diff = abs($from_unix - $to_unix);
+
+        // total difference in days
+        $total_days = floor($diff / 60 / 60 / 24);
+ 
+        // for maximum 15 buckets
+        // @TODO: make max buckets variable
+        // @TODO: fine tune this: it's not very precise.
+        if ($total_days <= 15) {
+          $gap = '+1DAY';
+        }
+        elseif ($total_days <= 105) {
+          $gap = '+7DAYS';
+        }
+        elseif ($total_days <= 450) {
+          $gap = '+1MONTH';
+        }
+        elseif ($total_days <= 5475) {
+          $gap = '+1YEAR';
+        }
+        elseif ($total_days <= 10950) {
+          $gap = '+2YEARS';
+        }
+        elseif ($total_days <= 18250) {
+          $gap = '+5YEARS';
+        }
+        elseif ($total_days <= 54750) {
+          $gap = '+10YEARS';
+        }
+        elseif ($total_days <= 547500) {
+          $gap = '+100YEARS';
+        }
+        elseif ($total_days <= 5475000) {
+          $gap = '+1000YEARS';
+        }
+
+        // update range facet values
+        // @TODO: try to find a way to clone this object, because it's passed by reference throughout the entire page call.
+        $solrQueryProcessor->solrParams["f.$term.facet.date.start"] = $from;
+        $solrQueryProcessor->solrParams["f.$term.facet.date.end"] = $to;
+        $solrQueryProcessor->solrParams["f.$term.facet.date.gap"] = $gap;
+        
+        // update variable
+        $solr_call[] = $term;
+      }
+    }
+
+    // 3. execute
+    // if an extra solr call is necessary
+    if (!empty($solr_call)) {
+      // new query processor class
+      $islandoraSolrQuery = new IslandoraSolrQueryProcessor();
+
+      // internal solr query
+      $islandoraSolrQuery->internalSolrQuery = $solrQueryProcessor->internalSolrQuery;
+      // add solr limit
+      $islandoraSolrQuery->solrLimit = 0;
+      // add solr start
+      $islandoraSolrQuery->solrStart = 0;
+      // add query (defaults to *:*)
+      $islandoraSolrQuery->solrQuery = $solrQueryProcessor->solrQuery;
+      // add solr parameters
+      $islandoraSolrQuery->solrParams = $solrQueryProcessor->solrParams;
+      // no need to include normal facets
+      unset($islandoraSolrQuery->solrParams['facet.field']);
+
+      // excecute query
+      $islandoraSolrQuery->executeQuery();
+
+      // 4. prepare for return
+      // solr results
+      $results = $islandoraSolrQuery->solrResult;
+      $raw_response = $results->getRawResponse();
+      $response_array = json_decode($raw_response, TRUE);
+
+      // update date_facets
+      $date_facets = $response_array['facet_counts']['facet_dates'];
+      
+    }
+
+    // 5. return
+    return array('date_facets' => $date_facets, 'solr_call' => $solr_call);
+  }
+  
+  
+  /**
+   * Finds the maximum or minimum value of a date field in a query. Called when
+   * one of the values in a date range filter equals to '*'.
+   * 
+   * @param object $solrQueryProcessor
+   *   current solr query object.
+   * @param string $field
+   *   solr field to sort on.
+   * @param string $order
+   *   sort order (asc or desc). Defaults to ascending.
+   * @return string
+   *   maximum or minimum value of a date field in the current query
+   */
+  function findMinMaxValue($solrQueryProcessor, $field, $order = 'asc') {
+
+    // new query processor class
+    $islandoraSolrQuery = new IslandoraSolrQueryProcessor();
+
+    // internal solr query
+    $islandoraSolrQuery->internalSolrQuery = $solrQueryProcessor->internalSolrQuery;
+    // add solr limit
+    $islandoraSolrQuery->solrLimit = 5;
+    // add solr start
+    $islandoraSolrQuery->solrStart = 0;
+    // add query (defaults to *:*)
+    $islandoraSolrQuery->solrQuery = $solrQueryProcessor->solrQuery;
+    // add solr parameters
+    $islandoraSolrQuery->solrParams = $solrQueryProcessor->solrParams;
+
+    // no need to include normal facets
+    unset($islandoraSolrQuery->solrParams['facet.field']);
+    // add the right sorting
+    $islandoraSolrQuery->solrParams['sort'] = $field . ' ' . $order;
+
+    // excecute query
+    $islandoraSolrQuery->executeQuery();
+
+    // solr results
+    $results = $islandoraSolrQuery->solrResult;
+    $raw_response = $results->getRawResponse();
+    $response_array = json_decode($raw_response, TRUE);
+
+    return $response_array['response']['docs'][0][$field];    
+  }
+  
+  
   
 
   
