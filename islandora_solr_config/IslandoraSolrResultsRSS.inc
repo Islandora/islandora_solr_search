@@ -102,9 +102,9 @@ class IslandoraSolrResultsRSS extends IslandoraSolrResults {
     $object_url = $base_url . '/fedora/repository/' . htmlspecialchars($doc['PID'], ENT_QUOTES, 'utf-8');
 
     // enclosure file url (thumbnail by default)
-    $dsid = $rss_item['enclosure_dsid'] ? $doc[$rss_item['enclosure_dsid']] : 'TN';
+    $dsid = $rss_item['enclosure_dsid'] ? $rss_item['enclosure_dsid'] : 'TN';
     $enclosure_url = $object_url . '/' . $dsid;
-    
+
     // set the variables to be rendered as elements in the <item> element
     $result = array();
     $result['title'] = $rss_item['title'] ? $doc[$rss_item['title']] : '';
