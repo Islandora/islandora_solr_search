@@ -329,6 +329,7 @@ function islandora_solr_admin_settings(&$form_state) {
     '#description' => t("Indicate which date field will appear in the <strong>Islandora Facet Block</strong>.<br />
       Enter terms on separate lines using the following pattern: field [tilde] preferred label. ie <strong>dc.date ~ Date</strong> "),
     '#default_value' => variable_get('islandora_solr_facet_date' , NULL),
+    '#wysiwyg' => FALSE,
   );
   $form['facet_settings']['facet_dates']['islandora_solr_facet_date_gap_variable'] = array(
     '#type' => 'checkbox',
