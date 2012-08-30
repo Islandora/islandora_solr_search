@@ -240,14 +240,13 @@ class IslandoraSolrQueryProcessor {
       $this->solrParams['fq'][] = "PID:$namespace\:*";
     }
 
-    // if no qf fields are specified in rthe requestHandler a default list is supplied here for dismax searches
+    // if no qf fields are specified in the requestHandler a default list is supplied here for dismax searches
     if (!variable_get('dismax_allowed', 0) && $this->internalSolrParams['type'] == "dismax") {
       $this->solrParams['qf'] = 'dc.title^5 dc.subject^2 dc.description^2 dc.creator^2 dc.contributor^1 dc.type';
     }
 
     // Invoke a hook for third-party modules to alter the parameters.
     module_invoke_all('islandora_solr_search_query_processor', $this); //The hook implementation needs to specify that it takes a reference, not be passed one
-    $processor->solrParams['fq'][] = $fq; // @TODO figure out where $processor is set - what does it do?
     return;
   }
 

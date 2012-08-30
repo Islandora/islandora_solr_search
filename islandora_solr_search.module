@@ -498,7 +498,7 @@ function islandora_solr_search_display() {
           
           // create link
           // we're not using l() because of active classes: http://drupal.org/node/41595
-          $item = '<a' . drupal_attributes($attr) . '>' . $display_name . '</a>';
+          $item = '<a' . drupal_attributes($attr) . '>' . check_plain($display_name) . '</a>';
           
           // add link to list
           $list_items[] = $item;
@@ -698,7 +698,7 @@ function islandora_solr_search_sort() {
 
       // create link
       // we're not using l() because of active classes: http://drupal.org/node/41595
-      $item = '<a' . drupal_attributes($attr) . '>' . $label . ' ' . $indicator . '</a>';
+      $item = '<a' . drupal_attributes($attr) . '>' . check_plain($label) . ' ' . $indicator . '</a>';
 
       // add link to list
       $list_items[] = $item;
@@ -728,7 +728,7 @@ function islandora_solr_search_forms($form_id, $args) {
     // Lets attach islandora_solr_search_date_filter_form to $forms[$form_id].  This effectively allows you to use the same form builder function to build a form with any form_id of your choice.
     $forms[$form_id] = array(
       'callback' => 'islandora_solr_search_date_filter_form',
-      'callback arguments' => array($args[0], $args[1]),
+      'callback arguments' => array($args[0], $args[1], $args[2]),
     );
     return $forms;
   }
@@ -746,7 +746,7 @@ function islandora_solr_search_forms($form_id, $args) {
 }
 
 
-function islandora_solr_search_date_filter_form(&$form_state, $form_key, $solr_field) {
+function islandora_solr_search_date_filter_form(&$form_state, $form_key, $solr_field, $noslider) {
   global $queryClass;
 
   // set variables
@@ -803,7 +803,7 @@ function islandora_solr_search_date_filter_form(&$form_state, $form_key, $solr_f
     $to_default = NULL;
   }
   
-  if ($from_default != NULL OR $to_default != NULL) {
+  if ($from_default != NULL OR $to_default != NULL OR $noslider) {
     $class = 'date-range-expanded';
     $value = t('Hide');
   }

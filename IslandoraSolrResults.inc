@@ -305,8 +305,8 @@ class IslandoraSolrResults {
       
       // create link
       // we're not using l() because of active classes: http://drupal.org/node/41595
-      $query_list[] = '<a' . drupal_attributes($attr_minus) . '>(-)</a> ' . $query_value;
-      
+      $query_list[] = '<a' . drupal_attributes($attr_minus) . '>(-)</a> ' . check_plain($query_value);
+
       // add wrap and list
       $output .= '<div class="islandora_solr_search_query_wrap">';
       $output .= theme_item_list($query_list, t('Query'), "ul", array('class' => 'islandora_solr_search_query_list query_list'));
@@ -350,8 +350,8 @@ class IslandoraSolrResults {
           
           $from_str = (strpos($filter_array[0], '*') !== FALSE) ? '*' : format_date(strtotime(trim($filter_array[0])) + 1, 'custom', $format, 0);
           $to_str = (strpos($filter_array[1], '*') !== FALSE) ? '*' : format_date(strtotime(trim($filter_array[1])), 'custom', $format, 0);
-          
-          if ($from_str == $to_str) {
+
+          if ($from_str == $to_str OR trim($filter_array[0]) == trim($filter_array[1])) {
             $filter_value = $from_str;
           }
           else {
@@ -383,7 +383,7 @@ class IslandoraSolrResults {
 
         // create link
         // we're not using l() because of active classes: http://drupal.org/node/41595
-        $filter_list[] = '<a' . drupal_attributes($attr_minus) . '>(-)</a> ' . $symbol . ' ' . $filter_value;
+        $filter_list[] = '<a' . drupal_attributes($attr_minus) . '>(-)</a> ' . $symbol . ' ' . check_plain($filter_value);
       }
       // return filter list
       $output .= '<div class="islandora_solr_search_filter_wrap">';
@@ -448,7 +448,7 @@ class IslandoraSolrResults {
           $from_str = (strpos($filter_array[0], '*') !== FALSE) ? '*' : format_date(strtotime(trim($filter_array[0])) + 1, 'custom', $format, 0);
           $to_str = (strpos($filter_array[1], '*') !== FALSE) ? '*' : format_date(strtotime(trim($filter_array[1])), 'custom', $format, 0);
           
-          if ($from_str == $to_str) {
+          if ($from_str == $to_str OR trim($filter_array[0]) == trim($filter_array[1])) {
             $filter_value = $from_str;
           }
           else {
@@ -499,7 +499,7 @@ class IslandoraSolrResults {
 
         // create links
         // we're not using l() because of active classes: http://drupal.org/node/41595
-        $breadcrumb[] = '<a' . drupal_attributes($attr) . '>' . $filter_value . '</a>'
+        $breadcrumb[] = '<a' . drupal_attributes($attr) . '>' . check_plain($filter_value) . '</a>'
               . '<span class="islandora_solr_search_breadcrumb_super"> <a' . drupal_attributes($attr_x) . '>(' . t('x') . ')</a></span>';
 
       }
@@ -569,7 +569,7 @@ class IslandoraSolrResults {
       $query_value = implode(" ", $query_implode);
       // create links
       // we're not using l() because of active classes: http://drupal.org/node/41595
-      $breadcrumb[] = '<a' . drupal_attributes($attr) . '>' . $query_value . '</a>'
+      $breadcrumb[] = '<a' . drupal_attributes($attr) . '>' . check_plain($query_value) . '</a>'
             . '<span class="islandora_solr_search_breadcrumb_super"> <a' . drupal_attributes($attr_x) . '>(' . t('x') . ')</a></span>';
     }
     
@@ -759,10 +759,6 @@ class IslandoraSolrResults {
 
       // check if we need range slider.
       if (variable_get('islandora_solr_range_slider_enabled', 0) == 1 AND array_key_exists($facet_key, $date_facets_arr) AND $solrQueryProcessor->solrResult->response->numFound > 0 AND module_exists('jquery_ui')  AND jquery_ui_get_version() >= 1.7) {
-        // opening facet div // @TODO: this should go in theme function
-        $facet_output .='<div class="islandora_solr_search_range_slider">';
-        // add title
-        $facet_output .='<h3>' . $this->facetFieldArray[$facet_key] . '</h3>';
         
         // facet data
         // @TODO: this is pretty bad code. Clean this up.
@@ -881,10 +877,21 @@ class IslandoraSolrResults {
         $slider_color = variable_get('islandora_solr_range_slider_color', '#edc240');
         // To here
 
-        // render form
-        $facet_output .= drupal_get_form('islandora_solr_search_range_slider_form_' . $range_slider_key, $range_slider_key, $facet_key, $data, $slider_color, $gap, $date_format);
-        $range_slider_key++;
-        $facet_output .='</div>';
+        // if values are available
+        $noslider = FALSE;
+        if (count($data) > 1) {
+          // render form
+          // opening facet div // @TODO: this should go in theme function
+          $facet_output .='<div class="islandora_solr_search_range_slider">';
+          // add title
+          $facet_output .='<h3>' . $this->facetFieldArray[$facet_key] . '</h3>';
+          $facet_output .= drupal_get_form('islandora_solr_search_range_slider_form_' . $range_slider_key, $range_slider_key, $facet_key, $data, $slider_color, $gap, $date_format);
+          $range_slider_key++;
+          $facet_output .='</div>';
+        }
+        else {
+          $noslider = TRUE;
+        }
       }
       
       // add datefilter
@@ -893,12 +900,12 @@ class IslandoraSolrResults {
         $facet_output .='<div class="islandora_solr_search_date_filter">';
 
         // @TODO: set title when the range slider isn't active
-        if (count($list_items) < $facet_min_count AND !(variable_get('islandora_solr_range_slider_enabled', 0) == 1 AND array_key_exists($facet_key, $date_facets_arr))) {
+        if (count($list_items) < $facet_min_count AND !(variable_get('islandora_solr_range_slider_enabled', 0) == 1 AND array_key_exists($facet_key, $date_facets_arr)) OR $noslider) {
           // add title
           $facet_output .='<h3>' . $this->facetFieldArray[$facet_key] . '</h3>';
         }
 
-        $facet_output .= drupal_get_form('islandora_solr_search_date_filter_form_' . $date_filter_key, $date_filter_key, $facet_key);
+        $facet_output .= drupal_get_form('islandora_solr_search_date_filter_form_' . $date_filter_key, $date_filter_key, $facet_key, $noslider);
         $date_filter_key++;
         $facet_output .='</div>';
       }
@@ -1012,7 +1019,7 @@ class IslandoraSolrResults {
       
       // create links
       // we're not using l() because of active classes: http://drupal.org/node/41595
-      $list[] = '<a' . drupal_attributes($attr) . '>' . $value . '</a>' . ' (' . $data . ')' .
+      $list[] = '<a' . drupal_attributes($attr) . '>' . check_plain($value) . '</a>' . ' (' . $data . ')' .
           '<span class="plusminus">' .
           '<a' . drupal_attributes($attr_plus) . '>+</a>'
           . ' ' .
