@@ -547,7 +547,7 @@ function islandora_solr_display() {
 
           // create link
           // we're not using l() because of active classes: http://drupal.org/node/41595
-          $item = '<a' . drupal_attributes($attr) . '>' . $display_name . '</a>';
+          $item = '<a' . drupal_attributes($attr) . '>' . check_plain($display_name) . '</a>';
 
           // add link to list
           $list_items[] = $item;

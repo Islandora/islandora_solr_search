@@ -267,7 +267,7 @@ class IslandoraSolrResults {
 
       // create link
       // we're not using l() because of active classes: http://drupal.org/node/41595
-      $query_list[] = '<a' . drupal_attributes($attr_minus) . '>(-)</a> ' . $query_value;
+      $query_list[] = '<a' . drupal_attributes($attr_minus) . '>(-)</a> ' . check_plain($query_value);
 
       // add wrap and list
       $output .= '<div class="islandora-solr-query-wrap">';
@@ -336,7 +336,7 @@ class IslandoraSolrResults {
 
         // create link
         // we're not using l() because of active classes: http://drupal.org/node/41595
-        $filter_list[] = '<a' . drupal_attributes($attr_minus) . '>(-)</a> ' . $symbol . ' ' . $filter_split[1];
+        $filter_list[] = '<a' . drupal_attributes($attr_minus) . '>(-)</a> ' . $symbol . ' ' . check_plain($filter_split[1]);
       }
       // return filter list
       $output .= '<div class="islandora-solr-filter-wrap">';
@@ -450,7 +450,7 @@ class IslandoraSolrResults {
 
         // create links
         // we're not using l() because of active classes: http://drupal.org/node/41595
-        $breadcrumb[] = '<a' . drupal_attributes($attr) . '>' . $filter_split[1] . '</a>'
+        $breadcrumb[] = '<a' . drupal_attributes($attr) . '>' . check_plain($filter_split[1]) . '</a>'
               . '<span class="islandora-solr-breadcrumb-super"> <a' . drupal_attributes($attr_x) . '>(' . t('x') . ')</a></span>';
 
       }
@@ -521,7 +521,7 @@ class IslandoraSolrResults {
 
       // create links
       // we're not using l() because of active classes: http://drupal.org/node/41595
-      $breadcrumb[] = '<a' . drupal_attributes($attr) . '>' . $query_value . '</a>'
+      $breadcrumb[] = '<a' . drupal_attributes($attr) . '>' . check_plain($query_value) . '</a>'
             . '<span class="islandora-solr-breadcrumb-super"> <a' . drupal_attributes($attr_x) . '>(' . t('x') . ')</a></span>';
     }
 

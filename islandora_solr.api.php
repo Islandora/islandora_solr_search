@@ -53,13 +53,18 @@ function hook_islandora_solr_secondary_display() {
 }
 
 /**
- * Hook which passes the IslandoraSolrQueryProcessor object right before it
- * connects to Solr and executes it. This is a hook to call when you want to
- * make 'last minute' changes.
+ * Hook which passes the IslandoraSolrQueryProcessor object for modification.
+ * 
+ * This hook is called at the end of IslandoraSolrQueryProcessor::buildQuery()
+ * and it's purpose is to make 'last minute' changes. This will not be called
+ * when creating a query processor object programatically without manually
+ * including IslandoraSolrQueryProcessor::buildQuery().
  *
  * @param type $islandora_solr_query
  *   The IslandoraSolrQueryProcessor object which includes the current query
- *   settings but at the beginning of IslandoraSolrQuery::executeQuery().
+ *   settings but at the end of IslandoraSolrQuery::buildQuery().
+ * 
+ * @see IslandoraSolrQueryProcessor::buildQuery().
  */
 function hook_islandora_solr_query($islandora_solr_query) {
   // example: on example_display, always sort descending on fgs.createdDate
