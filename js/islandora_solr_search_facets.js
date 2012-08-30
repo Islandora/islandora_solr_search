@@ -221,7 +221,7 @@ Drupal.behaviors.dateRangeSlider = function (context) {
         $('.slider-popup').hide();
         $('<div id="range-slider-tooltip"></div>').css( {
             top: y - 50,
-            left: x - 125,
+            left: x - 125
         }).html('<span>' + contents + '</span>').appendTo("body").fadeIn(0);
       }
 
