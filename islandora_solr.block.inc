@@ -492,7 +492,7 @@ function islandora_solr_display() {
     // parameters set in url
     $params = isset($_islandora_solr_queryclass->internalSolrParams) ? $_islandora_solr_queryclass->internalSolrParams : array();
     // set path
-    $path = SOLR_SEARCH_PATH . '/' . $_islandora_solr_queryclass->solrQuery;
+    $path = SOLR_SEARCH_PATH . '/' . replace_slashes($_islandora_solr_queryclass->solrQuery);
 
     // get profiles
     $profiles = module_invoke_all("islandora_solr_primary_display");
@@ -585,7 +585,7 @@ function islandora_solr_sort() {
     // parameters set in url
     $params = isset($_islandora_solr_queryclass->internalSolrParams) ? $_islandora_solr_queryclass->internalSolrParams : array();
     // set path
-    $path = SOLR_SEARCH_PATH . '/' . $_islandora_solr_queryclass->solrQuery;
+    $path = SOLR_SEARCH_PATH . '/' . replace_slashes($_islandora_solr_queryclass->solrQuery);
 
     // get sort terms
     $sort_terms = islandora_build_substitution_list(variable_get('islandora_solr_sort_terms', 'score ~ Relevance, PID ~ PID'));
