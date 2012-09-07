@@ -442,7 +442,7 @@ function islandora_solr_search_display() {
   $output = '';
   
   // check if the page is dealing with search results
-  if (class_exists('IslandoraSolrResults')) {
+  if (isset($queryClass->display)) {
     
     // parameters set in url
     $params = $queryClass->internalSolrParams;
@@ -530,7 +530,7 @@ function islandora_solr_search_limit() {
   $output = '';
   
   // check if the page is dealing with search results
-  if (class_exists('IslandoraSolrResults')) {
+  if (isset($queryClass->display)) {
     
     // parameters set in url
     $params = $queryClass->internalSolrParams;
@@ -620,7 +620,7 @@ function islandora_solr_search_sort() {
   $output = '';
 
   // check if the page is dealing with search results
-  if (class_exists('IslandoraSolrResults')) {
+  if (isset($queryClass->display)) {
 
     // parameters set in url
     $params = isset($queryClass->internalSolrParams) ? $queryClass->internalSolrParams : array();
