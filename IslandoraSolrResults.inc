@@ -641,7 +641,7 @@ class IslandoraSolrResults {
           else {
             $split_facet = FALSE;
           }
-          
+
           if ($split_facet) {
             $show_more = TRUE; //There exists a split array...
             $list_items_hidden = array_slice($list_items, $initial_limit);
