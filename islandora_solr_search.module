@@ -62,12 +62,12 @@ function islandora_solr_search_boot() {
 function islandora_solr_search_menu() {
   $items['islandora/solr/search'] = array(
     'page callback' => 'islandora_solr_search',
-    'access arguments' => array('view fedora collection'), //depends of fedora_repository view
+    'access arguments' => array('view islandora solr search results'),
     'type' => MENU_CALLBACK,
   );
   $items['islandora/solr/process'] = array(
     'page callback' => 'update_solr_url_div',
-    'access arguments' => array('view fedora collection'),
+    'access arguments' => array('administer site configuration'),
     'file' => 'islandora_solr_search.admin.inc',
     'type' => MENU_CALLBACK,
   );
@@ -126,6 +126,13 @@ function islandora_solr_search_theme() {
       'arguments' => array('results' => NULL, 'elements' => array()),
     ),
   );
+}
+
+/**
+ * Implements hook_perm().
+ */
+function islandora_solr_search_perm() {
+  return array('view islandora solr search results');
 }
 
 /**

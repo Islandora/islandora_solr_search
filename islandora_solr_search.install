@@ -122,3 +122,35 @@ function islandora_solr_search_update_6000() {
   }
   return $ret;
 }
+
+/**
+ * Added separate permission to view islandora solr search content.
+ */
+function islandora_solr_search_update_6001() {
+  $ret = array();
+  // check if the solr permissions haven't been set before running the update script.
+  $solr_roles = user_roles(FALSE, 'view islandora solr search results');
+  if (empty($solr_roles)) {
+    // get roles that have 'view fedora collection' permissions
+    $user_roles = user_roles(FALSE, 'view fedora collection');
+    // loop over roles
+    foreach ($user_roles as $rid => $user_role) {
+      // query to get the current permissions
+      $db_query = db_query('SELECT * FROM {permission} WHERE rid = %d', $rid);
+      $result = db_fetch_array($db_query);
+      // add new permission
+      $perm = $result['perm'];
+      $perm_array = explode(', ', $perm);
+      $perm_array[] = 'view islandora solr search results';
+      $perm = implode(', ', $perm_array);
+      // update permissions
+      db_query("UPDATE {permission} SET perm = '%s' WHERE rid = %d", $perm, $rid);
+      $ret[] = array('success' => TRUE, 'query' => 'db_query("UPDATE {permission} SET perm = \'%s\' WHERE rid = %d", $perm, $rid);');
+    }
+  }
+  return $ret;
+}
+
+
+
+
