@@ -107,6 +107,8 @@ img.islandora_solr_secondary_display_icon {
   margin: 0;
   padding: 0 6px 0 3px;
   border-right: 1px solid #494949;
+  zoom: 1;
+  *display: inline;
 }
 
 .item-list ul.islandora-solr-search-limit.horizontal li.last
