@@ -21,14 +21,14 @@
 <?php else: ?>
   <div class="islandora islandora-solr-search-results">
     <?php $row_result = 0; ?>
-    <?php foreach($results as $result): ?>
+    <?php foreach($results as $key => $result): ?>
     <!-- Search result -->
     <div class="islandora-solr-search-result clear-block <?php print $row_result % 2 == 0 ? 'odd' : 'even'; ?>">
       <!-- Thumbnail -->
       <dl class="solr-thumb">
         <dt>
           <?php $image = '<img src="' . $thumbnail_path[$row_result] . '" />'; ?>
-          <?php print l($image, 'islandora/object/' . $result['PID']['value'], array('html' => TRUE)); ?>
+          <?php print l($image, 'islandora/object/' . $pids[$key], array('html' => TRUE)); ?>
         </dt>
         <dd></dd>
       </dl>

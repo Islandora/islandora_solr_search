@@ -2,30 +2,52 @@
 TODO:
 =====
 
+-- really need to clean IslandoraSolrResults. All of it, but especially facets.
+- result permissions only enforced on default display
+-- separate preparing results from display
+
+- fix snippet field highlighting
+- bug when reordering field and then clicking configure
+- throw warning if adding a sort field isn't sortable
+- improve settings display. add little icon with settings in tooltip? misc/message-16-help.png
+- some bugs in modal dialog resizing (facets)
+- clean up table headers
+- create doxygen code + wrapper doxygen
+- clean up code (run through coder)
+- merge with 7.x branch
+
+- when populating fields, if a solr field has a label in another field, maybe the default label can be the one already filled out? If the current one is empty still?
+- pressing 'enter' on 'add field' results in errors and no js callback
+
+- make labels translatable: http://drupal.org/node/1114010
+
 High priority
 -------------
 
-- update README.txt
-- update hook_help functions
-- check if islandora_solr.install is doing the right things.
-- add a check to see if the context is the search results page. Currently we
-check if IslandoraSolrQueryProcessor::display is set, which is not ideal.
-
-- port date faceting from D6
+- processor object alter call in executeQuery() might conflict with 2nd query calls from the variable date range gap functionality.
+- we could save us some code by storing the primary display settings in a DB table
 - add luke check for date fields (breaks if not)
 - more user friendly controls + advanced option
-- settings per date field (now same settings for all fields)
-- revert order of date facet fields?
+- don't prepopulate advanced search field if dropdown does not equal the solr field in url
+
+- port from D6 to D7:
+-- limit search results (block)
+-- range facet slider + datepicker
+-- look for details (permissions, string handling, css, etc..)
+-- rss feed + config
 
 Normal Priority
 ---------------
 
+- add a check to see if the context is the search results page. Currently we
+check if IslandoraSolrQueryProcessor::display is set, which is not ideal.
+- update hook_help functions
 - add a parameter to the luke function to return a single document.
 - check if spaces could be replaced by + or %20 , which would simplify some functions (splitting strings)
 http://wiki.apache.org/solr/CommonQueryParameters#sort
 - don't hardcode php solr library, instead override it.
 - table display works but should be rendered through a template file.
-
+- add ajax_command_changed() to the vertical tabs to show something has changed.
 - add watchdog messages on error.
 - on query without filter parameters the delete link adds a ? or &
 - some snippets of markup could go in theme functions
@@ -33,6 +55,10 @@ http://wiki.apache.org/solr/CommonQueryParameters#sort
 Low Priority
 ------------
 
+- update README.txt
+- tabledrag should update the table with ajax.
+- hook_alter instead of module invoke all for object manipulation
+- provide integration with display suite
 - expose result limit controls
 - put object url's in one variable?
 - Boolean operators as query seem to choke

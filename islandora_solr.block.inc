@@ -120,7 +120,7 @@ function islandora_solr_block_view($block_name = '') {
   $solr_blocks = module_invoke_all("islandora_solr_query_blocks");
 
   // if the block that is called is defined
-  if (!empty($solr_blocks[$block_name]) AND user_access('search islandora solr')) {
+  if (!empty($solr_blocks[$block_name]) && user_access('search islandora solr')) {
 
     // set block title
     $block['subject'] = $solr_blocks[$block_name]['name'];
@@ -131,7 +131,7 @@ function islandora_solr_block_view($block_name = '') {
     // if a class is present, instantiate it and proceed.
     // The variable $_islandora_solr_queryclass (the IslandoraSolrQueryProcessor, containing
     // the Solr search result), is fed as an argument.
-    if (!empty($solr_blocks[$block_name]['class']) AND !empty($solr_blocks[$block_name]['function'])) {
+    if (!empty($solr_blocks[$block_name]['class']) && !empty($solr_blocks[$block_name]['function'])) {
       // check if we're on a search results page
       if (islandora_solr_results_page($_islandora_solr_queryclass)) {
         $display_class = new $solr_blocks[$block_name]['class']();
@@ -249,7 +249,7 @@ function islandora_solr_advanced_search_form($form, &$form_state) {
     $values = $form_state['values'];
   }
   // 2. populate with current query on search results page
-  elseif (islandora_solr_results_page($_islandora_solr_queryclass) == TRUE AND (!isset($_islandora_solr_queryclass->internalSolrParams['type']) OR $_islandora_solr_queryclass->internalSolrParams['type'] != 'dismax')) {
+  elseif (islandora_solr_results_page($_islandora_solr_queryclass) == TRUE && (!isset($_islandora_solr_queryclass->internalSolrParams['type']) || $_islandora_solr_queryclass->internalSolrParams['type'] != 'dismax')) {
 
     // get current query
     $query = $_islandora_solr_queryclass->solrQuery;
@@ -326,7 +326,7 @@ function islandora_solr_advanced_search_form($form, &$form_state) {
       '#title' => t('Field'),
       '#type' => 'select',
       '#default_value' => isset($value['field']) ? $value['field'] : 'dc.title',
-      '#options' => islandora_build_substitution_list(variable_get('islandora_solr_searchterms', 'dc.title ~ Title,dc.subject ~ Subject')),
+      '#options' => islandora_solr_get_fields('search_fields'),
     );
     $term['search'] = array(
       '#title' => t('Search terms'),
@@ -367,7 +367,7 @@ function islandora_solr_advanced_search_form($form, &$form_state) {
           'progress' => array('type' => 'none'),
         )
       );
-      if ((variable_get('islandora_solr_search_boolean', 'user') == 'user') AND ((count($values['terms']) -1) != $i)) {
+      if ((variable_get('islandora_solr_search_boolean', 'user') == 'user') && ((count($values['terms']) -1) != $i)) {
         $term['boolean'] = array(
           '#type' => 'select',
           '#prefix' => '<div>',
@@ -588,7 +588,7 @@ function islandora_solr_sort() {
     $path = SOLR_SEARCH_PATH . '/' . replace_slashes($_islandora_solr_queryclass->solrQuery);
 
     // get sort terms
-    $sort_terms = islandora_build_substitution_list(variable_get('islandora_solr_sort_terms', 'score ~ Relevance, PID ~ PID'));
+    $sort_terms = islandora_solr_get_fields('sort_fields');
 
     // get current sort (check in the actual parameters used for the query, because modules might have altered it)
     if (isset($_islandora_solr_queryclass->solrParams['sort'])) {
@@ -614,7 +614,7 @@ function islandora_solr_sort() {
 
       // create query and indicator arrow
       if ($term == $current_sort_term) {
-        if (isset($current_sort_order) AND $current_sort_order == 'asc') {
+        if (isset($current_sort_order) && $current_sort_order == 'asc') {
           // set order
           $order = 'desc';
           // create indicator
@@ -628,7 +628,7 @@ function islandora_solr_sort() {
         }
       }
       // the term is score or a date, we want descending order by default
-      elseif ($term == 'score' OR stripos($term, 'date')) {
+      elseif ($term == 'score' || stripos($term, 'date')) {
         // set order
         $order = 'desc';
       }

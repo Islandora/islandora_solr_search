@@ -72,30 +72,27 @@ function islandora_solr_preprocess_islandora_solr(&$variables) {
   global $base_url;
   // base path
   global $base_path;
-
   // set base url
   $variables['base_url'] = $base_url;
-
   // set base path
   $variables['base_path'] = $base_path;
-
+  // pids
+  $pids = $variables['pids'];
   // get path
   $path = $base_path . drupal_get_path('module', 'islandora_solr');
-
   // placeholder image
   $solr_default_img = $path . '/images/defaultimg.png';
   $variables['elements']['solr_default_img'] = $solr_default_img;
-
   // make all variables in 'elements' available as variables in the template file
   foreach ($variables['elements'] as $key => $value) {
     $variables[$key] = $value;
   }
-
+  // thumbnails
   foreach ($variables['results'] as $key => $value) {
-    $object = islandora_object_load($value['PID']['value']);
+    $pid = $pids[$key];
+    $object = islandora_object_load($pids[$key]);
     if ($object) {
       if (isset($object['TN'])) {
-        $pid = $variables['results'][$key]['PID']['value'];
         $variables['thumbnail_path'][$key] = url('islandora/object/' . $pid . '/datastream/TN');
       }
       else {
@@ -106,5 +103,4 @@ function islandora_solr_preprocess_islandora_solr(&$variables) {
       $variables['thumbnail_path'][$key] = $path . '/images/defaultimg.png';
     }
   }
-
 }

@@ -146,55 +146,54 @@ class IslandoraSolrResults {
    * @see IslandoraSolrResults::displayResults()
    */
   function printResults($results) {
-
     // set variables
     $results_array = array();
     $elements = array();
-
+    $pids = array();
     // total
     $elements['solr_total'] = $results->response->numFound;
-
     // start
     $elements['solr_start'] = $results->response->start;
-
     // get prepared search results
     $docs = $this->prep_results($results);
-
     // optionally limit results to values given
-    $limitResults = variable_get('islandora_solr_limit_result_fields', 0);
+    $limit_results = variable_get('islandora_solr_limit_result_fields', 0);
+    // look for fields with no permission
+    $fields_all = islandora_solr_get_fields('result_fields', FALSE);
+    $fields_filtered = islandora_solr_get_fields('result_fields');
+    $fields_no_permission = array_diff($fields_all, $fields_filtered);
 
-    // loop over results array
+    // loop over results
     foreach ($docs as $doc) {
       $rows = array();
       $row = 0; // keeping $row in there for now until the snippet issue is cleared out
       $snippet = NULL; // @TODO: how is this suposed to work if the $snippet always is set to NULL ?
+      $pids[] = $doc['PID'];
+      $result_field_array = $this->resultFieldArray;
 
-      // loop over individual results to process fields
-      foreach ($doc as $field => $value) {
-
-        // check if this field should be included
-        if ($limitResults && empty($this->resultFieldArray[$field])) {
-          continue;
+      // 1. add defined fields
+      foreach ($result_field_array as $field => $label) {
+        if (isset($doc[$field]) && !empty($doc[$field])) {
+          $value = $doc[$field];
+          $rows[$field]['label'] = $label;
+          $rows[$field]['class'] = drupal_strtolower( preg_replace('/[^A-Za-z0-9]/', '-', $field));
+          $rows[$field]['value'] = (is_array($value)) ? implode(", ", $value) : $value; // split if it's an array
         }
-
-        // check for field label substitutions
-        $translated_field_name = isset($this->allSubsArray[$field]) ? $this->allSubsArray[$field] : $field;
-
-        // add label
-        $rows[$field]['label'] = $translated_field_name;
-
-        // add class: render solr field name to string that can be used as class name
-        $rows[$field]['class'] = drupal_strtolower( preg_replace('/[^A-Za-z0-9]/', '-', $field));
-
-        // split value if the result value is an array
-        if (is_array($value)) {
-          $value = implode(", ", $value);
-        }
-        // add value
-        $rows[$field]['value'] = $value;
-
-        $row++; // keeping $row in there for now until the snippet issue is cleared out
       }
+
+      // 2. if limit isn't set, add other fields
+      if ($limit_results == 0) {
+        foreach ($doc as $field => $value) {
+          // skip if added by the first loop already OR if no permission
+          if (isset($rows[$field]) || in_array($field, $fields_no_permission)) {
+            continue;
+          }
+          $rows[$field]['label'] = $field;
+          $rows[$field]['class'] = drupal_strtolower( preg_replace('/[^A-Za-z0-9]/', '-', $field));
+          $rows[$field]['value'] = (is_array($value)) ? implode(", ", $value) : $value; // split if it's an array
+        }
+      }
+//      $row++; // keeping $row in there for now until the snippet issue is cleared out
       // @TODO: how is this suposed to work if the $snippet always is set to NULL ?
       if ($snippet) {
         $rows[$row][] = array(
@@ -203,12 +202,12 @@ class IslandoraSolrResults {
         );
         $rows[$row][] = $snippet[0];
       }
-      // append array to results array
+      // append to results array
       $results_array[] = $rows;
     }
 
     // return themed search results
-    return theme('islandora_solr', array('results' => $results_array, 'elements' => $elements));
+    return theme('islandora_solr', array('results' => $results_array, 'elements' => $elements, 'pids' => $pids));
   }
 
 
@@ -226,18 +225,17 @@ class IslandoraSolrResults {
 
     // set path
     $path = SOLR_SEARCH_PATH . '/' . replace_slashes($islandoraSolrQuery->solrQuery); // $_GET['q'] didn't seem to work here
-
     // get date format
     $format = variable_get('islandora_solr_facet_date_format', 'Y');
-
     // set output variable
     $output = '';
-
     // get user provided filter parameters
     $fq = isset($islandoraSolrQuery->internalSolrParams['f']) ? $islandoraSolrQuery->internalSolrParams['f'] : array();
-
     // parameters set in url
     $params = $islandoraSolrQuery->internalSolrParams;
+    // get range facets
+    $range_facets = islandora_solr_get_range_facets();
+
 
     // Get Query values
     if (!in_array($islandoraSolrQuery->solrQuery, $islandoraSolrQuery->different_kinds_of_nothing)) {
@@ -301,7 +299,13 @@ class IslandoraSolrResults {
         $filter_split[1] = trim($filter_split[1], "\"");
 
         // if value is date
-        if (isset($islandoraSolrQuery->solrParams['facet.date']) AND in_array(ltrim($filter_split[0], '-'), $islandoraSolrQuery->solrParams['facet.date'])) {
+        if (isset($islandoraSolrQuery->solrParams['facet.date']) && in_array(ltrim($filter_split[0], '-'), $islandoraSolrQuery->solrParams['facet.date'])) {
+          // check date format setting
+          foreach ($range_facets as $value) {
+            if ($value['solr_field'] == $filter_split[0] && isset($value['solr_field_settings']['date_facet_format']) && !empty($value['solr_field_settings']['date_facet_format'])) {
+              $format = $value['solr_field_settings']['date_facet_format'];
+            }
+          }
           // split range filter string to return formatted date values
           $filter_str = $filter_split[1];
           $filter_str = trim($filter_str, '[');
@@ -355,16 +359,14 @@ class IslandoraSolrResults {
    *   settings and the raw Solr results.
    */
   function setBreadcrumbs($islandoraSolrQuery) {
-
     // set path
     $path = SOLR_SEARCH_PATH . '/' . replace_slashes($islandoraSolrQuery->solrQuery); // $_GET['q'] didn't seem to work here
-
     // get date format
     $format = variable_get('islandora_solr_facet_date_format', 'Y');
-
     // set breadcrumb variable
     $breadcrumb = array();
-
+    // get range facets
+    $range_facets = islandora_solr_get_range_facets();
     // get user provided filter parameters
     if (isset($islandoraSolrQuery->internalSolrParams['f'])) {
       $fq = $islandoraSolrQuery->internalSolrParams['f'];
@@ -398,7 +400,13 @@ class IslandoraSolrResults {
         $filter_split[1] = trim($filter_split[1], "\"");
 
         // if value is date
-        if (isset($islandoraSolrQuery->solrParams['facet.date']) AND in_array(ltrim($filter_split[0], '-'), $islandoraSolrQuery->solrParams['facet.date'])) {
+        if (isset($islandoraSolrQuery->solrParams['facet.date']) && in_array(ltrim($filter_split[0], '-'), $islandoraSolrQuery->solrParams['facet.date'])) {
+          // check date format setting
+          foreach ($range_facets as $value) {
+            if ($value['solr_field'] == $filter_split[0] && isset($value['solr_field_settings']['date_facet_format']) && !empty($value['solr_field_settings']['date_facet_format'])) {
+              $format = $value['solr_field_settings']['date_facet_format'];
+            }
+          }
           // split range filter string to return formatted date values
           $filter_str = $filter_split[1];
           $filter_str = trim($filter_str, '[');
@@ -546,38 +554,41 @@ class IslandoraSolrResults {
    *
    * @see islandora_solr_islandora_solr_query_blocks()
    * @see islandora_solr_block_view()
+   *
+   * // @TODO: clean this entire method up. It's really messy. Including _addFacets().
    */
   function displayFacets($islandoraSolrQuery) {
     // set variables
     $facet_output = $output = '';
-
-    // limits
     $facet_min_count = 1;
     $min_result = variable_get('islandora_solr_facet_min_limit', '2');
     $initial_limit = variable_get('islandora_solr_facet_soft_limit', '10');
     $facet_limit = variable_get('islandora_solr_facet_max_limit', '20');
+    $format = variable_get('islandora_solr_facet_date_format' , 'Y');
+    $show_more = FALSE;
+    $range_facets = islandora_solr_get_range_facets();
 
     // get facet values returned from solr
     $facets = isset($islandoraSolrQuery->solrResult->facet_counts->facet_fields) ? $islandoraSolrQuery->solrResult->facet_counts->facet_fields : array();
-    // object to json
     $facets_json  = json_encode($facets);
-    // json  to array
     $facets = json_decode($facets_json, TRUE);
 
     // get date facet values
     $date_facets = isset($islandoraSolrQuery->solrResult->facet_counts->facet_dates) ? $islandoraSolrQuery->solrResult->facet_counts->facet_dates : array();
-    // object to json
     $date_facets_json  = json_encode($date_facets);
-    // json to array
     $date_facets_arr = json_decode($date_facets_json, TRUE);
-    // clean up facet dates array
-    $format = variable_get('islandora_solr_facet_date_format' , 'Y');
-    // set variable
+
+    // loop over each date field // clean up facet dates array
     $date_facets = array();
-    // loop over each date field
     foreach ($date_facets_arr as $key => $fields) {
-      // loop over each field
       $date_facets[$key] = array();
+      // check date format setting
+      foreach ($range_facets as $value) {
+        if ($value['solr_field'] == $key && isset($value['solr_field_settings']['date_facet_format']) && !empty($value['solr_field_settings']['date_facet_format'])) {
+          $format = $value['solr_field_settings']['date_facet_format'];
+        }
+      }
+      // render date facet fields
       foreach ($fields as $date => $number) {
         // facet.date includes other values in the facet results - excluding these
         // we're turning the facet results in an array with multiple values
@@ -597,17 +608,18 @@ class IslandoraSolrResults {
       }
     }
 
-    // merge facet fields with date facets
-    $facets = array_merge($date_facets, $facets);
-
+    // merge facet fields with date facets and order
+    $facets_unordered = array_merge($date_facets, $facets);
+    $facet_order = islandora_solr_get_fields('facet_fields');
+    $facets = array();
+    foreach ($facet_order as $term => $label) {
+      $facets[$term] = $facets_unordered[$term];
+    }
 
     // return if no facets are available
     if (empty($facets)) {
       return $output;
     }
-
-    // set show more variable
-    $show_more = FALSE;
 
     // loop over returned facet objects
     foreach ($facets as $facet_key => $facet) {
@@ -635,7 +647,7 @@ class IslandoraSolrResults {
           $list_title = $this->facetFieldArray[$facet_key];
 
           // check if facet value amount is larger than the initial limit
-          if ($facet_count > $initial_limit AND $initial_limit < $facet_limit AND $initial_limit > $facet_min_count) {
+          if ($facet_count > $initial_limit && $initial_limit < $facet_limit && $initial_limit > $facet_min_count) {
             $split_facet = TRUE;
           }
           else {
@@ -819,21 +831,12 @@ class IslandoraSolrResults {
    * as set in the admin form.
    */
   function prepFieldSubstitutions() {
-    $rawFacetVals = variable_get("islandora_solr_facets", 'dc.subject ~ Subject,dc.type ~ Type');
-    $this->facetFieldArray = islandora_build_substitution_list($rawFacetVals);
 
-    // populate with date facet readable names
-    $rawDateFacetVals = variable_get('islandora_solr_facet_date' , NULL);
-    $rawDateFacetVals = islandora_build_substitution_list($rawDateFacetVals);
-    if ($rawDateFacetVals != NULL) {
-      $this->facetFieldArray = array_merge($this->facetFieldArray, $rawDateFacetVals);
-    }
+    $this->facetFieldArray = islandora_solr_get_fields('facet_fields');
 
-    $rawSearchTerms = variable_get('islandora_solr_searchterms', 'dc.title ~ Title');
-    $this->searchFieldArray = islandora_build_substitution_list($rawSearchTerms);
+    $this->searchFieldArray = islandora_solr_get_fields('search_fields');
 
-    $rawResultFields = variable_get('islandora_solr_result_fields', 'dc.subject ~ Subject,dc.type ~ Type');
-    $this->resultFieldArray = islandora_build_substitution_list($rawResultFields);
+    $this->resultFieldArray = islandora_solr_get_fields('result_fields');
 
     $this->allSubsArray = array_merge($this->facetFieldArray, $this->searchFieldArray, $this->resultFieldArray);
   }
@@ -854,25 +857,30 @@ class IslandoraSolrResults {
       return FALSE;
     }
 
-    $rawResponse = $results->getRawResponse();
-    $responseArray = json_decode($rawResponse, TRUE);
+    $raw_response = $results->getRawResponse();
+    $response_array = json_decode($raw_response, TRUE);
+//dsm($response_array);
+    $highlights = isset($response_array['highlighting']) ? $response_array['highlighting'] : NULL;
+    $docs = $response_array['response']['docs'];
+//dsm($docs);
+// @TODO: review/redo this.
 
-    $highlights = isset($responseArray['highlighting']) ? $responseArray['highlighting'] : NULL;
-    $docs = $responseArray['response']['docs'];
-
+/*
     if (!is_array($highlights)) {
       return $docs;
     }
 
+    $snippet_fields = islandora_solr_get_snippet_fields();
    // if highights exist, inetegrate them back into the doc array
     $label = variable_get("islandora_solr_snippet_field", '');
+    // blah~Blah,foo~Foo,bar~Bar
     if ($label) {
       $label_parts = explode('~', $label);
       $field_label = trim($label_parts[1]);
       $field_text = trim($label_parts[0]);
     }
-    $this->resultFieldArray[$field_text]= $field_label;
-    $this->allSubsArray[$field_text]= $field_label;
+    $this->resultFieldArray[$field_text] = $field_label;
+    $this->allSubsArray[$field_text] = $field_label;
     foreach ($docs as &$doc) {
       $pid = $doc['PID'];
       unset($doc[$field_text]);
@@ -881,6 +889,7 @@ class IslandoraSolrResults {
         $doc[$field_text] = implode('<br />', $value);
       }
     }
+ */
     return $docs;
   }
 

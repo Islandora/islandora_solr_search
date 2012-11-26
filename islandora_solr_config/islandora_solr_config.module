@@ -125,7 +125,7 @@ function islandora_solr_config_islandora_solr_query($islandora_solr_query) {
     $dividable = FALSE;
     while ($dividable == FALSE) {
       // dividable by 4 and 3
-      if (($limit % 4) == 0 AND ($limit % 3) == 0) {
+      if (($limit % 4) == 0 && ($limit % 3) == 0) {
         $dividable = TRUE;
         $solr_limit = $limit;
       }

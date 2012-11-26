@@ -13,9 +13,9 @@
  */
 function islandora_solr_init() {
   // include inc files
-  module_load_include('inc', 'islandora_solr', 'islandora_solr.admin');
-  module_load_include('inc', 'islandora_solr', 'islandora_solr.block');
+  module_load_include('inc', 'islandora_solr', 'includes/islandora_solr.db');
   module_load_include('inc', 'islandora_solr', 'includes/common');
+  module_load_include('inc', 'islandora_solr', 'islandora_solr.block');
 
   static $islandora_solr_init = FALSE;
   if (!$islandora_solr_init) {
@@ -59,7 +59,6 @@ function islandora_solr_menu() {
     'access arguments' => array('search islandora solr'),
     'type' => MENU_CALLBACK,
   );
-
   $items['admin/islandora/search/islandora_solr'] = array(
     'title' => 'Solr client',
     'description' => 'Configure Solr search settings.',
@@ -68,6 +67,23 @@ function islandora_solr_menu() {
     'access arguments' => array('administer islandora solr'),
     'file' => 'islandora_solr.admin.inc',
     'type' => MENU_NORMAL_ITEM,
+  );
+  $items['islandora_solr/field'] = array(
+    'title' => 'Result field',
+    'description' => 'Configuration for result field',
+    'page callback' => 'islandora_solr_admin_settings_field',
+    'page arguments' => array(2, 3),
+    'access arguments' => array('administer islandora solr'),
+    'file' => 'islandora_solr.admin.inc',
+    'type' => MENU_CALLBACK,
+  );
+  $items['islandora_solr/autocomplete_luke'] = array(
+    'title' => 'Islandora Solr Luke autocomplete',
+    'description' => 'Autocomplete callback to populate solr text fields.',
+    'page callback' => '_islandora_solr_autocomplete_luke',
+    'access arguments' => array('administer islandora solr'),
+    'file' => 'islandora_solr.admin.inc',
+    'type' => MENU_CALLBACK,
   );
   return $items;
 }
@@ -121,6 +137,12 @@ function islandora_solr_theme() {
       'file' => 'islandora_solr.admin.inc',
       'render element' => 'form',
     ),
+    // theme admin form fields
+    'islandora_solr_admin_fields' => array(
+      'path' => $path,
+      'file' => 'islandora_solr.admin.inc',
+      'render element' => 'form',
+    ),
     // results page
     'islandora_solr_wrapper' => array(
       'path' => $path . '/theme',
@@ -133,7 +155,7 @@ function islandora_solr_theme() {
       'path' => $path . '/theme',
       'file' => $file,
       'template' => 'islandora-solr',
-      'variables' => array('results' => NULL, 'elements' => array()),
+      'variables' => array('results' => NULL, 'elements' => array(), 'pids' => array()),
     ),
   );
 }
@@ -218,7 +240,7 @@ function islandora_solr($query = NULL) {
 
   // Set primary display
   // check if display param is an valid, enabled profile. Else show default.
-  if (isset($params['display']) AND in_array($params['display'], $enabled_profiles)) {
+  if (isset($params['display']) && in_array($params['display'], $enabled_profiles)) {
     $islandora_solr_primary_display = $params['display'];
   }
   else {
@@ -236,7 +258,7 @@ function islandora_solr($query = NULL) {
   }
 
   // TODO: Also filter secondary displays against those checked in the configuration options.
-  if (isset($_GET['solr_profile']) AND isset($secondary_profiles[$_GET['solr_profile']])) {
+  if (isset($_GET['solr_profile']) && isset($secondary_profiles[$_GET['solr_profile']])) {
     $profile = $secondary_profiles[$_GET['solr_profile']];
   }
   elseif (isset($primary_profiles[$islandora_solr_primary_display])) {
@@ -353,7 +375,7 @@ function islandora_solr_ping($solr_url) {
   $solr_url_parsed = parse_url($solr_url);
 
   // if it's not a correct url for solr to check, return false.
-  if (!isset($solr_url_parsed['host']) OR !isset($solr_url_parsed['port'])) {
+  if (!isset($solr_url_parsed['host']) || !isset($solr_url_parsed['port'])) {
     return FALSE;
   }
 
@@ -385,7 +407,7 @@ function islandora_solr_ping($solr_url) {
 function islandora_solr_check_http($url) {
 
   // check for 'http://' or 'https://' prefix - if not found, add it.
-  if (strpos($url, "http://") === FALSE AND strpos($url, "https://") === FALSE) {
+  if (strpos($url, "http://") === FALSE && strpos($url, "https://") === FALSE) {
     $url = 'http://' . $url;
   }
   return $url;
@@ -465,13 +487,13 @@ function islandora_solr_get_sortable($solr_url = NULL) {
   $luke = islandora_solr_get_luke($solr_url);
 
   // check if fields are available
-  if (isset($luke['fields']) AND !empty($luke['fields'])) {
+  if (isset($luke['fields']) && !empty($luke['fields'])) {
     // loop over fields
     foreach ($luke['fields'] as $field => $value) {
       // scheck if field is sortable
       // must be indexed and can't be multivalued
       // http://wiki.apache.org/solr/CommonQueryParameters#sort
-      if (strstr($value['schema'], "I") != FALSE AND strstr($value['schema'], "M") == FALSE) {
+      if (strstr($value['schema'], "I") != FALSE && strstr($value['schema'], "M") == FALSE) {
         // add field
         $sortable[] = $field;
       }
@@ -511,7 +533,7 @@ function islandora_solr_check_sortable($solr_url = NULL, $field = NULL) {
       // scheck if field is sortable
       // must be indexed and can't be multivalued
       // http://wiki.apache.org/solr/CommonQueryParameters#sort
-      if (strstr($schema, "I") != FALSE AND strstr($schema, "M") == FALSE) {
+      if (strstr($schema, "I") != FALSE && strstr($schema, "M") == FALSE) {
         $sortable = TRUE;
       }
     }

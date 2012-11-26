@@ -34,8 +34,6 @@ class IslandoraSolrQueryProcessor {
    */
   function IslandoraSolrQueryProcessor() {
 
-    // include common.inc
-    module_load_include('inc', 'islandora_solr', 'includes/common');
   }
 
   /**
@@ -91,7 +89,7 @@ class IslandoraSolrQueryProcessor {
     unset($this->internalSolrParams['page']);
 
     // Set Solr type (dismax)
-    if (isset($this->internalSolrParams['type']) AND $this->internalSolrParams['type'] == 'dismax') {
+    if (isset($this->internalSolrParams['type']) && $this->internalSolrParams['type'] == 'dismax') {
       $this->solrDefType = $this->internalSolrParams['type'];
       $this->solrParams['defType'] = $this->internalSolrParams['type'];
     }
@@ -115,7 +113,7 @@ class IslandoraSolrQueryProcessor {
     if (isset($this->internalSolrParams['sort'])) {
       $sort_explode = explode(' ', $this->internalSolrParams['sort']);
       // check if an order is given and if the order value is asc or desc
-      if (isset($sort_explode[1]) AND ($sort_explode[1] == 'asc' OR $sort_explode[1] == 'desc')) {
+      if (isset($sort_explode[1]) && ($sort_explode[1] == 'asc' || $sort_explode[1] == 'desc')) {
         $this->solrParams['sort'] = $this->internalSolrParams['sort'];
       }
       else {
@@ -143,38 +141,55 @@ class IslandoraSolrQueryProcessor {
 
     // set facet parameters
     // set variables
-    $raw_facet_vals = variable_get("islandora_solr_facets", 'dc.subject ~ Subject,dc.type ~ Type');
-    $facet_array = islandora_build_substitution_list($raw_facet_vals);
+    $facet_array = islandora_solr_get_fields('facet_fields');
     $facet_fields = implode(",", array_keys($facet_array));
     $keys = array();
-    $snippet_array = islandora_build_substitution_list(variable_get('islandora_solr_snippet_field', ''));
-    if (is_array($snippet_array)) {
-      $keys = array_keys($snippet_array);
-    }
+    $snippet_array = islandora_solr_get_snippet_fields();
+    $snippets = implode(',', $snippet_array);
+
     // set params
     $params_array = array(
       'facet' => 'true',
       'facet.mincount' => variable_get('islandora_solr_facet_min_limit', '2'),
       'facet.limit' => variable_get('islandora_solr_facet_max_limit', '20'),
       'qt' => variable_get('islandora_solr_request_handler', ''),
-      'hl' => isset($keys[0]) ? 'true' : NULL,
-      'hl.fl' => isset($keys[0]) ? trim($keys[0]) : NULL,
+      'hl' => isset($snippets) ? 'true' : NULL,
+      'hl.fl' => isset($snippets) ? $snippets : NULL,
       'hl.fragsize' => 400,
       'facet.field' => explode(',', $facet_fields), //comma separated list configured in the block config
     );
 
     // check for date facets
-    if (variable_get('islandora_solr_facet_date' , NULL) != NULL) {
-      // set variables
-      $facet_date = variable_get('islandora_solr_facet_date' , NULL);
-      $facet_date = islandora_build_substitution_list($facet_date);
-      $facet_date = implode(",", array_keys($facet_date));
-      $params_date_facets = array(
-        'facet.date' => explode(',', $facet_date),
-        'facet.date.start' => variable_get('islandora_solr_facet_date_start' , 'NOW/YEAR-20YEARS'),
-        'facet.date.end' => variable_get('islandora_solr_facet_date_end' , 'NOW'),
-        'facet.date.gap' => variable_get('islandora_solr_facet_date_gap' , '+1YEAR'),
-      );
+    $facet_dates = islandora_solr_get_range_facets();
+    if (!empty($facet_dates)) {
+      // set range/date variables
+      $params_date_facets = array();
+      foreach ($facet_dates as $key => $value) {
+        $field = $value['solr_field'];
+        $start = $value['solr_field_settings']['range_facet_start'];
+        $end = $value['solr_field_settings']['range_facet_end'];
+        $gap = $value['solr_field_settings']['range_facet_gap'];
+        // add date facet
+        $params_date_facets["facet.date"][] = $field;
+        // custom field settings
+        if ($start) {
+          $params_date_facets["f.{$field}.facet.date.start"] = $start;
+        }
+        if ($end) {
+          $params_date_facets["f.{$field}.facet.date.end"] = $end;
+        }
+        if ($gap) {
+          $params_date_facets["f.{$field}.facet.date.gap"] = $gap;
+        }
+        // remove range/date field from facet.field array
+        $pos = array_search($field, $params_array['facet.field']);
+        unset($params_array['facet.field'][$pos]);
+      }
+      // default settings
+      $params_date_facets["facet.date.start"] = 'NOW/YEAR-20YEARS';
+      $params_date_facets["facet.date.end"] = 'NOW';
+      $params_date_facets["facet.date.gap"] = '+1YEAR';
+
       $params_array = array_merge($params_array, $params_date_facets);
     }
 
@@ -188,7 +203,7 @@ class IslandoraSolrQueryProcessor {
     $base_filters = preg_split("/\\r\\n|\\n|\\r/", variable_get('islandora_solr_base_filter', ''), -1, PREG_SPLIT_NO_EMPTY);
 
     // set filter parameters - both from url and admin settings.
-    if (isset($this->internalSolrParams['f']) AND is_array($this->internalSolrParams['f'])) {
+    if (isset($this->internalSolrParams['f']) && is_array($this->internalSolrParams['f'])) {
       $this->solrParams['fq'] = $this->internalSolrParams['f'];
       if (!empty($base_filters)) {
         $this->solrParams['fq'] = array_merge($this->internalSolrParams['f'], $base_filters);
@@ -197,7 +212,6 @@ class IslandoraSolrQueryProcessor {
     elseif (!empty($base_filters)) {
       $this->solrParams['fq'] = $base_filters;
     }
-
 
     // restrict results based on specified namespaces
     $namespace_list = trim(variable_get('islandora_solr_namespace_restriction', ''));
@@ -211,7 +225,7 @@ class IslandoraSolrQueryProcessor {
     }
 
     // if no qf fields are specified in the requestHandler a default list is supplied here for dismax searches
-    if (!variable_get('islandora_solr_dismax_allowed', FALSE) AND isset($this->internalSolrParams['type']) AND $this->internalSolrParams['type'] == "dismax") {
+    if (!variable_get('islandora_solr_dismax_allowed', FALSE) && isset($this->internalSolrParams['type']) && $this->internalSolrParams['type'] == "dismax") {
       $this->solrParams['qf'] = 'dc.title^5 dc.subject^2 dc.description^2 dc.creator^2 dc.contributor^1 dc.type';
     }
 
