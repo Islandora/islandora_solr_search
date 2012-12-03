@@ -15,7 +15,7 @@ class IslandoraSolrResults {
   public $searchFieldArray = array();
   public $resultFieldArray = array();
   public $allSubsArray = array();
-
+  public $islandoraSolrQueryProcessor;
   /**
    * Constructor
    */
@@ -39,7 +39,7 @@ class IslandoraSolrResults {
    * @see islandora_solr()
    */
   function displayResults($islandoraSolrQuery) {
-
+    $this->islandoraSolrQueryProcessor = $islandoraSolrQuery;
     // set variables to collect returned data.
     $results = NULL;
     $secondary_profiles = NULL;
