@@ -22,7 +22,7 @@ function islandora_solr_admin_settings($form, &$form_state) {
 
   // Solr connect
   // triggering handler is dismax check or no trigger at all (page load)
-  if ((isset($form_state['triggering_element']) && $form_state['triggering_element']['#name'] == 'islandora_solr_url') || !isset($form_state['triggering_element'])) {
+  if ((isset($form_state['triggering_element']) && (($form_state['triggering_element']['#name'] == 'islandora_solr_url') || ($form_state['triggering_element']['#name'] == 'islandora_solr_request_handler'))) || !isset($form_state['triggering_element'])) {
 
     // check for the php solr lib class
     if (!class_exists('Apache_Solr_Service')) {
