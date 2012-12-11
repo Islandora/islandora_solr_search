@@ -85,6 +85,10 @@ function islandora_solr_admin_settings($form, &$form_state) {
       'progress' => array('type' => 'throbber'),
     ),
   );
+  $form['solr_ajax_wrapper']['islandora_solr_dismax_allowed'] = array(
+    '#type' => 'hidden',
+    '#default_value' => $dismax_allowed,
+  );
   // hidden submit button
   $form['solr_ajax_wrapper']['refresh_page'] = array(
     '#type' => 'submit',
@@ -436,15 +440,6 @@ function islandora_solr_admin_settings($form, &$form_state) {
     '#description' => t('Dumps solr query to the screen for testing. Warning: if you have the Drupal Apache Solr module enabled alongside this one then the debug function will not work.'),
     '#weight' => 6,
   );
-
-  //Notice: Undefined index: #options in expand_checkboxes() (line 1930 of /Applications/MAMP/htdocs/drupal-6.22/includes/form.inc).
-  $form['islandora_solr_dismax_allowed'] = array(
-    '#type' => 'hidden',
-    '#value' => $dismax_allowed,
-  );
-
-
-
 
   // The content of the popup dialog.
   $form['islandora_solr_admin_dialog'] = array(

@@ -39,6 +39,8 @@ High priority
 Normal Priority
 ---------------
 
+- split out highlighting true by default. Don't include unless at least one field is given.
+- add ability to add permission callback or permission id to solr display profiles
 - add a check to see if the context is the search results page. Currently we
 check if IslandoraSolrQueryProcessor::display is set, which is not ideal.
 - update hook_help functions
