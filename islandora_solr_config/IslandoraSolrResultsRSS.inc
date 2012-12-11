@@ -28,7 +28,7 @@ class IslandoraSolrResultsRSS extends IslandoraSolrResults {
   function printRSS($solrQueryProcessor, $title = "Search Results") {
 
     global $base_url;
-    dsm('printrss');
+
     // get raw results
     $solr_result = $solrQueryProcessor->solrResult;
     $raw_response = $solr_result->getRawResponse();
