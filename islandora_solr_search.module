@@ -384,17 +384,19 @@ function islandora_solr_search_block_form_validate($form, &$form_state) {
 
   $repeat = variable_get('islandora_solr_search_block_repeat', '3');
   $found = FALSE;
+  $message = t("Please enter search term.");
   for ($fieldNum = 1; $fieldNum <= $repeat; $fieldNum++) {
     if (!empty($form_state['values']["fedora_terms$fieldNum"])) {
-      if($form_state['values']["fedora_terms$fieldNum"]== '*'){
+      if($form_state['values']["fedora_terms$fieldNum"][0]== '*'){
        unset($form_state['values']["fedora_terms$fieldNum"]);
+       $message = t("If  !char  is used in search field it must follow other characters.", array('!char' => '<bold>*</bold>'));
        continue;
       }
       $found = TRUE;
     }
   }
   if (!$found) {
-    form_set_error('edit_fedora_terms1', t('Please enter search term.'));
+    form_set_error('edit_fedora_terms1', $message);
   }
 }
 
