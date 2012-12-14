@@ -39,7 +39,7 @@ class IslandoraSolrResults {
    * @return string
    */
   function displayResults($solrQueryProcessor, $title = NULL, $output = '') {
-    
+
     // set variables to collect returned data.
     $results = NULL;
     $secondary_profiles = NULL;
@@ -49,13 +49,13 @@ class IslandoraSolrResults {
     if (!is_null($title)) {
       drupal_set_title($title);
     }
-    
+
     // set breadcrumbs
     $this->setBreadcrumbs($solrQueryProcessor);
-    
+
     // raw solr results
     $apacheSolrResult = $solrQueryProcessor->solrResult;
-    
+
     // solr results count
     // total solr results
     $total = (int) $apacheSolrResult->response->numFound;
@@ -80,10 +80,10 @@ class IslandoraSolrResults {
 
     // rendered secondary display profiles
     $secondary_profiles = $this->addSecondaries($solrQueryProcessor);
-    
+
     // rendered results
     $results = $this->printResults($apacheSolrResult);
-        
+
     // return themed layout
     return theme('islandora_solr_wrapper', $results, $secondary_profiles, $elements);
   }
@@ -92,13 +92,12 @@ class IslandoraSolrResults {
     $query_list = array();
     // Get secondary display profiles
     $secondary_display_profiles = module_invoke_all('islandora_solr_secondary_display');
-    
+
     // set path
     $path = SOLR_SEARCH_PATH . '/' . replaceSlashes($solrQueryProcessor->solrQuery); // $_GET['q'] didn't seem to work here
-    
     // parameters set in url
     $params = $solrQueryProcessor->internalSolrParams;
-    
+
     // Expected return:
     // 
     // return array(
@@ -113,7 +112,7 @@ class IslandoraSolrResults {
     // );
 
     $secondary_array = variable_get('islandora_solr_secondary_display', array());
-    
+
     foreach ($secondary_array as $name => $status) {
       if ($status === $name) {
         // generate url
@@ -124,7 +123,7 @@ class IslandoraSolrResults {
         // set title
         $attr['title'] = $secondary_display_profiles[$name]['description'];
         // set rel
-        $attr['rel'] = 'nofollow';      
+        $attr['rel'] = 'nofollow';
         // set url
         $attr['href'] = url($path, array('query' => $query_secondary));
         // logo
@@ -149,16 +148,16 @@ class IslandoraSolrResults {
     // set variables
     $results_array = array();
     $elements = array();
-    
+
     // total
     $elements['solr_total'] = $results->response->numFound;
 
     // start
     $elements['solr_start'] = $results->response->start;
-    
+
     // get prepared search results
     $docs = $this->prep_results($results);
-    
+
     // optionally limit results to values given
     $limitResults = variable_get('islandora_solr_search_limit_result_fields', 0);
 
@@ -167,7 +166,6 @@ class IslandoraSolrResults {
       $rows = array();
       $row = 0; // keeping $row in there for now until the snippet issue is cleared out
       $snippet = NULL; // @TODO: how is this suposed to work if the $snippet always is set to NULL ?
-
       // loop over individual results to process fields
       foreach ($doc as $field => $value) {
 
@@ -183,7 +181,7 @@ class IslandoraSolrResults {
         $rows[$field]['label'] = $translated_field_name;
 
         // add class: render solr field name to string that can be used as class name
-        $rows[$field]['class'] = strtolower( preg_replace('/[^A-Za-z0-9]/', '-', $field));
+        $rows[$field]['class'] = strtolower(preg_replace('/[^A-Za-z0-9]/', '-', $field));
 
         // split value if the result value is an array
         if (is_array($value)) {
@@ -209,10 +207,6 @@ class IslandoraSolrResults {
     // return themed search results
     return theme('islandora_solr_search', $results_array, $elements);
   }
-  
-  
-  
-  
 
   function printDebugOutput($results) {
     // debug dump
@@ -262,47 +256,46 @@ class IslandoraSolrResults {
    * @param IslandoraSolrQueryProcessor $solrQueryProcessor
    */
   function currentQuery($solrQueryProcessor) {
-    
+
     // set path
     $path = SOLR_SEARCH_PATH . '/' . replaceSlashes($solrQueryProcessor->solrQuery); // $_GET['q'] didn't seem to work here
-    
     // get date format
     $format = variable_get('islandora_solr_facet_date_format', 'Y');
-    
+
     // set output variable
     $output = '';
-    
+
     // get user provided filter parameters
     $fq = $solrQueryProcessor->internalSolrParams['f'];
-    
+
     // parameters set in url
     $params = $solrQueryProcessor->internalSolrParams;
 
-    
+
     // Get Query values
     if (!in_array($solrQueryProcessor->solrQuery, $solrQueryProcessor->different_kinds_of_nothing)) {
       // get query value
       $query_value = $solrQueryProcessor->solrQuery;
-      
+
       // set list variables
       $query_list = array();
-      
+
       // remove link keeps all parameters (query gets removed instead)
       $query_minus = array();
       $query_minus = $params;
 
       // remove query from path
       $path_minus = implode('/', explode('/', $path, -1)) . '/ ';
-      
+
       // set attributes variable for remove link
       $attr_minus = array();
       // set title
       $attr_minus['title'] = t('Remove') . ' ' . $query_value;
       // set rel
-      $attr_minus['rel'] = 'nofollow';      
+      $attr_minus['rel'] = 'nofollow';
       // set url
       $attr_minus['href'] = url($path_minus, array('query' => $query_minus));
-      
+
       // create link
       // we're not using l() because of active classes: http://drupal.org/node/41595
       $query_list[] = '<a' . drupal_attributes($attr_minus) . '>(-)</a> ' . check_plain($query_value);
@@ -311,16 +304,15 @@ class IslandoraSolrResults {
       $output .= '<div class="islandora_solr_search_query_wrap">';
       $output .= theme_item_list($query_list, t('Query'), "ul", array('class' => 'islandora_solr_search_query_list query_list'));
       $output .= '</div>'; // 'islandora_solr_search_query_wrap'
-      
     }
-    
-    
+
+
     // Get Filter values
     if (!empty($fq)) {
-      
+
       // set list variables
       $filter_list = array();
-      
+
       // loop over filters
       foreach ($fq as $key => $filter) {
 
@@ -338,8 +330,8 @@ class IslandoraSolrResults {
         // trim brackets
 //        $filter_split[1] = trim($filter_split[1], "\"");
         $filter_value = trim($filter_split[1], "\"");
-        
-        
+
+
         // if value is date
         if (isset($solrQueryProcessor->solrParams['facet.date']) AND in_array(ltrim($filter_split[0], '-'), $solrQueryProcessor->solrParams['facet.date'])) {
           // split range filter string to return formatted date values
@@ -347,7 +339,7 @@ class IslandoraSolrResults {
           $filter_str = trim($filter_str, '[');
           $filter_str = trim($filter_str, ']');
           $filter_array = explode(' TO ', $filter_str);
-          
+
           $from_str = (strpos($filter_array[0], '*') !== FALSE) ? '*' : format_date(strtotime(trim($filter_array[0])) + 1, 'custom', $format, 0);
           $to_str = (strpos($filter_array[1], '*') !== FALSE) ? '*' : format_date(strtotime(trim($filter_array[1])), 'custom', $format, 0);
 
@@ -377,7 +369,7 @@ class IslandoraSolrResults {
         // set title
         $attr_minus['title'] = t('Remove') . ' ' . $filter;
         // set rel
-        $attr_minus['rel'] = 'nofollow';      
+        $attr_minus['rel'] = 'nofollow';
         // set url
         $attr_minus['href'] = url($path, array('query' => $query_minus));
 
@@ -390,7 +382,7 @@ class IslandoraSolrResults {
       $output .= theme_item_list($filter_list, t("Enabled Filters"), "ul", array('class' => 'islandora_solr_search_filter_list filter_list'));
       $output .= '</div>'; // 'islandora_solr_search_filter_wrap'
     }
-    
+
     return $output;
   }
 
@@ -400,26 +392,25 @@ class IslandoraSolrResults {
    * Description: sets the drupal breadcrumbs based on the current query and filters. 
    */
   function setBreadcrumbs($solrQueryProcessor) {
-    
+
     // set path
     $path = SOLR_SEARCH_PATH . '/' . replaceSlashes($solrQueryProcessor->solrQuery); // $_GET['q'] didn't seem to work here
-    
     // get date format
     $format = variable_get('islandora_solr_facet_date_format', 'Y');
-    
+
     // set breadcrumb variable
     $breadcrumb = array();
-    
+
     // get user provided filter parameters
     $fq = $solrQueryProcessor->internalSolrParams['f'];
-    
+
     // parameters set in url
     $params = $solrQueryProcessor->internalSolrParams;
     // set filter key if there are no filters included
     if (empty($params['f'])) {
       $params['f'] = array();
     }
-    
+
     // loop to create filter breadcrumbs if available
     if (!empty($fq)) {
       // set var
@@ -444,10 +435,10 @@ class IslandoraSolrResults {
           $filter_str = trim($filter_str, '[');
           $filter_str = trim($filter_str, ']');
           $filter_array = explode(' TO ', $filter_str);
-          
+
           $from_str = (strpos($filter_array[0], '*') !== FALSE) ? '*' : format_date(strtotime(trim($filter_array[0])) + 1, 'custom', $format, 0);
           $to_str = (strpos($filter_array[1], '*') !== FALSE) ? '*' : format_date(strtotime(trim($filter_array[1])), 'custom', $format, 0);
-          
+
           if ($from_str == $to_str OR trim($filter_array[0]) == trim($filter_array[1])) {
             $filter_value = $from_str;
           }
@@ -474,7 +465,7 @@ class IslandoraSolrResults {
         if (empty($query_x['f'])) {
           unset($query_x['f']);
         }
-        
+
         // set attributes variable
         $attr = array();
         // set title
@@ -493,40 +484,39 @@ class IslandoraSolrResults {
         // set title
         $attr_x['title'] = t('Remove') . ' ' . $filter;
         // set rel
-        $attr_x['rel'] = 'nofollow';      
+        $attr_x['rel'] = 'nofollow';
         // set url
         $attr_x['href'] = url($path, array('query' => $query_x));
 
         // create links
         // we're not using l() because of active classes: http://drupal.org/node/41595
         $breadcrumb[] = '<a' . drupal_attributes($attr) . '>' . check_plain($filter_value) . '</a>'
-              . '<span class="islandora_solr_search_breadcrumb_super"> <a' . drupal_attributes($attr_x) . '>(' . t('x') . ')</a></span>';
-
+            . '<span class="islandora_solr_search_breadcrumb_super"> <a' . drupal_attributes($attr_x) . '>(' . t('x') . ')</a></span>';
       }
 
       // at this point reverse the breadcrumbs array (only contains filters)
       $breadcrumb = array_reverse($breadcrumb);
     }
-    
+
     // create Query breadcrumb
     if (!in_array($solrQueryProcessor->solrQuery, $solrQueryProcessor->different_kinds_of_nothing)) {
       // get query value
       $query_value = $solrQueryProcessor->solrQuery;
-      
+
       // remove all filters for this breadcrumb
       $query = array();
       $query = array_diff($params, array('f' => array()));
-      
+
       // remove button keeps all parameters (query gets removed instead)
       $query_x = array();
       $query_x = $params;
       if (empty($params['f'])) {
         unset($query_x['f']);
       }
-      
+
       // remove query from path
       $path_x = implode('/', explode('/', $path, -1)) . '/ ';
-      
+
       // set attributes variable
       $attr = array();
       // set title
@@ -541,7 +531,7 @@ class IslandoraSolrResults {
       // set title
       $attr_x['title'] = t('Remove') . ' ' . $query_value;
       // set rel
-      $attr_x['rel'] = 'nofollow';      
+      $attr_x['rel'] = 'nofollow';
       // set url
       $attr_x['href'] = url($path_x, array('query' => $query_x));
 
@@ -570,16 +560,15 @@ class IslandoraSolrResults {
       // create links
       // we're not using l() because of active classes: http://drupal.org/node/41595
       $breadcrumb[] = '<a' . drupal_attributes($attr) . '>' . check_plain($query_value) . '</a>'
-            . '<span class="islandora_solr_search_breadcrumb_super"> <a' . drupal_attributes($attr_x) . '>(' . t('x') . ')</a></span>';
+          . '<span class="islandora_solr_search_breadcrumb_super"> <a' . drupal_attributes($attr_x) . '>(' . t('x') . ')</a></span>';
     }
-    
+
     $breadcrumb[] = l(t('Home'), '<front>', array('attributes' => array('title' => t('Home'))));
     if (!empty($breadcrumb))
       $breadcrumb = array_reverse($breadcrumb);
     drupal_set_breadcrumb($breadcrumb);
-    
   }
-  
+
   /**
    * Function: prepFieldSubstitutions
    *
@@ -591,7 +580,7 @@ class IslandoraSolrResults {
     $this->facetFieldArray = islandora_build_substitution_list($rawFacetVals);
 
     // populate with date facet readable names
-    $rawDateFacetVals = variable_get('islandora_solr_facet_date' , NULL);
+    $rawDateFacetVals = variable_get('islandora_solr_facet_date', NULL);
     $rawDateFacetVals = islandora_build_substitution_list($rawDateFacetVals);
     if ($rawDateFacetVals != NULL) {
       $this->facetFieldArray = array_merge($this->facetFieldArray, $rawDateFacetVals);
@@ -605,7 +594,6 @@ class IslandoraSolrResults {
 
     $this->allSubsArray = array_merge($this->facetFieldArray, $this->searchFieldArray, $this->resultFieldArray);
   }
-
 
   /**
    * Function: displayFacets
@@ -632,10 +620,10 @@ class IslandoraSolrResults {
     // get facet values returned from solr
     $facets = isset($solrQueryProcessor->solrResult->facet_counts->facet_fields) ? $solrQueryProcessor->solrResult->facet_counts->facet_fields : array();
     // object to json
-    $facets_json  = json_encode($facets);
+    $facets_json = json_encode($facets);
     // json  to array
     $facets = json_decode($facets_json, true);
-    
+
     // get date facet values
     $date_facets = isset($solrQueryProcessor->solrResult->facet_counts->facet_dates) ? $solrQueryProcessor->solrResult->facet_counts->facet_dates : array();
 
@@ -645,14 +633,14 @@ class IslandoraSolrResults {
       $date_facets = $variable_range_data['date_facets'];
       $solr_call = $variable_range_data['solr_call'];
     }
-    
+
     // object to json
-    $date_facets_json  = json_encode($date_facets);
+    $date_facets_json = json_encode($date_facets);
     // json to array
     $date_facets_arr = json_decode($date_facets_json, true);
 
     // get date format
-    $format = variable_get('islandora_solr_facet_date_format' , 'Y');
+    $format = variable_get('islandora_solr_facet_date_format', 'Y');
     // set variable
     $date_facets = array();
     // loop over each date field
@@ -717,10 +705,10 @@ class IslandoraSolrResults {
 
         // check for minumum returned values again, because some might have been disabled
         if (count($list_items) >= $facet_min_count) {
-          
+
           // opening facet div // @TODO: this should go in theme function
           $facet_output .='<div class="islandora_solr_search_facet">';
-          
+
           // set title
           $list_title = $this->facetFieldArray[$facet_key];
 
@@ -752,14 +740,18 @@ class IslandoraSolrResults {
             $facet_output .= theme('item_list', $list_items_hidden, NULL, $list_type, $list_attributes);
             $facet_output .= '</div>';
           }
-          
+
           $facet_output .='</div>'; //div.islandora_solr_search_facet
         }
       }
 
       // check if we need range slider.
-      if (variable_get('islandora_solr_range_slider_enabled', 0) == 1 AND array_key_exists($facet_key, $date_facets_arr) AND $solrQueryProcessor->solrResult->response->numFound > 0 AND module_exists('jquery_ui')  AND jquery_ui_get_version() >= 1.7) {
-        
+      if (variable_get('islandora_solr_range_slider_enabled', 0) == 1 
+          AND array_key_exists($facet_key, $date_facets_arr) 
+          AND $solrQueryProcessor->solrResult->response->numFound > 0 
+          AND module_exists('jquery_ui')  
+          AND jquery_ui_get_version() >= 1.7 
+          AND !islandora_solr_is_ie_less_then(9)) {
         // facet data
         // @TODO: this is pretty bad code. Clean this up.
         // From here
@@ -771,7 +763,7 @@ class IslandoraSolrResults {
         unset($facet_data['other']);
         unset($facet_data['hardend']);
         unset($facet_data['include']);
-        
+
         // strip empty buckets left and right when no date filters are set
         if (isset($solr_call) AND !in_array($facet_key, $solr_call)) {
           foreach ($facet_data as $key => $value) {
@@ -815,13 +807,13 @@ class IslandoraSolrResults {
         $calc_from = strtotime(key($facet_data));
         next($facet_data);
         $calc_to = strtotime(key($facet_data));
-        
+
         // calculate difference between from and to date
         $calc_diff = abs($calc_from - $calc_to);
 
         // total difference in days
         $calc_total_days = floor($calc_diff / 60 / 60 / 24);
-        
+
         $gap = NULL;
         if ($calc_total_days == 1) {
           $gap = t('days');
@@ -850,7 +842,7 @@ class IslandoraSolrResults {
         elseif ($calc_total_days >= 360000 AND $calc_total_days <= 370000) {
           $gap = t('millennia');
         }
-        
+
         if (strpos($gap, t('year')) !== FALSE OR strpos($gap, t('decades')) !== FALSE OR strpos($gap, t('centuries')) !== FALSE OR strpos($gap, t('millennia')) !== FALSE) {
           $date_format = 'Y';
         }
@@ -860,7 +852,7 @@ class IslandoraSolrResults {
         else {
           $date_format = 'M j, Y';
         }
-        
+
         // create a nice array with our data
         $data = array();
         foreach ($facet_data as $date => $bucket_size) {
@@ -872,11 +864,10 @@ class IslandoraSolrResults {
             'bucket_size' => $bucket_size,
           );
         }
-        
+
         // add range slider color
         $slider_color = variable_get('islandora_solr_range_slider_color', '#edc240');
         // To here
-
         // if values are available
         $noslider = FALSE;
         if (count($data) > 1) {
@@ -893,7 +884,7 @@ class IslandoraSolrResults {
           $noslider = TRUE;
         }
       }
-      
+
       // add datefilter
       if (variable_get('islandora_solr_date_filter_enabled', 0) == 1 AND array_key_exists($facet_key, $date_facets_arr) AND module_exists('jquery_ui') AND $solrQueryProcessor->solrResult->response->numFound > 0) {
         // opening facet div // @TODO: this should go in theme function
@@ -921,7 +912,7 @@ class IslandoraSolrResults {
       // add js settings
       drupal_add_js(array('islandora_solr_search_datepicker_range' => trim($date_range)), 'setting');
     }
-    
+
     // add js for facets
     if ($show_more OR $date_filter_key > 0) {
       // if there is at least one occurence of a split array, we add js to the page.
@@ -943,8 +934,7 @@ class IslandoraSolrResults {
     return $output;
   }
 
-  
-  /**
+   /**
    * Add facet callback
    * @param type $key
    * @param type $name
@@ -954,7 +944,7 @@ class IslandoraSolrResults {
    * @param string $list 
    */
   function _addFacets(&$key, &$value, &$data, &$solrQueryProcessor, &$facet_count, &$list, $min_result) {
-    
+
     // value of date facet is an array, normal facets is a string.
     if (is_array($data)) {
       // set value
@@ -966,14 +956,14 @@ class IslandoraSolrResults {
       // don't include facet fields with a document count lower than the configured minimum
       if ($data < $min_result) {
         return;
-      } 
+      }
     }
     else {
       // @TODO: Should be changed to format_string for Drupal 7
       // @TODO: does this check for exclude filters? -PID:"foo"
       $filter = $key . ':"' . $value . '"'; // PID:"foo"
     }
-    
+
     //FIXME:  This isn't quite right...  It can make sense to facet on 
     //  the same field multiple times, provided it is multi-valued...
     $fq = (array) $solrQueryProcessor->solrParams['fq'];
@@ -991,14 +981,14 @@ class IslandoraSolrResults {
 
       $query_plus = array();
       $query_minus = array();
-      
+
       // parameters set in url
       $params = $solrQueryProcessor->internalSolrParams;
       // set filter key if there are no filters included
       if (empty($params['f'])) {
         $params['f'] = array();
       }
-      
+
       // merge recursively to add new filter parameter
       $query_plus = array_merge_recursive($params, array('f' => array($filter)));
       $query_minus = array_merge_recursive($params, array('f' => array('-' . $filter)));
@@ -1007,16 +997,16 @@ class IslandoraSolrResults {
       $attr = array('rel' => 'nofollow');
 
       $attr_plus = $attr_minus = $attr;
-      
+
       // add url
       $attr['href'] = url($path, array('query' => $query_plus));
       $attr_plus['href'] = url($path, array('query' => $query_plus));
       $attr_minus['href'] = url($path, array('query' => $query_minus));
-      
+
       // add classes
       $attr_plus['class'] = 'plus';
       $attr_minus['class'] = 'minus';
-      
+
       // create links
       // we're not using l() because of active classes: http://drupal.org/node/41595
       $list[] = '<a' . drupal_attributes($attr) . '>' . check_plain($value) . '</a>' . ' (' . $data . ')' .
@@ -1025,13 +1015,11 @@ class IslandoraSolrResults {
           . ' ' .
           '<a' . drupal_attributes($attr_minus) . '>-</a>'
           . '</span>';
-      
+
       $facet_count++;
     }
   }
 
-  
-  
   /**
    * Calculates date ranges based on enabled date range filters. Based on the
    * range it recalculates date range gaps and from/to dates.
@@ -1043,15 +1031,14 @@ class IslandoraSolrResults {
    *   present, this will return the default date range results.
    */
   function variableRangeGap($solrQueryProcessor) {
-    
+
     // 1. gather info
     // 2. calculate and render range gap
     // 3. execute
     // 4. prepare for return
     // 5. return
-
     // 1. gather info
-    $fq = isset($solrQueryProcessor->solrParams['fq']) ? $solrQueryProcessor->solrParams['fq'] : array();    
+    $fq = isset($solrQueryProcessor->solrParams['fq']) ? $solrQueryProcessor->solrParams['fq'] : array();
     // get date facet values
     $date_facets = isset($solrQueryProcessor->solrResult->facet_counts->facet_dates) ? $solrQueryProcessor->solrResult->facet_counts->facet_dates : array();
     // object to json
@@ -1061,10 +1048,10 @@ class IslandoraSolrResults {
 
     // populate with terms that needed a second solr call to update facets
     $solr_call = array();
-    
+
     // loop over all date facets
     foreach ($date_facets_arr as $term => $buckets) {
-        
+
       $values = array();
       // loop over all filters
       foreach ($fq as $key => $filter) {
@@ -1083,7 +1070,7 @@ class IslandoraSolrResults {
           $from_str = trim($filter_array[0]);
           $to_str = trim($filter_array[1]);
           $field = trim($filter_split[0], ' -');
-          
+
           // if a star is given, we need to perform an extra query to find out
           // what the minimum or maximum value is that 'star' would return.
           if (strpos($from_str, '*') !== FALSE) {
@@ -1109,7 +1096,7 @@ class IslandoraSolrResults {
         if ($from_unix >= $to_unix) {
           continue;
         }
-        
+
         // get ISO8601 values
         $from = $values['from'][$from_unix];
         // if the hour is 00:00:00, subtract one second. If we always subtract
@@ -1118,14 +1105,14 @@ class IslandoraSolrResults {
           $from .= '-1SECOND';
         }
         $to = $values['to'][$to_unix];
-        
+
         // 2. calculate and render range gap
         // calculate difference between from and to date
         $diff = abs($from_unix - $to_unix);
 
         // total difference in days
         $total_days = floor($diff / 60 / 60 / 24);
- 
+
         // for maximum 15 buckets
         // @TODO: make max buckets variable
         // @TODO: fine tune this: it's not very precise.
@@ -1162,7 +1149,7 @@ class IslandoraSolrResults {
         $solrQueryProcessor->solrParams["f.$term.facet.date.start"] = $from;
         $solrQueryProcessor->solrParams["f.$term.facet.date.end"] = $to;
         $solrQueryProcessor->solrParams["f.$term.facet.date.gap"] = $gap;
-        
+
         // update variable
         $solr_call[] = $term;
       }
@@ -1198,14 +1185,12 @@ class IslandoraSolrResults {
 
       // update date_facets
       $date_facets = $response_array['facet_counts']['facet_dates'];
-      
     }
 
     // 5. return
     return array('date_facets' => $date_facets, 'solr_call' => $solr_call);
   }
-  
-  
+
   /**
    * Finds the maximum or minimum value of a date field in a query. Called when
    * one of the values in a date range filter equals to '*'.
@@ -1248,13 +1233,9 @@ class IslandoraSolrResults {
     $raw_response = $results->getRawResponse();
     $response_array = json_decode($raw_response, TRUE);
 
-    return $response_array['response']['docs'][0][$field];    
+    return $response_array['response']['docs'][0][$field];
   }
-  
-  
-  
 
-  
   function _add_field(&$form, &$i, &$unprocessed_contents, &$types) {
     $type = NULL;
     $temp = preg_split('/:/', $unprocessed_contents, 2);
@@ -1431,18 +1412,18 @@ class IslandoraSolrResults {
     $docs = $responseArray['response']['docs'];
 
     if (!is_array($highlights)) {
-       return $docs;
+      return $docs;
     }
 
-   // if highights exist, inetegrate them back into the doc array
+    // if highights exist, inetegrate them back into the doc array
     $label = variable_get("islandora_solr_snippet_field", "");
     if ($label) {
       $label_parts = explode('~', $label);
       $field_label = trim($label_parts[1]);
       $field_text = trim($label_parts[0]);
     }
-    $this->resultFieldArray[$field_text]= $field_label;
-    $this->allSubsArray[$field_text]= $field_label;
+    $this->resultFieldArray[$field_text] = $field_label;
+    $this->allSubsArray[$field_text] = $field_label;
     foreach ($docs as &$doc) {
       $pid = $doc['PID'];
       unset($doc[$field_text]);

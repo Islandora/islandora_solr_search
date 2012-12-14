@@ -121,3 +121,31 @@ function islandora_build_substitution_list($rawFieldList) {
   }
   return $facetArray;
 }
+
+/**
+   * checks to see if browser is IE and is less then the specified version
+   * 
+   * user agent can be spoofed but we are only using this to determine 
+   * whether or not we should show the Date facet with the canvas graph
+   * 
+   * @param mixed $version_number
+   *   version number ie 8
+   * @return boolean 
+   *   TRUE if browser is IE and version is less then $version_number
+   *   otherwise FALSE
+   */
+  function islandora_solr_is_ie_less_then($version_number) {
+    preg_match('/MSIE (.*?);/', $_SERVER['HTTP_USER_AGENT'], $matches);
+    if (count($matches) > 1) {
+      //Then we're using IE
+      $version = $matches[1];
+      if ($version < $version_number) {
+        return TRUE;
+      }
+      else {
+        return FALSE;
+      }
+    }
+    //NOT ie
+    return FALSE;
+  }
