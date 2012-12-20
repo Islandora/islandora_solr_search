@@ -759,6 +759,7 @@ class IslandoraSolrResults {
         $facet_gap = $facet_data['gap'];
         $facet_end = $facet_data['end'];
         unset($facet_data['gap']);
+        unset($facet_data['start']);
         unset($facet_data['end']); // 'gap', 'end', 'other', 'hardend', 'include'
         unset($facet_data['other']);
         unset($facet_data['hardend']);
