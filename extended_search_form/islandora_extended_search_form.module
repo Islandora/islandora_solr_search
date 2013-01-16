@@ -132,25 +132,6 @@ EOT
       '#type' => 'markup',
       '#prefix' => '<div class="islandora-extended-search-controls">',
       '#suffix' => '</div>',
-      'sort' => array(
-        '#title' => t('Sort By'),
-        '#type' => 'select',
-        '#default_value' => (isset($values['sort']) ? $values['sort'] : 'score'),
-        '#options' => array( //XXX:  Need to make configurable...
-          'score' => t('Relevance'),
-          'mods_title_mlt' => t('Title'),
-          'mods_dateIssued_s' => t('Date Issued'),
-        ),
-      ),
-      'order' => array(
-        '#title' => t('Order'),
-        '#type' => 'select',
-        '#default_value' => (isset($values['order']) ? $values['order'] : 'desc'),
-        '#options' => array(
-          'desc' => t('Descending'),
-          'asc' => t('Ascending'),
-        ),
-      ),
       'submit' => array(
         '#type' => 'submit',
         '#value' => t('Search')
@@ -167,10 +148,10 @@ EOT
  */
 function islandora_extended_search_form_submit(array $form, array &$form_state) {
   $_SESSION['islandora_extended_search']['values'] = $form_state['values'];
-  //$_SESSION['islandora_extended_search']['sort'] = $form_state['values']['sort'];
-  //$_SESSION['islandora_extended_search']['order'] = $form_state['values']['order'];
   $query = _islandora_extended_search_form_build_query($form_state);
-  $form_state['redirect'] = 'islandora/solr/search/' . urlencode($query) . '/'; // Redirect to the search.
+
+  // Redirect to the search.
+  $form_state['redirect'] = 'islandora/solr/search/' . urlencode($query);
 }
 
 /**
