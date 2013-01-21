@@ -256,7 +256,7 @@ class IslandoraSolrResults {
    * @param IslandoraSolrQueryProcessor $solrQueryProcessor
    */
   function currentQuery($solrQueryProcessor) {
-
+    date_default_timezone_set('UTC');
     // set path
     $path = SOLR_SEARCH_PATH . '/' . replaceSlashes($solrQueryProcessor->solrQuery); // $_GET['q'] didn't seem to work here
     // get date format
@@ -746,11 +746,11 @@ class IslandoraSolrResults {
       }
 
       // check if we need range slider.
-      if (variable_get('islandora_solr_range_slider_enabled', 0) == 1 
-          AND array_key_exists($facet_key, $date_facets_arr) 
-          AND $solrQueryProcessor->solrResult->response->numFound > 0 
-          AND module_exists('jquery_ui')  
-          AND jquery_ui_get_version() >= 1.7 
+      if (variable_get('islandora_solr_range_slider_enabled', 0) == 1
+          AND array_key_exists($facet_key, $date_facets_arr)
+          AND $solrQueryProcessor->solrResult->response->numFound > 0
+          AND module_exists('jquery_ui')
+          AND jquery_ui_get_version() >= 1.7
           AND !islandora_solr_is_ie_less_then(9)) {
         // facet data
         // @TODO: this is pretty bad code. Clean this up.
@@ -935,7 +935,7 @@ class IslandoraSolrResults {
     return $output;
   }
 
-   /**
+  /**
    * Add facet callback
    * @param type $key
    * @param type $name
