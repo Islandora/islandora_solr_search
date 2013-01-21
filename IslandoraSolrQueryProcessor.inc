@@ -89,7 +89,7 @@ class IslandoraSolrQueryProcessor {
     unset($this->internalSolrParams['page']);
 
     // Set Solr type (dismax)
-    if (isset($this->internalSolrParams['type']) && $this->internalSolrParams['type'] == 'dismax') {
+    if (isset($this->internalSolrParams['type']) && ($this->internalSolrParams['type'] == 'dismax' || $this->internalSolrParams['type'] == 'edismax')) {
       $this->solrDefType = $this->internalSolrParams['type'];
       $this->solrParams['defType'] = $this->internalSolrParams['type'];
     }
@@ -225,10 +225,10 @@ class IslandoraSolrQueryProcessor {
     }
 
     // if no qf fields are specified in the requestHandler a default list is supplied here for dismax searches
-    if (!variable_get('islandora_solr_dismax_allowed', FALSE) && isset($this->internalSolrParams['type']) && $this->internalSolrParams['type'] == "dismax") {
+    if (!variable_get('islandora_solr_dismax_allowed', FALSE) && isset($this->internalSolrParams['type']) && ($this->internalSolrParams['type'] == "dismax" || $this->internalSolrParams['type'] == "edismax")) {
       $this->solrParams['qf'] = 'dc.title^5 dc.subject^2 dc.description^2 dc.creator^2 dc.contributor^1 dc.type';
     }
-
+    
     // Invoke a hook for third-party modules to alter the parameters.
     // The hook implementation needs to specify that it takes a reference, not be passed one
     module_invoke_all('islandora_solr_query', $this);
