@@ -249,7 +249,6 @@ function islandora_solr($query = NULL) {
     unset($params['display']);
   }
 
-
   // Build and execute Apache Solr query
   $queryResult = $_islandora_solr_queryclass->buildAndExecuteQuery($query, $params);
 
@@ -301,6 +300,9 @@ function islandora_solr($query = NULL) {
     $results_class = new IslandoraSolrResults();
     $output = $results_class->displayResults($_islandora_solr_queryclass);
   }
+
+  // Fire a hook to alter the solr search results, used for book and newspaper viewers search hit highlighting
+  drupal_alter('islandora_solr_search_results', $output, $_islandora_solr_queryclass);
 
   // debug dump
   if (variable_get('islandora_solr_debug_mode', 0)) {
