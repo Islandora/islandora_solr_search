@@ -99,7 +99,7 @@ class IslandoraSolrResults {
     $params = $solrQueryProcessor->internalSolrParams;
 
     // Expected return:
-    // 
+    //
     // return array(
     // 'machine-name' = array(
     //   'name' => 'Human Readable Name',
@@ -160,9 +160,11 @@ class IslandoraSolrResults {
 
     // optionally limit results to values given
     $limitResults = variable_get('islandora_solr_search_limit_result_fields', 0);
+    $pids = array();
 
     // loop over results array
     foreach ($docs as $doc) {
+      $pids[] = $doc['PID'];
       $rows = array();
       $row = 0; // keeping $row in there for now until the snippet issue is cleared out
       $snippet = NULL; // @TODO: how is this suposed to work if the $snippet always is set to NULL ?
@@ -203,6 +205,9 @@ class IslandoraSolrResults {
       // append array to results array
       $results_array[] = $rows;
     }
+    
+    // make pids accessible without interfering with results
+    $elements['pids'] = $pids;
 
     // return themed search results
     return theme('islandora_solr_search', $results_array, $elements);
@@ -388,8 +393,8 @@ class IslandoraSolrResults {
 
   /**
    * Function: setBreadcrumbs
-   * 
-   * Description: sets the drupal breadcrumbs based on the current query and filters. 
+   *
+   * Description: sets the drupal breadcrumbs based on the current query and filters.
    */
   function setBreadcrumbs($solrQueryProcessor) {
 
@@ -942,7 +947,7 @@ class IslandoraSolrResults {
    * @param type $number
    * @param type $solrQueryProcessor
    * @param int $facet_count
-   * @param string $list 
+   * @param string $list
    */
   function _addFacets(&$key, &$value, &$data, &$solrQueryProcessor, &$facet_count, &$list, $min_result) {
 
@@ -965,7 +970,7 @@ class IslandoraSolrResults {
       $filter = $key . ':"' . $value . '"'; // PID:"foo"
     }
 
-    //FIXME:  This isn't quite right...  It can make sense to facet on 
+    //FIXME:  This isn't quite right...  It can make sense to facet on
     //  the same field multiple times, provided it is multi-valued...
     $fq = (array) $solrQueryProcessor->solrParams['fq'];
 
@@ -1024,7 +1029,7 @@ class IslandoraSolrResults {
   /**
    * Calculates date ranges based on enabled date range filters. Based on the
    * range it recalculates date range gaps and from/to dates.
-   * 
+   *
    * @param object $solrQueryProcessor
    *   current query object.
    * @return array $date_facets
@@ -1195,7 +1200,7 @@ class IslandoraSolrResults {
   /**
    * Finds the maximum or minimum value of a date field in a query. Called when
    * one of the values in a date range filter equals to '*'.
-   * 
+   *
    * @param object $solrQueryProcessor
    *   current solr query object.
    * @param string $field
@@ -1292,11 +1297,11 @@ class IslandoraSolrResults {
 
     $queryArray = NULL;
     if (isset($query)) {
-      //A regex like '\\) (OR|AND) \\(' should work, right?  Nope.  Seems that 
-      //  preg_split (when given PREG_SPLIT_DELIM_CAPTURE) returns each explicit 
+      //A regex like '\\) (OR|AND) \\(' should work, right?  Nope.  Seems that
+      //  preg_split (when given PREG_SPLIT_DELIM_CAPTURE) returns each explicit
       //  capture group, so for that regex, you'd get only the 'AND' or 'OR'.
-      //  If you tried something like '('/(\\) (OR|AND) \\()/')', you'd get the 
-      //  'proper' ') AND (' or ') OR (', but also the 'AND' or 'OR' from the 
+      //  If you tried something like '('/(\\) (OR|AND) \\()/')', you'd get the
+      //  'proper' ') AND (' or ') OR (', but also the 'AND' or 'OR' from the
       //  inner group...  RAGE!...  This turns out to be unused...  Anyway.
       $bool_re = '/(OR|AND)/';
       $queryArray = preg_split($bool_re, $query, 0, PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE);
