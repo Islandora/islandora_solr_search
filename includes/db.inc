@@ -19,7 +19,7 @@
  *
  * @see islandora_solr_get_fields()
  */
-function islandora_solr_get_fields($field_type = NULL, $filter = TRUE, $simplified = TRUE) {
+function islandora_solr_get_fields($field_type = NULL, $filter = TRUE, $simplified = TRUE, $keys = FALSE) {
   global $base_path;
   // fields query
   $query = db_select('islandora_solr_fields', 'isf');
@@ -52,6 +52,13 @@ function islandora_solr_get_fields($field_type = NULL, $filter = TRUE, $simplifi
   // simplify
   if ($simplified == TRUE) {
     $records = _islandora_solr_simplify_fields($records);
+  }
+  // fields as keys  
+  if ($keys == TRUE && $simplified == FALSE) {
+    foreach ($records as $key => $value) {
+      $records[$value['solr_field']] = $value;
+      unset($records[$key]);
+    }    
   }
   return $records;
 }

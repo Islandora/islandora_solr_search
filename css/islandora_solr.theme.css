@@ -1,22 +1,5 @@
 /* Theme style sheet for islandora solr */
 
-
-/* Facets */
-
-.islandora-solr-facet-name,
-.islandora-solr-facet-title
-{
-  font-weight:bold;
-}
-
-.islandora-solr-facet-wrap ul li
-{
-  font-size:90%;
-  line-height: 1.3em;
-}
-
-
-
 /* breadcrumbs */
 
 .strikethrough
@@ -29,8 +12,6 @@
   vertical-align: super;
   font-size: 80%;
 }
-
-
 
 /* Default solr results styling (list) */
 
@@ -78,4 +59,144 @@ dl.solr-fields
 .solr-fields dd.first
 {
   border-top: 0;
+}
+
+
+/* Range filter */
+
+.islandora-solr-date-filter label
+{
+  display: inline-block;  
+}
+
+.islandora-solr-range-slider,
+.islandora-solr-date-filter
+{
+  text-align: right;
+}
+
+.islandora-solr-date-filter label
+{
+  float: left;
+  margin: 5px 0;
+}
+
+.islandora-solr-date-filter input.form-submit,
+.islandora-solr-range-slider input.form-submit
+{
+  margin-right: 0;
+}
+
+.islandora-solr-date-filter form,
+.islandora-solr-range-slider form
+{
+  width: 100%;
+}
+
+.islandora-solr-date-filter .description
+{
+  margin: 5px 0;
+  text-align: left;
+  font-size: 0.85em;
+}
+
+table.ui-datepicker tbody td.ui-datepicker-current-day a
+{
+  background: yellow;
+}
+
+table.ui-datepicker tbody td.ui-datepicker-today a
+{
+  background: #cbe5fc;
+}
+
+.islandora-solr-range-slider .ui-slider
+{
+  height: 2px;
+  border: 0px;
+  background: #ccc;
+  margin-bottom: 20px;
+}
+
+.islandora-solr-range-slider .ui-slider-range
+{
+  background: #edc240;
+  height: 1px;
+}
+
+.islandora-solr-date-filter .form-item label
+{
+  display: inline-block;
+}
+
+.islandora-solr-range-slider .ui-state-default,
+.islandora-solr-range-slider .ui-widget-content .ui-state-default,
+.islandora-solr-range-slider .ui-slider-handle
+{
+  background: url('../images/slider-handle.png') top center no-repeat transparent;
+  border: 0px;
+  top: 2px; 
+  cursor: pointer;
+}
+
+.islandora-solr-range-slider .ui-slider-handle:hover {
+  background: url('../images/slider-handle.png') top center no-repeat transparent;
+  border: 0px;
+  top: 2px;
+}
+
+.islandora-solr-range-slider .range-slider-fromto
+{
+  text-align: center;
+}
+
+.islandora-solr-range-slider .date-range-slider-gap
+{
+  text-align: center;
+}
+
+#ui-datepicker-div {
+  z-index: 9999; /*must have*/
+}
+
+.slider-popup-from-wrapper,
+.slider-popup-to-wrapper
+{
+  display: none;
+  position: absolute;
+  width: 120px;
+  top: -40px;
+  left: 50%;
+  margin-left: -60px;
+  text-align: center;
+}
+
+.slider-popup-from,
+.slider-popup-to
+{
+  padding: 0px 10px 1px 10px;
+  font-size: 11px;
+  color: #333;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 10px 10px 10px 10px;
+}
+
+#range-slider-tooltip
+{
+  display: none;
+  position: absolute;
+  width: 250px;
+  text-align: center;
+  z-index: 9999;
+}
+
+#range-slider-tooltip span
+{
+  padding: 0px 10px 1px 10px;
+  font-size: 11px;
+  color: #333;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 10px 10px 10px 10px;
 }

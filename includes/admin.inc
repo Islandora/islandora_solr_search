@@ -511,7 +511,7 @@ function islandora_solr_admin_settings_fields(&$form_state, &$terms, $field_type
   if ($form_state['rebuild'] == FALSE) {
 
     // get values from DB
-    $records = islandora_solr_get_fields($field_type, FALSE, FALSE); // unfiltered and not simplified
+    $records = islandora_solr_get_fields($field_type, FALSE, FALSE); // unfiltered, not simplified and incremental keys
 
     // set fields to populate the admin table
     $fields = array();
@@ -1236,10 +1236,15 @@ function _islandora_solr_handle_solr_field_settings($solr_field_settings = NULL,
         return array(
           'label' => $solr_field_settings['label'],
           'range_facet_select' => $solr_field_settings['range_facet_select'],
+          'range_facet_variable_gap' => $solr_field_settings['range_facet_variable_gap'],
           'range_facet_start' => $solr_field_settings['range_facet_start'],
           'range_facet_end' => $solr_field_settings['range_facet_end'],
           'range_facet_gap' => $solr_field_settings['range_facet_gap'],
           'date_facet_format' => $solr_field_settings['date_facet_format'],
+          'range_facet_slider_enabled' => $solr_field_settings['range_facet_slider_enabled'],
+          'range_facet_slider_color' => $solr_field_settings['range_facet_slider_color'],
+          'date_filter_datepicker_enabled' => $solr_field_settings['date_filter_datepicker_enabled'],
+          'date_filter_datepicker_range' => $solr_field_settings['date_filter_datepicker_range'],
           'permissions' => $solr_field_settings['permissions'],
         );
         break;
@@ -1305,7 +1310,7 @@ function _islandora_solr_admin_get_form_function($field_type = NULL) {
  */
 function islandora_solr_admin_settings_result_fields($form, &$form_state, $variables) {
   // include this file in build_info
-  form_load_include($form_state, 'inc', 'islandora_solr', 'islandora_solr.admin');
+  form_load_include($form_state, 'inc', 'islandora_solr', 'includes/admin');
   // pass variables to form state
   $form_state['dialog'] = $variables;
   // get solr field values
@@ -1381,7 +1386,7 @@ function islandora_solr_admin_settings_result_fields($form, &$form_state, $varia
  */
 function islandora_solr_admin_settings_sort_fields($form, &$form_state, $variables) {
   // include this file in build_info
-  form_load_include($form_state, 'inc', 'islandora_solr', 'islandora_solr.admin');
+  form_load_include($form_state, 'inc', 'islandora_solr', 'includes/admin');
 
   $form_state['dialog'] = $variables;
   // get solr field values
@@ -1451,7 +1456,7 @@ function islandora_solr_admin_settings_sort_fields($form, &$form_state, $variabl
  */
 function islandora_solr_admin_settings_facet_fields($form, &$form_state, $variables) {
   // include this file in build_info
-  form_load_include($form_state, 'inc', 'islandora_solr', 'islandora_solr.admin');
+  form_load_include($form_state, 'inc', 'islandora_solr', 'includes/admin');
 
   $form_state['dialog'] = $variables;
   // get solr field values
@@ -1488,39 +1493,101 @@ function islandora_solr_admin_settings_facet_fields($form, &$form_state, $variab
   );
 
   // @TODO: check for non-ajax values
-    $form['options']['range_facet']['wrapper'] = array(
-      '#type' => 'container',
-      '#states' => array(
-        'visible' => array(
-          ':input[name="range_facet_select"]' => array('checked' => TRUE)
-        ),
+  $form['options']['range_facet']['wrapper'] = array(
+    '#type' => 'container',
+    '#states' => array(
+      'visible' => array(
+        ':input[name="range_facet_select"]' => array('checked' => TRUE)
       ),
-    );
-    $form['options']['range_facet']['wrapper']['range_facet_start'] = array(
-      '#type' => 'textfield',
-      '#title' => t('Start'),
-      '#description' => t('The lower bound for the first date range for all Date Faceting on this field. This should be a single date expression which may use the <a href="!url">DateMathParser</a> syntax.', array('!url' => 'http://lucene.apache.org/solr/api/org/apache/solr/util/DateMathParser.html')),
-      '#default_value' => $values['range_facet_start'] ? $values['range_facet_start'] : 'NOW/YEAR-20YEARS',
-    );
-    $form['options']['range_facet']['wrapper']['range_facet_end'] = array(
-      '#type' => 'textfield',
-      '#title' => t('End'),
-      '#description' => t('The minimum upper bound for the last date range for all Date Faceting on this field. This should be a single date expression which may use the <a href="!url">DateMathParser</a> syntax.', array('!url' => 'http://lucene.apache.org/solr/api/org/apache/solr/util/DateMathParser.html')),
-      '#default_value' => $values['range_facet_end'] ? $values['range_facet_end'] : 'NOW',
-    );
-    $form['options']['range_facet']['wrapper']['range_facet_gap'] = array(
-      '#type' => 'textfield',
-      '#title' => t('Gap'),
-      '#description' => t('The size of each date range expressed as an interval to be added to the lower bound using the <a href="!url">DateMathParser</a> syntax.', array('!url' => 'http://lucene.apache.org/solr/api/org/apache/solr/util/DateMathParser.html')),
-      '#default_value' => $values['range_facet_gap'] ? $values['range_facet_gap'] : '+1YEAR',
-    );
-    $form['options']['range_facet']['wrapper']['date_facet_format'] = array(
-      '#type' => 'textfield',
-      '#title' => t('Date format'),
-      '#description' => t('The format of the date as it will be displayed in the facet block. Use the <a href="!url">PHP date()</a> formatting.', array('!url' => 'http://lucene.apache.org/solr/api/org/apache/solr/util/DateMathParser.html')),
-      '#default_value' => $values['date_facet_format'] ? $values['date_facet_format'] : 'Y',
-    );
+    ),
+  );
+  $form['options']['range_facet']['wrapper']['range_facet_variable_gap'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Variable range gap'),
+    '#return_value' => 1,
+    '#default_value' => $values['range_facet_variable_gap'] ? $values['range_facet_variable_gap'] : 0,
+    '#description' => t('When checked, the following date range settings will be used as a default. If a date range is filtered down, a new date range gap will be calculated and applied. When unchecked the following settings provide fixed range gaps.'),
+  );
+  $form['options']['range_facet']['wrapper']['range_facet_start'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Start'),
+    '#default_value' => $values['range_facet_start'] ? $values['range_facet_start'] : 'NOW/YEAR-20YEARS',
+    '#description' => t('The lower bound for the first date range for all Date Faceting on this field. This should be a single date expression which may use the <a href="!url">DateMathParser</a> syntax.', array('!url' => 'http://lucene.apache.org/solr/api/org/apache/solr/util/DateMathParser.html')),
+  );
+  $form['options']['range_facet']['wrapper']['range_facet_end'] = array(
+    '#type' => 'textfield',
+    '#title' => t('End'),
+    '#default_value' => $values['range_facet_end'] ? $values['range_facet_end'] : 'NOW',
+    '#description' => t('The minimum upper bound for the last date range for all Date Faceting on this field. This should be a single date expression which may use the <a href="!url">DateMathParser</a> syntax.', array('!url' => 'http://lucene.apache.org/solr/api/org/apache/solr/util/DateMathParser.html')),
+  );
+  $form['options']['range_facet']['wrapper']['range_facet_gap'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Gap'),
+    '#default_value' => $values['range_facet_gap'] ? $values['range_facet_gap'] : '+1YEAR',
+    '#description' => t('The size of each date range expressed as an interval to be added to the lower bound using the <a href="!url">DateMathParser</a> syntax.', array('!url' => 'http://lucene.apache.org/solr/api/org/apache/solr/util/DateMathParser.html')),
+  );
+  $form['options']['range_facet']['wrapper']['date_facet_format'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Date format'),
+    '#default_value' => $values['date_facet_format'] ? $values['date_facet_format'] : 'Y',
+    '#description' => t('The format of the date as it will be displayed in the facet block. Use the <a href="!url">PHP date()</a> formatting.', array('!url' => 'http://lucene.apache.org/solr/api/org/apache/solr/util/DateMathParser.html')),
+  );
 
+  // Range slider.
+  $form['options']['range_facet']['wrapper']['range_slider'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Range slider'),
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
+  );
+  $form['options']['range_facet']['wrapper']['range_slider']['range_facet_slider_enabled'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Enable range slider'),
+    '#return_value' => 1,
+    '#default_value' => $values['range_facet_slider_enabled'] ? $values['range_facet_slider_enabled'] : 0,
+    '#description' => t('When checked, the normal range facet will be replaced by a range slider widget.'),
+  );
+  $form['options']['range_facet']['wrapper']['range_slider']['range_facet_slider_color'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Slider color'),
+    '#description' => t('A color for the range slider. Defaults to #edc240'),
+    '#default_value' => $values['range_facet_slider_color'] ? $values['range_facet_slider_color'] : '#edc240',
+    '#states' => array(
+      'visible' => array(
+        ':input[name="range_facet_slider_enabled"]' => array('checked' => TRUE)
+      ),
+    ),
+  );
+
+  // Date filter
+  $form['options']['range_facet']['wrapper']['date_filter'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Date range filter'),
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
+  );
+  $form['options']['range_facet']['wrapper']['date_filter']['date_filter_datepicker_enabled'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Enable date range filter'),
+    '#return_value' => 1,
+    '#default_value' => $values['date_filter_datepicker_enabled'] ? $values['date_filter_datepicker_enabled'] : 0,
+    '#description' => t('When checked, a date range filter will become available underneath the date range facets. The date range filter includes a <em>from date</em> and a <em>to date</em> textfield. It comes with a calendar popup widget.'),
+  );
+  $form['options']['range_facet']['wrapper']['date_filter']['date_filter_datepicker_range'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Years back and forward'),
+    '#default_value' => $values['date_filter_datepicker_range'] ? $values['date_filter_datepicker_range'] : '-100:+3',
+    '#size' => 10,
+    '#maxsize' => 10,
+    '#description' => t('The range of years displayed in the year drop-down: either relative to today\'s year ("-nn:+nn"), relative to the currently selected year ("c-nn:c+nn"), absolute ("nnnn:nnnn"), or combinations of these formats ("nnnn:-nn"). For more info, check the jQuery UI <a href="!url" target="_blank">datepicker documentation</a>.', array('!url' => 'http://api.jqueryui.com/datepicker/#option-yearRange')),
+    '#states' => array(
+      'visible' => array(
+        ':input[name="date_filter_datepicker_enabled"]' => array('checked' => TRUE)
+      ),
+    ),
+  );
+
+  // Permissions.
   $form['options']['permissions_fieldset'] = array(
     '#type' => 'fieldset',
     '#title' => t('Permissions'),
@@ -1583,7 +1650,7 @@ function _islandora_solr_admin_settings_facet_fields_callback($form, &$form_stat
  */
 function islandora_solr_admin_settings_search_fields($form, &$form_state, $variables) {
   // include this file in build_info
-  form_load_include($form_state, 'inc', 'islandora_solr', 'islandora_solr.admin');
+  form_load_include($form_state, 'inc', 'islandora_solr', 'includes/admin');
 
   $form_state['dialog'] = $variables;
   // get solr field values

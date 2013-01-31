@@ -5,28 +5,15 @@
  * Implementation of Solr search for the Islandora fedora_search module.
  */
 
-/**
- * Implements hook_init().
- *
- * @global IslandoraSolrQueryProcessor $_islandora_solr_queryclass
- * @staticvar boolean $islandora_solr_init
- */
-function islandora_solr_init() {
-  // include inc files
-  module_load_include('inc', 'islandora_solr', 'includes/islandora_solr.db');
-  module_load_include('inc', 'islandora_solr', 'includes/common');
-  module_load_include('inc', 'islandora_solr', 'islandora_solr.block');
+// Includes functions for common db queries.
+require_once dirname(__FILE__) . '/includes/db.inc';
+// Includes functions for common tasks.
+require_once dirname(__FILE__) . '/includes/common.inc';
+// Includes functions to create Islandora Solr blocks.
+require_once dirname(__FILE__) . '/includes/blocks.inc';
+// Includes functions for advanced facet functionality.
+require_once dirname(__FILE__) . '/includes/facets.inc';
 
-  static $islandora_solr_init = FALSE;
-  if (!$islandora_solr_init) {
-    // single underscore followed by the module and another underscore
-    global $_islandora_solr_queryclass;
-    if (empty($_islandora_solr_queryclass)) {
-      $_islandora_solr_queryclass = new IslandoraSolrQueryProcessor();
-    }
-    $islandora_solr_init = TRUE;
-  }
-}
 
 /**
  * Implements hook_boot().
@@ -43,9 +30,12 @@ function islandora_solr_boot() {
       'islandora_solr_searchterms'
     );
 
-    $conf['i18n_variables'] = (isset($conf['i18n_variables']) && is_array($conf['i18n_variables'])) ?
-      array_merge($vars, $conf['i18n_variables']):
-      $vars;
+    if (isset($conf['i18n_variables']) && is_array($conf['i18n_variables'])) {
+      $conf['i18n_variables'] = array_merge($vars, $conf['i18n_variables']);
+    }
+    else {
+      $conf['i18n_variables'] = $vars;
+    }
   }
 }
 
@@ -65,7 +55,7 @@ function islandora_solr_menu() {
     'page callback' => 'drupal_get_form',
     'page arguments' => array('islandora_solr_admin_settings'),
     'access arguments' => array('administer islandora solr'),
-    'file' => 'islandora_solr.admin.inc',
+    'file' => 'includes/admin.inc',
     'type' => MENU_NORMAL_ITEM,
   );
   $items['islandora_solr/field'] = array(
@@ -74,7 +64,7 @@ function islandora_solr_menu() {
     'page callback' => 'islandora_solr_admin_settings_field',
     'page arguments' => array(2, 3),
     'access arguments' => array('administer islandora solr'),
-    'file' => 'islandora_solr.admin.inc',
+    'file' => 'includes/admin.inc',
     'type' => MENU_CALLBACK,
   );
   $items['islandora_solr/autocomplete_luke'] = array(
@@ -82,7 +72,7 @@ function islandora_solr_menu() {
     'description' => 'Autocomplete callback to populate solr text fields.',
     'page callback' => '_islandora_solr_autocomplete_luke',
     'access arguments' => array('administer islandora solr'),
-    'file' => 'islandora_solr.admin.inc',
+    'file' => 'includes/admin.inc',
     'type' => MENU_CALLBACK,
   );
   return $items;
@@ -122,7 +112,7 @@ function islandora_solr_permission() {
 function islandora_solr_theme() {
   // set path
   $path = drupal_get_path('module', 'islandora_solr');
-  $file = 'islandora_solr.theme.inc';
+  $file = 'theme.inc';
 
   return array(
     // advanced solr search form/block
@@ -134,13 +124,13 @@ function islandora_solr_theme() {
     // theme admin form
     'islandora_solr_admin_primary_display' => array(
       'path' => $path,
-      'file' => 'islandora_solr.admin.inc',
+      'file' => 'includes/admin.inc',
       'render element' => 'form',
     ),
     // theme admin form fields
     'islandora_solr_admin_fields' => array(
       'path' => $path,
-      'file' => 'islandora_solr.admin.inc',
+      'file' => 'includes/admin.inc',
       'render element' => 'form',
     ),
     // results page
@@ -156,6 +146,26 @@ function islandora_solr_theme() {
       'file' => $file,
       'template' => 'islandora-solr',
       'variables' => array('results' => NULL, 'elements' => array(), 'pids' => array()),
+    ),
+     // default facet
+    'islandora_solr_facet' => array(
+      'path' => $path . '/theme',
+      'file' => $file,
+      'template' => 'islandora-solr-facet',
+      'variables' => array('buckets' => NULL, 'hidden' => FALSE),
+    ),
+     // facet wrapper
+    'islandora_solr_facet_wrapper' => array(
+      'path' => $path . '/theme',
+      'file' => $file,
+      'variables' => array('title' => NULL, 'content' => NULL),
+    ),
+     // range slider
+    'islandora_solr_range_slider' => array(
+      'path' => $path . '/theme',
+      'file' => $file,
+      'template' => 'islandora-solr-range-slider',
+      'variables' => array('form_key' => NULL, 'gap' => NULL, 'range_from' => NULL, 'range_to' => NULL),
     ),
   );
 }
@@ -188,9 +198,6 @@ function islandora_solr_islandora_solr_primary_display() {
   );
 }
 
-
-
-
 /**
  * Page callback: Islandora Solr.
  *
@@ -211,18 +218,16 @@ function islandora_solr_islandora_solr_primary_display() {
  */
 function islandora_solr($query = NULL) {
   global $_islandora_solr_queryclass;
-
-  // add islandora solr theme css
   drupal_add_css(drupal_get_path('module', 'islandora_solr') . '/css/islandora_solr.theme.css');
 
-  // get all url parameters
+  // Url parameters.
   $params = $_GET;
 
   // get profiles
   $primary_profiles = module_invoke_all('islandora_solr_primary_display');
   $secondary_profiles = module_invoke_all('islandora_solr_secondary_display');
 
-// Get the preferred display profile
+  // Get the preferred display profile
   // Order: First choice is what's in the ?profile query var
   //        Second choice is the primary display profile
   //        Third choice is the default IslandoraSolrResults
@@ -251,6 +256,7 @@ function islandora_solr($query = NULL) {
 
 
   // Build and execute Apache Solr query
+  $_islandora_solr_queryclass = new IslandoraSolrQueryProcessor();
   $queryResult = $_islandora_solr_queryclass->buildAndExecuteQuery($query, $params);
 
   if (empty($_islandora_solr_queryclass->solrResult)) {

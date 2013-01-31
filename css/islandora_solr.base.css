@@ -26,13 +26,17 @@ ul#secondary-display-profiles
 
 /* facets */
 
+.block ul.islandora-solr-facet {
+  padding: 0 0 0 1em;
+}
+
 /* hide the 2nd list if a facet list is split in two */
-.islandora-solr-facet .hidden
+.islandora-solr-facet.hidden
 {
   display: none;
 }
 
-.facet-list .plusminus
+.plusminus
 {
   float: right;
 }

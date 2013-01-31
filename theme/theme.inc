@@ -104,3 +104,24 @@ function islandora_solr_preprocess_islandora_solr(&$variables) {
     }
   }
 }
+
+/**
+ * Implements hook_preprocess().
+ */
+function islandora_solr_preprocess_islandora_solr_facet(&$variables) {
+  $buckets = $variables['buckets'];
+  if ($variables['hidden']) {
+    $variables['classes_array'][] = 'hidden';
+  }
+}
+
+/**
+ * Theme function for facet wrapper.
+ */
+function theme_islandora_solr_facet_wrapper($variables) {
+  $output = '<div class="islandora-solr-facet-wrapper">';
+  $output .= '<h3>' . $variables['title'] . '</h3>';
+  $output .= $variables['content'];
+  $output .= '</div>';
+  return $output;
+}

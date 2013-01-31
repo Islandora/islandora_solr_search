@@ -27,7 +27,7 @@ function islandora_solr_islandora_solr_query_blocks() {
     'advanced' => array(
       'name' => t('Islandora advanced search'),
       'module' => 'islandora_solr',
-      'file' => 'islandora_solr.block.inc',
+      'file' => 'includes/blocks.inc',
       'class' => NULL,
       'function' => NULL,
       'form' => 'islandora_solr_advanced_search_form',
@@ -35,7 +35,7 @@ function islandora_solr_islandora_solr_query_blocks() {
     'simple' => array(
       'name' => t('Islandora simple search'),
       'module' => 'islandora_solr',
-      'file' => 'islandora_solr.block.inc',
+      'file' => 'includes/blocks.inc',
       'class' => NULL,
       'function' => NULL,
       'form' => 'islandora_solr_simple_search_form',
@@ -59,7 +59,7 @@ function islandora_solr_islandora_solr_query_blocks() {
     'display_switch' => array(
       'name' => t('Islandora displays'),
       'module' => 'islandora_solr',
-      'file' => 'islandora_solr.block.inc',
+      'file' => 'includes/blocks.inc',
       'class' => NULL,
       'function' => 'islandora_solr_display',
       'form' => NULL,
@@ -67,7 +67,7 @@ function islandora_solr_islandora_solr_query_blocks() {
     'sort' => array(
       'name' => t('Islandora sort'),
       'module' => 'islandora_solr',
-      'file' => 'islandora_solr.block.inc',
+      'file' => 'includes/blocks.inc',
       'class' => NULL,
       'function' => 'islandora_solr_sort',
       'form' => NULL,
@@ -112,9 +112,6 @@ function islandora_solr_block_view($block_name = '') {
 
   // get global class
   global $_islandora_solr_queryclass;
-
-  // all hook_init()
-  islandora_solr_init(); // @TODO: should we really call islandora_solr_init() again ?
 
   // get solr blocks
   $solr_blocks = module_invoke_all("islandora_solr_query_blocks");
@@ -220,7 +217,6 @@ function islandora_solr_simple_search_form_submit($form, &$form_state) {
  */
 function islandora_solr_advanced_search_form($form, &$form_state) {
   global $_islandora_solr_queryclass;
-  islandora_solr_init(); // @TODO: figure out why init needs to be called
 
   // include common.inc
   module_load_include('inc', 'islandora_solr', 'includes/common');
