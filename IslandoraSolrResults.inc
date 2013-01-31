@@ -859,10 +859,10 @@ class IslandoraSolrResults {
 
     $raw_response = $results->getRawResponse();
     $response_array = json_decode($raw_response, TRUE);
-//dsm($response_array);
+
     $highlights = isset($response_array['highlighting']) ? $response_array['highlighting'] : NULL;
     $docs = $response_array['response']['docs'];
-//dsm($docs);
+
 // @TODO: review/redo this.
 
 /*

@@ -21,9 +21,13 @@ class IslandoraSolrQueryProcessor {
   public $solrStart;
   public $solrLimit;
   public $solrDefType;
-  public $solrParams = array(); // all other solr parameters
+  // All other Solr parameters.
+  public $solrParams = array();
 
-  public $solrResult; // raw solr results returned after query execution
+  // Raw Solr results returned after query execution.
+  public $solrResult;
+  // Solr results tailored for Islandora's use.
+  public $islandoraSolrResult;
 
   public $display; // the current display (for modules wanting to alter the query of a display)
   public $internalSolrParams; // parameters from url
@@ -43,11 +47,14 @@ class IslandoraSolrQueryProcessor {
    *   The query string provided in the url.
    * @param type $params
    *   All url parameters from the solr results page.
+   * @param boolean $alter_results
+   *   Whether or not to send out hooks to alter the islandora_solr_results.
+   *
    * @return
    *   The contents of the executeQuery() method. ExecuteQuery() stores the raw
    *   solr results in the solrResult property.
    */
-  function buildAndExecuteQuery($query, $params = NULL) {
+  function buildAndExecuteQuery($query, $params = NULL, $alter_results = TRUE) {
     // include IslandoraSolrResults
     module_load_include('inc', 'islandora_solr', 'IslandoraSolrResults');
 
@@ -62,17 +69,18 @@ class IslandoraSolrQueryProcessor {
     $this->buildQuery($query, $params);
 
     // execute the query
-    return $this->executeQuery();
+    return $this->executeQuery($alter_results);
   }
 
   /**
    * Builds Solr query and performs checks based on url parameters and
    * defaults set in the Islandora Solr admin form. Populates the properties to
-   * be used for the query execution.
+   * be used for the query execution. Includes a module_invoke_all to make
+   * changes to the query.
    *
    * @param type $query
    *   The query string provided in the url.
-   * @param type $params
+   * @param array $params
    *   All url parameters from the solr results page.
    * @return
    *   Doesn't return anything.
@@ -224,13 +232,13 @@ class IslandoraSolrQueryProcessor {
       $this->solrParams['fq'][] = implode(' OR ', $namespace_array);
     }
 
-    // if no qf fields are specified in the requestHandler a default list is supplied here for dismax searches
+    // If no qf fields are specified in the requestHandler a default list is supplied here for dismax searches.
     if (!variable_get('islandora_solr_dismax_allowed', FALSE) && isset($this->internalSolrParams['type']) && ($this->internalSolrParams['type'] == "dismax" || $this->internalSolrParams['type'] == "edismax")) {
       $this->solrParams['qf'] = 'dc.title^5 dc.subject^2 dc.description^2 dc.creator^2 dc.contributor^1 dc.type';
     }
-    
+
     // Invoke a hook for third-party modules to alter the parameters.
-    // The hook implementation needs to specify that it takes a reference, not be passed one
+    // The hook implementation needs to specify that it takes a reference, not be passed one.
     module_invoke_all('islandora_solr_query', $this);
 
     return;
@@ -244,47 +252,59 @@ class IslandoraSolrQueryProcessor {
   }
 
   /**
-   * Connects to Solr and executes the query. Collects the raw Solr results and
-   * populates the solrResults property. Includes a module_invoke_all to make
-   * changes to the query object before it executes.
+   * Connects to Solr and executes the query. Populates the solrResults
+   * property with the raw Solr results.
    *
-   * @return
-   *   Doesn't return anything, but does populate the solrResults property with
-   *   the raw Solr results.
+   * @param boolean $alter_results
+   *   Whether or not to send out hooks to alter the islandora_solr_results.
    */
-  function executeQuery() {
-
-    // set variables
-    $url = variable_get('islandora_solr_url', 'localhost:8080/solr');
-    $pathParts = parse_url($url);
-
-    // call solr
-    $solr = new Apache_Solr_Service($pathParts['host'], $pathParts['port'], $pathParts['path'] . '/');
+  function executeQuery($alter_results = TRUE) {
+    // Init Apache_Solr_Service object.
+    $path_parts = parse_url(variable_get('islandora_solr_url', 'localhost:8080/solr'));
+    $solr = new Apache_Solr_Service($path_parts['host'], $path_parts['port'], $path_parts['path'] . '/');
     $solr->setCreateDocuments(0);
 
-    // This is where the query gets executed and output starts being created.
+    // Query is executed.
     try {
-      // solrQuery
       $solr_query = ($this->internalSolrQuery) ? $this->internalSolrQuery : $this->solrQuery;
-      // execute query
       $results = $solr->search($solr_query, $this->solrStart, $this->solrLimit, $this->solrParams);
-    } catch (Exception $e) {
-      drupal_set_message(check_plain(t('Error searching solr index')) . ' ' . $e->getMessage(), 'error');
     }
-    // save results in class property
+    catch (Exception $e) {
+      drupal_set_message(check_plain(t('Error searching Solr index')) . ' ' . $e->getMessage(), 'error');
+    }
+
     if (isset($results)) {
+      // Save raw results in class property.
       $this->solrResult = $results;
+      // Create results tailored for Islandora's use.
+      $object_results = (array) $this->solrResult->response->docs;
+      foreach ($object_results as $object_index => $object_result) {
+        unset($object_results[$object_index]);
+        $object_results[$object_index]['solr_doc'] = (array) $object_result;
+        $object_results[$object_index]['object_url'] = 'islandora/object/' . $object_results[$object_index]['solr_doc']['PID'];
+        $object_results[$object_index]['object_url_params'] = array();
+        $object_results[$object_index]['thumbnail_url'] = $object_results[$object_index]['object_url'] . '/TN/view';
+        $object_results[$object_index]['thumbnail_params'] = array();
+      }
+      // Allow other parts of code to modify the tailored results.
+      if ($alter_results) {
+        // Hook to alter based on content model.
+        module_load_include('inc', 'islandora', 'includes/utilities');
+        $content_model_solr_field = variable_get('islandora_solr_content_model_field', 'RELS_EXT_hasModel_uri_ms');
+        foreach ($object_results as $object_result) {
+          $hook_list = islandora_build_hook_list('islandora_solr_object_result', array(substr($object_result['solr_doc'][$content_model_solr_field], 12)));
+          drupal_alter($hook_list, $object_result, $this);
+        }
+        // Hook to alter everything.
+        drupal_alter('islandora_solr_results', $object_results, $this);
+      }
+      // Save results tailored for Islandora's use.
+      $this->islandoraSolrResult = $object_results;
     }
     else {
       $this->solrResult = NULL;
     }
 
-    // unset variables
-    unset($results);
-    unset($solr);
-
     return;
   }
-
 }
-

@@ -8,14 +8,15 @@
 /**
  * Function to return admin setting form
  *
- * @param type $form
- * @param type $form_state
- * @return
+ * @param array $form
+ * @param array $form_state
+ *
+ * @return array
  *   The form array.
  */
 function islandora_solr_admin_settings($form, &$form_state) {
 
-  // add admin form css
+  // Add admin form css.
   drupal_add_css(drupal_get_path('module', 'islandora_solr') . '/css/islandora_solr.admin.css');
   drupal_add_library('system', 'ui.dialog');
   drupal_add_js(drupal_get_path('module', 'islandora_solr') . '/js/islandora_solr.admin.js');
@@ -431,7 +432,7 @@ function islandora_solr_admin_settings($form, &$form_state) {
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
   );
-  // debug mode
+  // Debug mode.
   $form['islandora_solr_tabs']['other']['islandora_solr_debug_mode'] = array(
     '#type' => 'checkbox',
     '#title' => t('Debug mode?'),
@@ -439,6 +440,16 @@ function islandora_solr_admin_settings($form, &$form_state) {
     '#default_value' => variable_get('islandora_solr_debug_mode', 0),
     '#description' => t('Dumps solr query to the screen for testing. Warning: if you have the Drupal Apache Solr module enabled alongside this one then the debug function will not work.'),
     '#weight' => 6,
+  );
+  // Content Model Solr field.
+  $form['islandora_solr_tabs']['other']['islandora_solr_content_model_field'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Content model Solr field'),
+    '#size' => 30,
+    '#weight' => -1,
+    '#description' => t('The Solr field containing the content model URIs.'),
+    '#default_value' => variable_get('islandora_solr_content_model_field', 'RELS_EXT_hasModel_uri_ms'),
+    '#required' => TRUE,
   );
 
   // The content of the popup dialog.

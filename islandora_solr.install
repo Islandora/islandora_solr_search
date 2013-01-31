@@ -1,5 +1,4 @@
 <?php
-
 /*
  * @file
  * islandora_solr install file
@@ -83,6 +82,7 @@ function islandora_solr_uninstall() {
     'islandora_solr_base_query',
     'islandora_solr_base_filter',
     'islandora_solr_debug_mode',
+    'islandora_solr_content_model_field',
   );
   foreach ($variables as $variable) {
     variable_del($variable);
