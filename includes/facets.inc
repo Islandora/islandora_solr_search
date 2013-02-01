@@ -327,7 +327,8 @@ function islandora_solr_range_slider_form($form, &$form_state, $elements) {
   drupal_add_library('system', 'ui.slider');
   // include flot
   // @TODO: use the libraries module for this!
-  drupal_add_js('sites/all/libraries/flot/jquery.flot.js');
+  // @TODO: use the new version of flot. Didn't work out of the box, so needs some extra attention.
+  drupal_add_js(drupal_get_path('module', 'islandora_solr') . '/js/flot/jquery.flot.min.js');  
   // @TODO: find a good way to call this for IE8 and lower
   // <!--[if lte IE 8]><![endif]-->
 //  drupal_add_js(drupal_get_path('module', 'islandora_solr') . '/js/flot/excanvas.min.js');
