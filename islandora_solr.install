@@ -1,5 +1,4 @@
 <?php
-
 /*
  * @file
  * islandora_solr install file
@@ -9,6 +8,7 @@
  * Implements hook_requirements().
  *
  * @param type $phase
+ * 
  * @return array
  *   An array describing the status of the site regarding available updates.
  *   If there is no update data, only one record will be returned, indicating
@@ -59,7 +59,7 @@ function islandora_solr_install() {
  */
 function islandora_solr_uninstall() {
 
-  // removing variables
+  // Removing variables.
   $variables = array(
     'islandora_solr_url',
     'islandora_solr_request_handler',
@@ -77,6 +77,9 @@ function islandora_solr_uninstall() {
     'islandora_solr_base_query',
     'islandora_solr_base_filter',
     'islandora_solr_debug_mode',
+    'islandora_solr_content_model_field',
+    'islandora_solr_object_label_field',
+    'islandora_solr_datastream_id_field',
   );
   foreach ($variables as $variable) {
     variable_del($variable);

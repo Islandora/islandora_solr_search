@@ -2,29 +2,34 @@
 
 /**
  * @file
- * Contains all admin related functionality
+ * Contains all administration related functionality
  */
 
 /**
- * Function to return admin setting form
+ * Function to return administration setting form
  *
- * @param type $form
- * @param type $form_state
- * @return
+ * @param array $form
+ *   The form deffinition.
+ * @param array $form_state
+ *   The form state.
+ *
+ * @return array
  *   The form array.
  */
 function islandora_solr_admin_settings($form, &$form_state) {
-
-  // add admin form css
+  // Add admin form css.
   drupal_add_css(drupal_get_path('module', 'islandora_solr') . '/css/islandora_solr.admin.css');
   drupal_add_library('system', 'ui.dialog');
   drupal_add_js(drupal_get_path('module', 'islandora_solr') . '/js/islandora_solr.admin.js');
+  $solr_url = !empty($form_state['values']['islandora_solr_url']) ? $form_state['values']['islandora_solr_url'] : variable_get('islandora_solr_url', 'localhost:8080/solr');
 
-  // Solr connect
-  // triggering handler is dismax check or no trigger at all (page load)
-  if ((isset($form_state['triggering_element']) && (($form_state['triggering_element']['#name'] == 'islandora_solr_url') || ($form_state['triggering_element']['#name'] == 'islandora_solr_request_handler'))) || !isset($form_state['triggering_element'])) {
+  // Solr connect triggering handler is dismax or not set on page load.
+  if ((isset($form_state['triggering_element']) &&
+      (($form_state['triggering_element']['#name'] == 'islandora_solr_url') ||
+          ($form_state['triggering_element']['#name'] == 'islandora_solr_request_handler'))) ||
+      !isset($form_state['triggering_element'])) {
 
-    // check for the php solr lib class
+    // Check for the php solr lib class.
     if (!class_exists('Apache_Solr_Service')) {
       $message = t('This module requires the <a href="!url">Apache Solr php client</a>. Please install the client directory in the root directory of this module before continuing.', array('!url' => 'http://code.google.com/p/solr-php-client'));
       drupal_set_message(check_plain($message));
@@ -33,9 +38,7 @@ function islandora_solr_admin_settings($form, &$form_state) {
 
     // get request handler
     $handler = !empty($form_state['values']['islandora_solr_request_handler']) ? $form_state['values']['islandora_solr_request_handler'] : variable_get('islandora_solr_request_handler', '');
-    // get solr url
-    $solr_url = !empty($form_state['values']['islandora_solr_url']) ? $form_state['values']['islandora_solr_url'] : variable_get('islandora_solr_url', 'localhost:8080/solr');
-    // check if solr is available
+    // Check if Solr is available.
     $solr_avail = islandora_solr_ping($solr_url);
 
     $dismax_allowed = FALSE;
@@ -56,7 +59,7 @@ function islandora_solr_admin_settings($form, &$form_state) {
         . t('Unable to connect to Solr server at !islandora_solr_url', array('!islandora_solr_url' => $solr_url));
     }
   }
-  // set form array
+  // Create form.
   $form = array();
   $form['islandora_solr_tabs'] = array(
     '#type' => 'vertical_tabs',
@@ -87,7 +90,7 @@ function islandora_solr_admin_settings($form, &$form_state) {
   );
   $form['solr_ajax_wrapper']['islandora_solr_dismax_allowed'] = array(
     '#type' => 'hidden',
-    '#default_value' => $dismax_allowed,
+    '#default_value' => isset($dismax_allowed) ? $dismax_allowed:$form_state['complete form']['solr_ajax_wrapper']['islandora_solr_dismax_allowed']['#default_value'],
   );
   // hidden submit button
   $form['solr_ajax_wrapper']['refresh_page'] = array(
@@ -96,13 +99,13 @@ function islandora_solr_admin_settings($form, &$form_state) {
     '#attributes' => array('class' => array('refresh-button')),
     '#submit' => array('_islandora_solr_admin_refresh'),
   );
-  // confirmation message
+  // Confirmation message.
   $form['solr_ajax_wrapper']['infobox'] = array(
     '#type' => 'item',
-    '#markup' => $confirmation_message,
+    '#markup' => isset($confirmation_message)? $confirmation_message:$form_state['complete form']['solr_ajax_wrapper']['infobox']['#markup'],
   );
-  // request handler
-  // don't show form item if no request handlers are found
+
+  // Don't show form item if no request handlers are found.
   if (!empty($handlers)) {
     $form['solr_ajax_wrapper']['islandora_solr_request_handler'] = array(
       '#type' => 'select',
@@ -297,8 +300,6 @@ function islandora_solr_admin_settings($form, &$form_state) {
 
 
 
-
-
   // facet settings
   $form['islandora_solr_tabs']['facet_settings'] = array(
     '#type' => 'fieldset',
@@ -389,8 +390,6 @@ function islandora_solr_admin_settings($form, &$form_state) {
   );
 
 
-
-
   // query defaults
   $form['islandora_solr_tabs']['query_defaults'] = array(
     '#type' => 'fieldset',
@@ -424,14 +423,52 @@ function islandora_solr_admin_settings($form, &$form_state) {
     '#wysiwyg' => FALSE,
   );
 
-  // more
+  // Solr fields.
+  $form['islandora_solr_tabs']['solr_fields'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Solr Fields'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+  );
+  // Content Model Solr field.
+  $form['islandora_solr_tabs']['solr_fields']['islandora_solr_content_model_field'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Content model Solr field'),
+    '#size' => 30,
+    '#weight' => -1,
+    '#description' => t('The Solr field containing the content model URIs. This should be a multivalued string field'),
+    '#default_value' => variable_get('islandora_solr_content_model_field', 'RELS_EXT_hasModel_uri_ms'),
+    '#required' => TRUE,
+  );
+  // Label Solr field.
+  $form['islandora_solr_tabs']['solr_fields']['islandora_solr_object_label_field'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Object label Solr field'),
+    '#size' => 30,
+    '#weight' => -2,
+    '#description' => t('The Solr field containing object labels. This should be a single valued string field.'),
+    '#default_value' => variable_get('islandora_solr_object_label_field', 'fgs_label_s'),
+    '#required' => TRUE,
+  );
+  // Present datastreams Solr field.
+  $form['islandora_solr_tabs']['solr_fields']['islandora_solr_datastream_id_field'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Content model Solr field'),
+    '#size' => 30,
+    '#weight' => -3,
+    '#description' => t('The Solr field containing the populated datastream IDs. This should be a multivalued string field.'),
+    '#default_value' => variable_get('islandora_solr_datastream_id_field', 'fedora_datastreams_ms'),
+    '#required' => TRUE,
+  );
+
+  // Miscellaneous.
   $form['islandora_solr_tabs']['other'] = array(
     '#type' => 'fieldset',
     '#title' => t('Other'),
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
   );
-  // debug mode
+  // Debug mode.
   $form['islandora_solr_tabs']['other']['islandora_solr_debug_mode'] = array(
     '#type' => 'checkbox',
     '#title' => t('Debug mode?'),
@@ -456,11 +493,9 @@ function islandora_solr_admin_settings($form, &$form_state) {
     '#markup' => t('Default dialog text'),
   );
 
-
-
-  // actions
+  // Actions.
   $form['actions'] = array(
-    '#type' => 'actions'
+    '#type' => 'actions',
   );
   $form['actions']['submit'] = array(
     '#type' => 'submit',
@@ -484,8 +519,8 @@ function islandora_solr_admin_settings($form, &$form_state) {
 
 /**
  * Generates fields for the admin fields table.
- *
  * First collects values to populate the table, then render the fields.
+ *
  * @param array $form_state
  *   The form_state array of the form. Includes submitted values.
  * @param array $terms
@@ -493,6 +528,9 @@ function islandora_solr_admin_settings($form, &$form_state) {
  *   already created and new form elements are added in this function.
  * @param string $field_type
  *   An identifier for the field table which is being created.
+ *
+ * @return NULL
+ *   Nothing to return.
  */
 function islandora_solr_admin_settings_fields(&$form_state, &$terms, $field_type) {
 
@@ -510,10 +548,10 @@ function islandora_solr_admin_settings_fields(&$form_state, &$terms, $field_type
   // 1. Saved values from the DB
   if ($form_state['rebuild'] == FALSE) {
 
-    // get values from DB
-    $records = islandora_solr_get_fields($field_type, FALSE, FALSE); // unfiltered, not simplified and incremental keys
+    // Get values from DB unfiltered, not simplified and incremental keys.
+    $records = islandora_solr_get_fields($field_type, FALSE, FALSE);
 
-    // set fields to populate the admin table
+    // Set fields to populate the admin table.
     $fields = array();
     foreach ($records as $key => $record) {
       $fields[$key] = array(
@@ -522,7 +560,7 @@ function islandora_solr_admin_settings_fields(&$form_state, &$terms, $field_type
         'weight' => $record['weight'],
       );
     }
-    // move solr_field_settings into the form state
+    // Move solr_field_settings into the form state.
     foreach ($records as $key => $value) {
       $solr_field = $value['solr_field'];
       $solr_field_settings = $value['solr_field_settings'];
@@ -531,8 +569,8 @@ function islandora_solr_admin_settings_fields(&$form_state, &$terms, $field_type
   }
 
   // 2. Triggered element (Add item or remove)
-  if (isset($form_state['triggering_element']) && $form_state['triggering_element']['#field_type'] == $field_type) {
-
+  if (isset($form_state['triggering_element']) &&
+      $form_state['triggering_element']['#field_type'] == $field_type) {
     // unset terms from input array
     // http://drupal.stackexchange.com/questions/14855/how-do-i-dynamically-fill-a-textfield-with-ajax/16576#16576
     $form_state['values']['islandora_solr_' . $field_type]['terms'] = $form_state['input']['islandora_solr_' . $field_type]['terms'];
@@ -549,6 +587,7 @@ function islandora_solr_admin_settings_fields(&$form_state, &$terms, $field_type
       }
       // check if value is already added
       $check_terms = $form_state['values']['islandora_solr_' . $field_type]['terms'];
+
       foreach ($check_terms as $key => $term) {
         if ($term['solr_field'] == $add_solr_field) {
           $solr_field_error = t('Solr term can only be added once.');
@@ -1004,6 +1043,7 @@ function _islandora_solr_admin_settings_submit($form, &$form_state) {
  *
  * @param String $solr_url
  *   url which points to Solr
+ *
  * @return
  *   a php array with request handlers found in solrconfig.xml of the Solr
  *   instance

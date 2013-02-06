@@ -1,18 +1,14 @@
 <?php
 /**
- * @file islandora-solr-grid.tpl.php
- * Islandora solr primary results template file for
+ * @file
+ *   Islandora solr primary results template file for
  *
  * Variables available:
- * - $variables: all array elements of $variables can be used as a variable. e.g. $base_url equals $variables['base_url']
- * - $base_url: The base url of the current website. eg: http://example.com/drupal .
- * - $user: The user object.
- * - $solr_default_img: default solr image. Used when no thumbnail is available.
- *
  * - $results: Primary profile results array
  *
  * @see template_preprocess_islandora_solr_grid()
  */
+
 ?>
 
 <?php if (empty($results)): ?>
@@ -20,19 +16,22 @@
 <?php else: ?>
   <div class="islandora-solr-search-results">
     <div class="islandora-solr-grid clearfix">
-    <?php $row_result = 0; ?>
     <?php foreach($results as $result): ?>
       <dl class="solr-grid-field">
         <dt class="solr-grid-thumb">
-          <?php $image = '<img src="' . $thumbnail_path[$row_result] . '" />'; ?>
-          <?php print l($image, 'islandora/object/' . $result['PID']['value'], array('html' => TRUE)); ?>
+          <?php
+            $image = '<img src="' . url($result['thumbnail_url'], array('query' => $result['thumbnail_url_params'])) . '" />';
+            print l($image, $result['object_url'], array('html' => TRUE, 'query' => $result['object_url_params']));
+          ?>
         </dt>
         <dd class="solr-grid-caption">
-          <?php $title = isset($result['fgs.label']['value']) ? $result['fgs.label']['value'] : ''; ?>
-          <?php print l($title, 'islandora/object/' . htmlspecialchars($result['PID']['value'], ENT_QUOTES, 'utf-8')); ?>
+          <?php
+            $label_field = variable_get('islandora_solr_object_label_field', 'fgs_label_s');
+            $object_label = isset($result['solr_doc'][$label_field]['value']) ? $result['solr_doc'][$label_field]['value'] : '';
+            print l($object_label, $result['object_url'], array('query' => $result['object_url_params']));
+          ?>
         </dd>
       </dl>
-    <?php $row_result++; ?>
     <?php endforeach; ?>
     </div>
   </div>

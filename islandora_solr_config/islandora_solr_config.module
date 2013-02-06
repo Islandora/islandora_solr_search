@@ -64,13 +64,11 @@ function islandora_solr_config_islandora_solr_secondary_display() {
 function islandora_solr_config_theme() {
   // set path
   $path = drupal_get_path('module', 'islandora_solr_config');
-  $file = 'islandora_solr_config.theme.inc';
 
   return array(
     // grid results display
     'islandora_solr_grid' => array(
       'path' => $path . '/theme',
-      'file' => $file,
       'template' => 'islandora-solr-grid',
       'variables' => array('results' => NULL, 'elements' => array()),
     ),
