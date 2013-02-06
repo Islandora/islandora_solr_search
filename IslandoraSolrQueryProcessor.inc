@@ -279,7 +279,7 @@ class IslandoraSolrQueryProcessor {
         // Set thumbnail to TN datastream if there is no $datastream_field or
         // if there is a populated TN datastream.
         if(!isset($object_result['solr_doc'][$datastream_field])) {
-          watchdog("The datastream Solr field is missing for $pid.");
+          watchdog('islandora_solr', "The datastream Solr field is missing for $pid.");
         }
         if (!isset($object_result[$datastream_field]) || in_array('TN', $object_result[$datastream_field])) {
           $object_results[$object_index]['thumbnail_url'] = $object_results[$object_index]['object_url'] . '/datastream/TN/view';
@@ -295,7 +295,7 @@ class IslandoraSolrQueryProcessor {
         module_load_include('inc', 'islandora', 'includes/utilities');
 
         if(!isset($object_result['solr_doc'][$content_model_solr_field])) {
-          watchdog("The CModel Solr field is missing for $pid.");
+          watchdog('islandora_solr', "The CModel Solr field is missing for $pid.");
         }
         else {
           foreach ($object_results as $object_index => $object_result) {
