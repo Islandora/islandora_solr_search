@@ -423,41 +423,40 @@ function islandora_solr_admin_settings($form, &$form_state) {
     '#wysiwyg' => FALSE,
   );
 
-  // Solr fields.
-  $form['islandora_solr_tabs']['solr_fields'] = array(
+  // Required Solr fields.
+  $form['islandora_solr_tabs']['required_solr_fields'] = array(
     '#type' => 'fieldset',
-    '#title' => t('Solr Fields'),
+    '#title' => t('Required Solr fields'),
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
   );
   // Content Model Solr field.
-  $form['islandora_solr_tabs']['solr_fields']['islandora_solr_content_model_field'] = array(
+  $form['islandora_solr_tabs']['required_solr_fields']['islandora_solr_content_model_field'] = array(
     '#type' => 'textfield',
     '#title' => t('Content model Solr field'),
     '#size' => 30,
-    '#weight' => -1,
     '#description' => t('The Solr field containing the content model URIs. This should be a multivalued string field'),
     '#default_value' => variable_get('islandora_solr_content_model_field', 'RELS_EXT_hasModel_uri_ms'),
     '#required' => TRUE,
   );
+  // Present datastreams Solr field.
+  $form['islandora_solr_tabs']['required_solr_fields']['islandora_solr_datastream_id_field'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Datastream ID Solr field'),
+    '#size' => 30,
+    '#description' => t('The Solr field containing the populated datastream IDs.
+      This should be a multivalued string field. If this field is not populated
+      the DSID of TN will be assumed valid for thumbnails.'),
+    '#default_value' => variable_get('islandora_solr_datastream_id_field', 'fedora_datastreams_ms'),
+    '#required' => TRUE,
+  );
   // Label Solr field.
-  $form['islandora_solr_tabs']['solr_fields']['islandora_solr_object_label_field'] = array(
+  $form['islandora_solr_tabs']['required_solr_fields']['islandora_solr_object_label_field'] = array(
     '#type' => 'textfield',
     '#title' => t('Object label Solr field'),
     '#size' => 30,
-    '#weight' => -2,
-    '#description' => t('The Solr field containing object labels. This should be a single valued string field.'),
+    '#description' => t('The Solr field containing an object\'s label. This should be a single valued string field.'),
     '#default_value' => variable_get('islandora_solr_object_label_field', 'fgs_label_s'),
-    '#required' => TRUE,
-  );
-  // Present datastreams Solr field.
-  $form['islandora_solr_tabs']['solr_fields']['islandora_solr_datastream_id_field'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Content model Solr field'),
-    '#size' => 30,
-    '#weight' => -3,
-    '#description' => t('The Solr field containing the populated datastream IDs. This should be a multivalued string field.'),
-    '#default_value' => variable_get('islandora_solr_datastream_id_field', 'fedora_datastreams_ms'),
     '#required' => TRUE,
   );
 

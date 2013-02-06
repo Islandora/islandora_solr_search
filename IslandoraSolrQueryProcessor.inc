@@ -267,15 +267,20 @@ class IslandoraSolrQueryProcessor {
       $solr_results = json_decode($results->getRawResponse(), TRUE);
       // Create results tailored for Islandora's use.
       $object_results = $solr_results['response']['docs'];
+      $content_model_solr_field = variable_get('islandora_solr_content_model_field', 'RELS_EXT_hasModel_uri_ms');
       $datastream_field = variable_get('islandora_solr_datastream_id_field', 'fedora_datastreams_ms');
       foreach ($object_results as $object_index => $object_result) {
         unset($object_results[$object_index]);
         $object_results[$object_index]['solr_doc'] = $object_result;
+        $pid = $object_results[$object_index]['solr_doc']['PID'];
         $object_results[$object_index]['object_url'] = 'islandora/object/' . $object_results[$object_index]['solr_doc']['PID'];
         $object_results[$object_index]['object_url_params'] = array();
 
         // Set thumbnail to TN datastream if there is no $datastream_field or
         // if there is a populated TN datastream.
+        if(!isset($object_result['solr_doc'][$datastream_field])) {
+          watchdog("The datastream Solr field is missing for $pid.");
+        }
         if (!isset($object_result[$datastream_field]) || in_array('TN', $object_result[$datastream_field])) {
           $object_results[$object_index]['thumbnail_url'] = $object_results[$object_index]['object_url'] . '/datastream/TN/view';
         }
@@ -288,11 +293,16 @@ class IslandoraSolrQueryProcessor {
       if ($alter_results) {
         // Hook to alter based on content model.
         module_load_include('inc', 'islandora', 'includes/utilities');
-        $content_model_solr_field = variable_get('islandora_solr_content_model_field', 'RELS_EXT_hasModel_uri_ms');
-        foreach ($object_results as $object_index => $object_result) {
-          foreach ($object_result['solr_doc'][$content_model_solr_field] as $content_model_uri) {
-            $hook_list = islandora_build_hook_list('islandora_solr_object_result', array(substr($content_model_uri, 12)));
-            drupal_alter($hook_list, $object_results[$object_index], $this);
+
+        if(!isset($object_result['solr_doc'][$content_model_solr_field])) {
+          watchdog("The CModel Solr field is missing for $pid.");
+        }
+        else {
+          foreach ($object_results as $object_index => $object_result) {
+            foreach ($object_result['solr_doc'][$content_model_solr_field] as $content_model_uri) {
+              $hook_list = islandora_build_hook_list('islandora_solr_object_result', array(substr($content_model_uri, 12)));
+              drupal_alter($hook_list, $object_results[$object_index], $this);
+            }
           }
         }
         // Hook to alter everything.
