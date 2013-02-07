@@ -263,6 +263,7 @@ class IslandoraSolrQueryProcessor {
       drupal_set_message(check_plain(t('Error searching Solr index')) . ' ' . $e->getMessage(), 'error');
     }
 
+    $object_results = array();
     if (isset($results)) {
       $solr_results = json_decode($results->getRawResponse(), TRUE);
       // Create results tailored for Islandora's use.
@@ -290,21 +291,22 @@ class IslandoraSolrQueryProcessor {
         $object_results[$object_index]['thumbnail_url_params'] = array();
       }
       // Allow other parts of code to modify the tailored results.
-      if ($alter_results && isset($object_result['solr_doc'])) {
+      if ($alter_results) {
         // Hook to alter based on content model.
         module_load_include('inc', 'islandora', 'includes/utilities');
 
-        if(!isset($object_result['solr_doc'][$content_model_solr_field])) {
-          watchdog('islandora_solr', "The CModel Solr field is missing for $pid.");
-        }
-        else {
-          foreach ($object_results as $object_index => $object_result) {
+        foreach ($object_results as $object_index => $object_result) {
+          if(!isset($object_result['solr_doc'][$content_model_solr_field])) {
+            watchdog('islandora_solr', "The CModel Solr field is missing for $pid.");
+          }
+          else {
             foreach ($object_result['solr_doc'][$content_model_solr_field] as $content_model_uri) {
               $hook_list = islandora_build_hook_list('islandora_solr_object_result', array(substr($content_model_uri, 12)));
               drupal_alter($hook_list, $object_results[$object_index], $this);
             }
           }
         }
+
         // Hook to alter everything.
         drupal_alter('islandora_solr_results', $object_results, $this);
       }
