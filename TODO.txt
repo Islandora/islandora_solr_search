@@ -15,6 +15,14 @@ High priority
 http://wunderroot.com/blog/parentsiblingstimlost/2012-11-29
 http://drupal.stackexchange.com/questions/50216/how-to-trigger-a-form-and-pass-variables-to-form-state-with-jquery/53063#53063
 
+- rewrite the way we do BuildAndExecuteQuery.
+  $query = new IslandoraSolrQueryProcessor();
+  $query->solrLimit = $limit;
+  $query->solrStart = $start;
+  $query->solrQuery = restore_slashes($query); // do restore slashes internally
+  $query->solrParams = $params; // split this out.
+  $query->executeQuery();
+
 - based on Solr version, use edismax by default for simple search.
 - create import/export functionality
 

@@ -61,6 +61,12 @@ dl.solr-fields
   border-top: 0;
 }
 
+/* Hightlight */
+
+.islandora-solr-highlight
+{
+  font-weight: bold;
+}
 
 /* Range filter */
 

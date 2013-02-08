@@ -144,67 +144,14 @@ class IslandoraSolrResults {
    *
    * @see IslandoraSolrResults::displayResults()
    */
-  function printResults($results) {
-    // set variables
-    $results_array = array();
+  function printResults($solr_results) {
+    $object_results = $solr_results['response']['objects'];
+    $object_results = islandora_solr_prepare_solr_doc($object_results);
     $elements = array();
-    $pids = array();
     // total
-    $elements['solr_total'] = $results['response']['numFound'];
+    $elements['solr_total'] = $solr_results['response']['numFound'];
     // start
-    $elements['solr_start'] = $results['response']['start'];
-    // get prepared search results
-    $object_results = $this->prep_results($results);
-    // optionally limit results to values given
-    $limit_results = variable_get('islandora_solr_limit_result_fields', 0);
-    // look for fields with no permission
-    $fields_all = islandora_solr_get_fields('result_fields', FALSE);
-    $fields_filtered = islandora_solr_get_fields('result_fields');
-    $fields_no_permission = array_diff($fields_all, $fields_filtered);
-
-    // Loop over object results.
-    foreach ($object_results as $object_index => $object_result) {
-      $doc = $object_result['solr_doc'];
-      $rows = array();
-      $row = 0; // keeping $row in there for now until the snippet issue is cleared out
-      $snippet = NULL; // @TODO: how is this suposed to work if the $snippet always is set to NULL ?
-      $result_field_array = $this->resultFieldArray;
-
-      // 1. add defined fields
-      foreach ($result_field_array as $field => $label) {
-        if (isset($doc[$field]) && !empty($doc[$field])) {
-          $value = $doc[$field];
-          $rows[$field]['label'] = $label;
-          $rows[$field]['class'] = drupal_strtolower( preg_replace('/[^A-Za-z0-9]/', '-', $field));
-          $rows[$field]['value'] = (is_array($value)) ? implode(", ", $value) : $value; // split if it's an array
-        }
-      }
-
-      // 2. if limit isn't set, add other fields
-      if ($limit_results == 0) {
-        foreach ($doc as $field => $value) {
-          // skip if added by the first loop already OR if no permission
-          if (isset($rows[$field]) || in_array($field, $fields_no_permission)) {
-            continue;
-          }
-          $rows[$field]['label'] = $field;
-          $rows[$field]['class'] = drupal_strtolower( preg_replace('/[^A-Za-z0-9]/', '-', $field));
-          $rows[$field]['value'] = (is_array($value)) ? implode(", ", $value) : $value; // split if it's an array
-        }
-      }
-//      $row++; // keeping $row in there for now until the snippet issue is cleared out
-      // @TODO: how is this suposed to work if the $snippet always is set to NULL ?
-      if ($snippet) {
-        $rows[$row][] = array(
-          'data' => 'Full Text',
-          'header' => TRUE,
-        );
-        $rows[$row][] = $snippet[0];
-      }
-      // Append array to object results array.
-      $object_results[$object_index]['solr_doc'] = $rows;
-    }
-
+    $elements['solr_start'] = $solr_results['response']['start'];
     // Return themed search results.
     return theme('islandora_solr', array('results' => $object_results, 'elements' => $elements));
   }
@@ -618,57 +565,6 @@ class IslandoraSolrResults {
     $this->resultFieldArray = islandora_solr_get_fields('result_fields');
 
     $this->allSubsArray = array_merge($this->facetFieldArray, $this->searchFieldArray, $this->resultFieldArray);
-  }
-
-  /**
-   * Merges highlight fields with the rest of the solr results.
-   *
-   * @param array $results
-   *   The raw Solr results from
-   *   IslandoraSolrQueryProcessor::islandoraSolrResult
-   *
-   * @return array
-   *   $object_results Processed Solr results array merged with highlight fields
-   */
-  function prep_results($results) {
-    // Catch if the result query returned an error.
-    if (!isset($results)) {
-      return FALSE;
-    }
-
-    $response_array = $results['response'];
-
-    $highlights = isset($response_array['highlighting']) ? $response_array['highlighting'] : NULL;
-    $object_results = $response_array['objects'];
-
-// @TODO: review/redo this.
-
-/*
-    if (!is_array($highlights)) {
-      return $docs;
-    }
-
-    $snippet_fields = islandora_solr_get_snippet_fields();
-   // if highights exist, inetegrate them back into the doc array
-    $label = variable_get("islandora_solr_snippet_field", '');
-    // blah~Blah,foo~Foo,bar~Bar
-    if ($label) {
-      $label_parts = explode('~', $label);
-      $field_label = trim($label_parts[1]);
-      $field_text = trim($label_parts[0]);
-    }
-    $this->resultFieldArray[$field_text] = $field_label;
-    $this->allSubsArray[$field_text] = $field_label;
-    foreach ($docs as &$doc) {
-      $pid = $doc['PID'];
-      unset($doc[$field_text]);
-      $snippet = $highlights[$doc['PID']];
-      foreach ($snippet as $key => $value) {
-        $doc[$field_text] = implode('<br />', $value);
-      }
-    }
- */
-    return $object_results;
   }
 }
 

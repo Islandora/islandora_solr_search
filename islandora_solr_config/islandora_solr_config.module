@@ -57,7 +57,6 @@ function islandora_solr_config_islandora_solr_secondary_display() {
   );
 }
 
-
 /**
  * Implements hook_theme().
  */
@@ -71,6 +70,12 @@ function islandora_solr_config_theme() {
       'path' => $path . '/theme',
       'template' => 'islandora-solr-grid',
       'variables' => array('results' => NULL, 'elements' => array()),
+    ),
+    // table results display
+    'islandora_solr_table' => array(
+      'path' => $path . '/theme',
+      'template' => 'islandora-solr-table',
+      'variables' => array('header' => NULL, 'rows' => NULL, 'elements' => array()),
     ),
   );
 }

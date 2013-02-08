@@ -75,8 +75,18 @@ function islandora_solr_date_filter_form($form, &$form_state, $elements) {
 
         // only set default times if from date is lower than to date
         if ($from_unix < $to_unix) {
-          $from_default = (strpos($filter_array[0], '*') !== FALSE) ? '*' : format_date($from_unix, 'custom', $format, 'UTC');
-          $to_default = (strpos($filter_array[1], '*') !== FALSE) ? '*' : format_date($to_unix, 'custom', $format, 'UTC');
+          if ($from_unix !== FALSE) {
+            $from_default = (strpos($filter_array[0], '*') !== FALSE) ? '*' : format_date($from_unix, 'custom', $format, 'UTC');
+          }
+          else {
+            $from_default = NULL;
+          }
+          if ($to_unix !== FALSE) {
+            $to_default = (strpos($filter_array[1], '*') !== FALSE) ? '*' : format_date($to_unix, 'custom', $format, 'UTC');            
+          }
+          else {
+            $to_default = NULL;
+          }
         }
         else {
           $from_default = NULL;

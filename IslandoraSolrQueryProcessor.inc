@@ -150,6 +150,8 @@ class IslandoraSolrQueryProcessor {
       'hl' => isset($snippets) ? 'true' : NULL,
       'hl.fl' => isset($snippets) ? $snippets : NULL,
       'hl.fragsize' => 400,
+      'hl.simple.pre' => '<span class="islandora-solr-highlight">',
+      'hl.simple.post' => '</span>',
         // Comma separated list configured in the block config.
       'facet.field' => explode(',', $facet_fields),
     );
@@ -270,45 +272,56 @@ class IslandoraSolrQueryProcessor {
       $object_results = $solr_results['response']['docs'];
       $content_model_solr_field = variable_get('islandora_solr_content_model_field', 'RELS_EXT_hasModel_uri_ms');
       $datastream_field = variable_get('islandora_solr_datastream_id_field', 'fedora_datastreams_ms');
-      foreach ($object_results as $object_index => $object_result) {
-        unset($object_results[$object_index]);
-        $object_results[$object_index]['solr_doc'] = $object_result;
-        $pid = $object_results[$object_index]['solr_doc']['PID'];
-        $object_results[$object_index]['object_url'] = 'islandora/object/' . $object_results[$object_index]['solr_doc']['PID'];
-        $object_results[$object_index]['object_url_params'] = array();
-
-        // Set thumbnail to TN datastream if there is no $datastream_field or
-        // if there is a populated TN datastream.
-        if(!isset($object_result['solr_doc'][$datastream_field])) {
-          watchdog('islandora_solr', "The datastream Solr field is missing for $pid.");
-        }
-        if (!isset($object_result[$datastream_field]) || in_array('TN', $object_result[$datastream_field])) {
-          $object_results[$object_index]['thumbnail_url'] = $object_results[$object_index]['object_url'] . '/datastream/TN/view';
-        }
-        else {
-          $object_results[$object_index]['thumbnail_url'] = drupal_get_path('module', 'islandora_solr') . '/images/defaultimg.png';
-        }
-        $object_results[$object_index]['thumbnail_url_params'] = array();
-      }
-      // Allow other parts of code to modify the tailored results.
-      if ($alter_results) {
-        // Hook to alter based on content model.
-        module_load_include('inc', 'islandora', 'includes/utilities');
-
+      $object_label = variable_get('islandora_solr_object_label_field', 'fgs_label_s');
+      if (!empty($object_results)) {
         foreach ($object_results as $object_index => $object_result) {
-          if(!isset($object_result['solr_doc'][$content_model_solr_field])) {
-            watchdog('islandora_solr', "The CModel Solr field is missing for $pid.");
+          unset($object_results[$object_index]);
+          $object_results[$object_index]['solr_doc'] = $object_result;
+          $pid = $object_results[$object_index]['solr_doc']['PID'];
+          $object_results[$object_index]['PID'] = $pid;
+          $object_results[$object_index]['object_url'] = 'islandora/object/' . $object_results[$object_index]['solr_doc']['PID'];
+          $object_results[$object_index]['object_url_params'] = array();
+          if (isset($object_result[$content_model_solr_field])) {
+            $object_results[$object_index]['content_models'] = $object_result[$content_model_solr_field];
+          }
+          if (isset($object_result[$datastream_field])) {
+            $object_results[$object_index]['datastreams'] = $object_result[$datastream_field];
           }
           else {
-            foreach ($object_result['solr_doc'][$content_model_solr_field] as $content_model_uri) {
-              $hook_list = islandora_build_hook_list('islandora_solr_object_result', array(substr($content_model_uri, 12)));
-              drupal_alter($hook_list, $object_results[$object_index], $this);
-            }
+            watchdog('islandora_solr', "The datastream Solr field is missing for $pid.");
           }
+          if (isset($object_result[$object_label])) {
+            $object_results[$object_index]['object_label'] = $object_result[$object_label];
+          }
+          if (!isset($object_result[$datastream_field]) || in_array('TN', $object_result[$datastream_field])) {
+            $object_results[$object_index]['thumbnail_url'] = $object_results[$object_index]['object_url'] . '/datastream/TN/view';
+          }
+          else {
+            $object_results[$object_index]['thumbnail_url'] = drupal_get_path('module', 'islandora_solr') . '/images/defaultimg.png';
+          }
+          $object_results[$object_index]['thumbnail_url_params'] = array();
         }
 
-        // Hook to alter everything.
-        drupal_alter('islandora_solr_results', $object_results, $this);
+        // Allow other parts of code to modify the tailored results.
+        if ($alter_results) {
+          // Hook to alter based on content model.
+          module_load_include('inc', 'islandora', 'includes/utilities');
+          foreach ($object_results as $object_index => $object_result) {
+            if (!isset($object_result['content_models'])) {
+              watchdog('islandora_solr', "The CModel Solr field is missing for $pid.");
+            }
+            else {
+              foreach ($object_result['content_models'] as $content_model_uri) {
+                $hook_list = islandora_build_hook_list('islandora_solr_object_result', array(substr($content_model_uri, 12)));
+                drupal_alter($hook_list, $object_results[$object_index], $this);
+              }
+            }            
+          }
+          // Hook to alter everything.
+          drupal_alter('islandora_solr_results', $object_results, $this);
+          // Additional Solr doc preparation. Includes field permissions and limitations.
+          $object_results = $this->prepareSolrDoc($object_results, $solr_results['highlighting']);
+        }
       }
       // Save results tailored for Islandora's use.
       unset($solr_results['response']['docs']);
@@ -319,5 +332,58 @@ class IslandoraSolrQueryProcessor {
       $this->islandoraSolrResult = NULL;
     }
     return;
+  }
+  
+  /**
+   * Iterates of the Solr doc of every result object and applies filters,
+   * sort orders and highlighting.
+   *
+   * @param array $object_results
+   *   An array containing the prepared object results.
+   * @param array $highlighting
+   *   Contains the highlighting array from the Solr results.
+   * @return array
+   *   The object results array with updated solr doc values.
+   */
+  function prepareSolrDoc($object_results, $highlighting = array()) {
+    // optionally limit results to values given
+    $limit_results = variable_get('islandora_solr_limit_result_fields', 0);
+    // look for fields with no permission
+    $fields_all = islandora_solr_get_fields('result_fields', FALSE);
+    $fields_filtered = islandora_solr_get_fields('result_fields');
+    $fields_no_permission = array_diff($fields_all, $fields_filtered);
+
+    // Loop over object results.
+    foreach ($object_results as $object_index => $object_result) {
+      $doc = $object_result['solr_doc'];
+      $pid = $object_result['PID'];
+      $rows = array();
+      // 1. add defined fields
+      foreach ($fields_filtered as $field => $label) {
+        if (isset($doc[$field]) && !empty($doc[$field])) {
+          // Check highlighting.
+          if (isset($highlighting[$pid][$field])) {
+            $value = $highlighting[$pid][$field];
+          }
+          else {
+            $value = $doc[$field];
+          }
+          $rows[$field] = is_array($value) ? implode(", ", $value) : $value;
+        }
+      }
+      // 2. if limit isn't set, add other fields
+      if ($limit_results == 0) {
+        foreach ($doc as $field => $value) {
+          // skip if added by the first loop already OR if no permission
+          if (isset($rows[$field]) || in_array($field, $fields_no_permission)) {
+            continue;
+          }
+          $rows[$field] = is_array($value) ? implode(", ", $value) : $value;
+        }
+      }
+      // Replace Solr doc rows.
+      $object_results[$object_index]['solr_doc'] = $rows;
+    }
+    return $object_results;
   }
 }

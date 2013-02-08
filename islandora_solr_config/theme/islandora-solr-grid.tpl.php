@@ -1,14 +1,13 @@
 <?php
 /**
  * @file
- *   Islandora solr primary results template file for
+ *   Islandora Solr grid template
  *
  * Variables available:
  * - $results: Primary profile results array
  *
  * @see template_preprocess_islandora_solr_grid()
  */
-
 ?>
 
 <?php if (empty($results)): ?>
@@ -26,8 +25,7 @@
         </dt>
         <dd class="solr-grid-caption">
           <?php
-            $label_field = variable_get('islandora_solr_object_label_field', 'fgs_label_s');
-            $object_label = isset($result['solr_doc'][$label_field]['value']) ? $result['solr_doc'][$label_field]['value'] : '';
+            $object_label = isset($result['object_label']) ? $result['object_label'] : '';
             print l($object_label, $result['object_url'], array('query' => $result['object_url_params']));
           ?>
         </dd>
