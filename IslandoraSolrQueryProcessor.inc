@@ -291,7 +291,8 @@ class IslandoraSolrQueryProcessor {
             watchdog('islandora_solr', "The datastream Solr field is missing for $pid.");
           }
           if (isset($object_result[$object_label])) {
-            $object_results[$object_index]['object_label'] = $object_result[$object_label];
+            $object_label_value = $object_result[$object_label];
+            $object_results[$object_index]['object_label'] = is_array($object_label_value) ? implode(", ", $object_label_value) : $object_label_value;
           }
           if (!isset($object_result[$datastream_field]) || in_array('TN', $object_result[$datastream_field])) {
             $object_results[$object_index]['thumbnail_url'] = $object_results[$object_index]['object_url'] . '/datastream/TN/view';
