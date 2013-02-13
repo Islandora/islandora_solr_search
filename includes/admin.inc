@@ -92,6 +92,7 @@ function islandora_solr_admin_settings($form, &$form_state) {
     '#type' => 'hidden',
     '#default_value' => isset($dismax_allowed) ? $dismax_allowed:$form_state['complete form']['solr_ajax_wrapper']['islandora_solr_dismax_allowed']['#default_value'],
   );
+
   // hidden submit button
   $form['solr_ajax_wrapper']['refresh_page'] = array(
     '#type' => 'submit',
@@ -421,6 +422,13 @@ function islandora_solr_admin_settings($form, &$form_state) {
       These filters will be applied to all queries in addition to any user-selected facet filters'),
     '#default_value' => variable_get('islandora_solr_base_filter', ''),
     '#wysiwyg' => FALSE,
+  );
+  $form['islandora_solr_tabs']['query_defaults']['islandora_solr_query_fields'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Query fields'),
+    '#size' => 30,
+    '#default_value' => variable_get('islandora_solr_query_fields', 'dc.title^5 dc.subject^2 dc.description^2 dc.creator^2 dc.contributor^1 dc.type'),
+    '#description' => t('In case there are no <a href="!url" target="_blank" title="Solr query fields documentation">query fields</a> defined in the request handler, this setting will be used as a fallback.', array('!url' => 'http://wiki.apache.org/solr/DisMaxQParserPlugin#qf_.28Query_Fields.29')),
   );
 
   // Required Solr fields.
@@ -1353,6 +1361,7 @@ function islandora_solr_admin_settings_result_fields($form, &$form_state, $varia
   // pass variables to form state
   $form_state['dialog'] = $variables;
   // get solr field values
+  $solr_field = $variables['solr_field'];
   $values = $variables['values'];
   $permissions = $values['permissions'];
   $permissions_disable = _islandora_solr_permissions_disable();
@@ -1370,12 +1379,19 @@ function islandora_solr_admin_settings_result_fields($form, &$form_state, $varia
     '#default_value' => $values['label'],
     '#description' => t('A human readable name.'),
   );
+  
   $form['options']['snippet'] = array(
     '#type' => 'checkbox',
-    '#title' => t('Snippet'),
+    '#title' => t('Highlight'),
     '#default_value' => $values['snippet'],
-    '#description' => t('If a match is found on this field, a snippet of text will be returned, with the search term highlighted.<br /><strong>Note:</strong> this feature is not supported by all display profiles.'),
+    '#description' => t('If a match is found on this field, the search term will be highlighted.<br /><strong>Note:</strong> Only text that has been both indexed and stored may be highlighted. While highlighting on non-tokenized fields is possible, the best results are achieved using tokenized fields. The checkbox may be grayed out if the Solr field cannot be highlighted.'),
   );
+  $highlighting_allowed = islandora_solr_check_highlighting_allowed($solr_field);
+  if ($highlighting_allowed == FALSE) {
+    $form['options']['snippet']['#default_value'] = 0;
+    $form['options']['snippet']['#disabled'] = TRUE;    
+  }
+  
   $form['options']['permissions_fieldset'] = array(
     '#type' => 'fieldset',
     '#title' => t('Permissions'),
