@@ -755,6 +755,7 @@ function islandora_solr_search_forms($form_id, $args) {
 
 
 function islandora_solr_search_date_filter_form(&$form_state, $form_key, $solr_field, $noslider) {
+  date_default_timezone_set('UTC');
   global $queryClass;
 
   // set variables

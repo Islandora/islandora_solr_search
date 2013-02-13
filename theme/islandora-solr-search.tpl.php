@@ -34,8 +34,8 @@
           <dt class="solr-label <?php print $value['class']; ?><?php print $row_field == 0 ? ' first' : ''; ?><?php print $row_field == $max_rows ? ' last' : ''; ?>">
             <?php print $value['label']; ?>
           </dt>
-          <?php if ($key == 'PID'): ?>
-            <?php $value['value'] = l($value['value'], 'fedora/repository/' . htmlspecialchars($value['value'], ENT_QUOTES, 'utf-8')); ?>
+          <?php if ($row_field == 0): ?>
+            <?php $value['value'] = l($value['value'], 'fedora/repository/' . $pids[$row_result]); ?>
           <?php endif; ?>
           <dd class="solr-value <?php print $value['class']; ?><?php print $row_field == 0 ? ' first' : ''; ?><?php print $row_field == $max_rows ? ' last' : ''; ?>">
             <?php print $value['value']; ?>
