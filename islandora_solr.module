@@ -181,7 +181,7 @@ function islandora_solr_islandora_solr_primary_display() {
     'default' => array(
       'name' => t('List (default)'),
       'module' => 'islandora_solr',
-      'file' => 'IslandoraSolrResults.inc',
+      'file' => 'includes/results.inc',
       'class' => "IslandoraSolrResults",
       'function' => "displayResults",
       'description' => t("A simple output."),

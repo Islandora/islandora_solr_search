@@ -182,7 +182,7 @@ function islandora_solr_prepare_solr_doc($object_results) {
       }
       $rows[$field]['label'] = $label;
       $rows[$field]['class'] = drupal_strtolower( preg_replace('/[^A-Za-z0-9]/', '-', $field));
-      $rows[$field]['value'] = $value;      
+      $rows[$field]['value'] = $value;
     }
     // Replace Solr doc.
     $object_results[$object_index]['solr_doc'] = $rows;

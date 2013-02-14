@@ -21,7 +21,7 @@ function islandora_solr_config_islandora_solr_primary_display() {
     'grid' => array(
       'name' => t('Grid'),
       'module' => 'islandora_solr_config',
-      'file' => 'IslandoraSolrResultsGrid.inc',
+      'file' => 'includes/grid_results.inc',
       'class' => "IslandoraSolrResultsGrid",
       'function' => "displayResults",
       'description' => t("Search results as a grid view"),
@@ -29,7 +29,7 @@ function islandora_solr_config_islandora_solr_primary_display() {
     'table' => array(
       'name' => t('Table'),
       'module' => 'islandora_solr_config',
-      'file' => 'IslandoraSolrResultsTable.inc',
+      'file' => 'includes/table_results.inc',
       'class' => "IslandoraSolrResultsTable",
       'function' => "displayResults",
       'description' => t("Search results as tabular output"),
@@ -48,7 +48,7 @@ function islandora_solr_config_islandora_solr_secondary_display() {
     'csv' => array(
       'name' => t('CSV'),
       'module' => 'islandora_solr_config',
-      'file' => 'IslandoraSolrResultsCSV.inc',
+      'file' => 'includes/csv_results.inc',
       'class' => 'IslandoraSolrResultsCSV',
       'function' => 'printCSV',
       'description' => 'Download complete resultset as a CSV Spreadsheet',
@@ -78,30 +78,6 @@ function islandora_solr_config_theme() {
       'variables' => array('header' => NULL, 'rows' => NULL, 'elements' => array()),
     ),
   );
-}
-
-/**
- * Implements hook_help().
- *
- * @param type $path
- * @param type $arg
- * @return type
- */
-function islandora_solr_config_help($path, $arg) {
-
-  switch ($path) {
-    case 'admin/help#islandora_solr_config':
-      return t("When 'Sample Solr Configuration Settings' is selected from the configuration drop-down in the<br />
-        !page the following settings will be used.
-        <ul>
-        <li>Module - islandora_solr_config</l1>
-        <li>File - IslandoraSolrResultsTable.inc</l1>
-        <li>Class - IslandoraSolrResultsTable</l1>
-        <li>Method - displayResults</l1>
-        </ul>
-        ", array('!page' => l("Islandora_solr_search configuration page", 'admin/islandora/search/islandora_solr'))
-      );
-  }
 }
 
 /**

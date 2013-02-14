@@ -242,7 +242,7 @@ function islandora_solr_admin_settings($form, &$form_state) {
   $terms = array(
     '#type' => 'item',
     '#title' => t('Display fields'),
-    '#description' => t('Set labels for Solr fields to be included in the search results.<br /><strong>Note:</strong> it is recommended to use non-tokenized solr fields (full literal strings).'),
+    '#description' => t('Set labels for Solr fields to be included in the search results.'),
     '#tree' => TRUE,
     '#prefix' => '<div id="islandora-solr-result-fields-wrapper">',
     '#suffix' => '</div>',

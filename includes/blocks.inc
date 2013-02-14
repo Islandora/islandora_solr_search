@@ -43,7 +43,7 @@ function islandora_solr_islandora_solr_query_blocks() {
     'basic_facets' => array(
       'name' => t('Islandora facets'),
       'module' => 'islandora_solr',
-      'file' => 'IslandoraSolrResults.inc',
+      'file' => 'includes/results.inc',
       'class' => 'IslandoraSolrResults',
       'function' => 'displayFacets',
       'form' => NULL,
@@ -51,7 +51,7 @@ function islandora_solr_islandora_solr_query_blocks() {
     'current_query' => array(
       'name' => t('Islandora query'),
       'module' => 'islandora_solr',
-      'file' => 'IslandoraSolrResults.inc',
+      'file' => 'includes/results.inc',
       'class' => 'IslandoraSolrResults',
       'function' => 'currentQuery',
       'form' => NULL,

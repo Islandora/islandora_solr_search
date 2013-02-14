@@ -43,7 +43,7 @@ class IslandoraSolrResultsTable extends IslandoraSolrResults {
           $value = $doc[$field]['value'];
           // @TODO: this should probably a config option to truncate the value.
           if (strlen($value) > 150) {
-            $value = substr($value, 0, 150) . ' ...';
+            $value = substr(filter_xss($value, array()), 0, 150) . ' ...';
           }
           $row[$field] = $value;
           $empty[$field] = FALSE;
