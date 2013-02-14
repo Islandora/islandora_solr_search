@@ -5,6 +5,8 @@
  * Implementation of Solr search for the Islandora fedora_search module.
  */
 
+DEFINE('SOLR_SEARCH_PATH', 'islandora/search');
+
 // Includes functions for common db queries.
 require_once dirname(__FILE__) . '/includes/db.inc';
 // Includes functions for common tasks.
@@ -248,7 +250,7 @@ function islandora_solr($query = NULL) {
   // this populates the GLOBAL!!!!!!!
   $_islandora_solr_queryclass = new IslandoraSolrQueryProcessor();
   $_islandora_solr_queryclass->buildAndExecuteQuery($query, $params);
-  
+
   if (empty($_islandora_solr_queryclass->islandoraSolrResult)) {
     return t('Error searching solr index.');
   }

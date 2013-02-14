@@ -5,9 +5,7 @@ package = Islandora Search
 configure = admin/config/islandora_solr
 version = 7.x-dev
 core = 7.x
-
 files[] = SolrPhpClient/Apache/Solr/Service.php
-files[] = IslandoraSolrQueryProcessor.inc
-files[] = IslandoraSolrResults.inc
-
+files[] = includes/query_processor.inc
+files[] = includes/results.inc
 stylesheets[all][] = css/islandora_solr.base.css

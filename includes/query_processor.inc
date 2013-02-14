@@ -6,8 +6,6 @@
  * Apache_Solr_Php client.
  */
 
-DEFINE('SOLR_SEARCH_PATH', 'islandora/search');
-
 /**
  * Islandora Solr Query Processor.
  *
@@ -316,7 +314,7 @@ class IslandoraSolrQueryProcessor {
                 $hook_list = islandora_build_hook_list('islandora_solr_object_result', array(substr($content_model_uri, 12)));
                 drupal_alter($hook_list, $object_results[$object_index], $this);
               }
-            }            
+            }
           }
           // Hook to alter everything.
           drupal_alter('islandora_solr_results', $object_results, $this);
@@ -334,7 +332,7 @@ class IslandoraSolrQueryProcessor {
     }
     return;
   }
-  
+
   /**
    * Iterates of the Solr doc of every result object and applies filters,
    * sort orders and highlighting.
