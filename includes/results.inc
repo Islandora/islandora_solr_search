@@ -682,6 +682,7 @@ class IslandoraSolrFacets {
     $elements = array(
       'title' => $this->title,
       'content' => $this->content,
+      'pid' => $this->facet_field,
     );
     return theme('islandora_solr_facet_wrapper', $elements);
   }
@@ -931,12 +932,12 @@ class IslandoraSolrFacets {
     if (count($buckets) > $soft_limit) {
       $buckets_visible = array_slice($buckets, 0, $soft_limit);
       $buckets_hidden = array_slice($buckets, $soft_limit);
-      $this->content .= theme('islandora_solr_facet', array('buckets' => $buckets_visible));
-      $this->content .= theme('islandora_solr_facet', array('buckets' => $buckets_hidden, 'hidden' => TRUE));
+      $this->content .= theme('islandora_solr_facet', array('buckets' => $buckets_visible, 'hidden' => FALSE, 'pid' => $facet_field));
+      $this->content .= theme('islandora_solr_facet', array('buckets' => $buckets_hidden, 'hidden' => TRUE, 'pid' => $facet_field));
       $this->content .= $this->showMore();
     }
     elseif (!empty($buckets)) {
-      $this->content .= theme('islandora_solr_facet', array('buckets' => $buckets));
+      $this->content .= theme('islandora_solr_facet', array('buckets' => $buckets, 'hidden' => FALSE, 'pid' => $facet_field));
     }
   }
 
