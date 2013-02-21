@@ -311,7 +311,9 @@ class IslandoraSolrQueryProcessor {
             }
             else {
               foreach ($object_result['content_models'] as $content_model_uri) {
-                $hook_list = islandora_build_hook_list('islandora_solr_object_result', array(substr($content_model_uri, 12)));
+                // Regex out the info:fedora/ from the content model.
+                $cmodel_name = preg_replace('/info\:fedora\//', '', $content_model_uri, 1);
+                $hook_list = islandora_build_hook_list('islandora_solr_object_result', array($cmodel_name));
                 drupal_alter($hook_list, $object_results[$object_index], $this);
               }
             }
