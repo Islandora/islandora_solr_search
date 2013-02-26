@@ -77,7 +77,7 @@ function _islandora_solr_filter_fields($records = array()) {
   global $user;
   // no checks for user 1
   if ($user->uid == 1) {
-    return $records;
+    return array();
   }
   $filtered_records = array();
   foreach ($records as $key => $record) {
