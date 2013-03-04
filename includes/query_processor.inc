@@ -351,8 +351,8 @@ class IslandoraSolrQueryProcessor {
     $limit_results = variable_get('islandora_solr_limit_result_fields', 0);
     // look for fields with no permission
     $fields_all = islandora_solr_get_fields('result_fields', FALSE);
-    $fields_to_filter = islandora_solr_get_fields('result_fields');
-    $filtered_fields = array_diff($fields_all, $fields_to_filter);
+    $fields_filtered = islandora_solr_get_fields('result_fields');
+    $fields_no_permission = array_diff($fields_all, $fields_filtered);
 
     // Loop over object results.
     foreach ($object_results as $object_index => $object_result) {
@@ -360,7 +360,7 @@ class IslandoraSolrQueryProcessor {
       $pid = $object_result['PID'];
       $rows = array();
       // 1. add defined fields
-      foreach ($filtered_fields as $field => $label) {
+      foreach ($fields_filtered as $field => $label) {
         if (isset($doc[$field]) && !empty($doc[$field])) {
           // Check highlighting.
           if (isset($highlighting[$pid][$field])) {
@@ -376,7 +376,7 @@ class IslandoraSolrQueryProcessor {
       if ($limit_results == 0) {
         foreach ($doc as $field => $value) {
           // skip if added by the first loop already OR if no permission
-          if (isset($rows[$field]) || in_array($field, $filtered_fields)) {
+          if (isset($rows[$field]) || in_array($field, $fields_no_permission)) {
             continue;
           }
           $rows[$field] = is_array($value) ? implode(", ", $value) : $value;
