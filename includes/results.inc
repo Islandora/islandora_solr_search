@@ -145,6 +145,7 @@ class IslandoraSolrResults {
    * @see IslandoraSolrResults::displayResults()
    */
   function printResults($solr_results) {
+    $solr_results = islandora_solr_prepare_solr_results($solr_results);
     $object_results = $solr_results['response']['objects'];
     $object_results = islandora_solr_prepare_solr_doc($object_results);
     $elements = array();
@@ -900,7 +901,7 @@ class IslandoraSolrFacets {
       if ($count < self::$minimum_count || array_search($filter, $fq) !== FALSE) {
         continue;
       }
-      // current path including query. e.g. islandora/solr/query
+      // current path including query, for example islandora/solr/query
       $path = SOLR_SEARCH_PATH . '/' . replace_slashes($islandoraSolrQuery->solrQuery); // $_GET['q'] didn't seem to work here
       // parameters set in url
       $params = $islandoraSolrQuery->internalSolrParams;

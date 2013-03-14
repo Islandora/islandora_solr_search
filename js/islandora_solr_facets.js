@@ -1,4 +1,7 @@
-/* Javascript file for islandora solr search facets */
+/**
+ * @file
+ * Javascript file for islandora solr search facets
+ */
 
 (function ($) {
 

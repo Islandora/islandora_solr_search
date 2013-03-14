@@ -1,5 +1,6 @@
 <?php
-/*
+
+/**
  * @file
  * islandora_solr install file
  */
@@ -8,7 +9,7 @@
  * Implements hook_requirements().
  *
  * @param type $phase
- * 
+ *
  * @return array
  *   An array describing the status of the site regarding available updates.
  *   If there is no update data, only one record will be returned, indicating

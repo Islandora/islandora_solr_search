@@ -25,6 +25,7 @@ class IslandoraSolrResultsTable extends IslandoraSolrResults {
    */
   function printResults($solr_results) {
     drupal_add_css(drupal_get_path('module', 'islandora_solr_config') . '/css/islandora_solr_config.theme.css');
+    $solr_results = islandora_solr_prepare_solr_results($solr_results);
     $object_results = $solr_results['response']['objects'];
     $object_results = islandora_solr_prepare_solr_doc($object_results);
     $record_start = (int) $solr_results['response']['start'];

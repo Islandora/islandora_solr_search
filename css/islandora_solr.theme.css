@@ -15,9 +15,11 @@
 
 /* Default solr results styling (list) */
 
+
+
 .islandora-solr-search-result
 {
-  float: left;
+  display: inline-block;
   width: 100%;
   margin: 0 0 1.5em 0;
 }

@@ -302,45 +302,6 @@ function islandora_solr($query = NULL) {
 }
 
 /**
- * Implements hook_help().
- *
- * @param type $path
- * @param type $arg
- * @return type
- */
-function islandora_solr_help($path, $arg) {
-  switch ($path) {
-    case 'admin/help#islandora_solr':
-      return t(
-          '<p>
-         The Islandora Solr Search extends the functionality of the Fedora_Repository module.
-         This module allows one or more of a series of blocks to be configured to search a solr index.
-         This module can co-exist with the original Fedora_Repositories search block, but Solr\'s
-         additional functionality will normally make the original block redundant.
-         </p>
-         <p>
-         The !guide contains additonal information.
-         </p>
-         <ul>
-           <li>Islandora Solr Search requires a working Solr instance. The !sWiki has full setup instructions</li>
-           <li>Once Solr is running and tested, configure <b>Gsearch</b> to update Solr. Consult the !GSearch for details.</li>
-           <li>Retreive the !client, unzip it, and copy the <b>Solr</b> directory from the archive to the islandora_solr module\'s folder.</li>
-           <li>Go to Administer &gt; Site Configuration &gt; Islandora Solr Client <em>(or click the link below)</em> to configure the module. Set which Solr request handler to use, set the port, host and context for the index to be queried, and select which fields are to be used for filtering. Solr\'s <b>schema.xml</b> and  <b>solrconfig.xml</b> must be configured for the request handler as well as which  fields to index and return.</li>
-           <li>The module allows custom code to be used to display search results.&nbsp; If custom PHP code is used, the paths to that codes\'s file and function must be entered here as well.</li>
-           <li>Three different blocks are now available under Administer &gt; Site Building &gt; Blocks:&nbsp; Islandora Solr Simple Search Block, Islandora Solr Facet Block, and Islandora Solr Search Block.&nbsp; The configuration setting for each of these blocks will allow you to control their position on the screen, and on which pages they will be displayed.</li>
-           <li>The Islandora Solr Simple Search Block will use will add  defType=dismax to the configured request handler. The request handler tag in <b>solrconfig.xml</b> must have an attribute of <b>default="TRUE"</b>.</li>
-         </ul>
-        ', array(
-        '!guide' => l('Islandora Guide', 'https://wiki.duraspace.org/display/ISLANDORA/Islandora+Guide'),
-        '!sWiki' => l("Solr Wiki", 'http://wiki.apache.org/solr/SolrTomcat'),
-        '!GSearch' => l('GSearch Documentation', 'https://wiki.duraspace.org/display/FCSVCS/Generic+Search+Service+2.2'),
-        '!client' => l('Apache Solr php client', 'http://code.google.com/p/solr-php-client'),
-          )
-      );
-  }
-}
-
-/**
  * Check if the current context is the search results page.
  *
  * @TODO: checking for display might not be the best way to do this. Need to

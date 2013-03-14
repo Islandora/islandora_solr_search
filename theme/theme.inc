@@ -55,6 +55,31 @@ function islandora_solr_preprocess_islandora_solr_wrapper(&$variables) {
 /**
  * Implements hook_preprocess().
  */
+function islandora_solr_preprocess_islandora_solr(&$variables) {
+  $results = $variables['results'];
+  foreach ($results as $key => $result) {
+    // Thumbnail.
+    $path = url($result['thumbnail_url'], array('query' => $result['thumbnail_url_params']));
+    $image = theme('image', array('path' => $path));
+
+    $options = array('html' => TRUE);
+    if (isset($result['object_label'])) {
+      $options['attributes']['title'] = $result['object_label'];
+    }
+    if (isset($result['object_url_params'])) {
+      $options['query'] = $result['object_url_params'];
+    }
+    if (isset($result['object_url_fragment'])) {
+      $options['fragment'] = $result['object_url_fragment'];
+    }
+    // Thumbnail link.
+    $variables['results'][$key]['thumbnail'] =  l($image, $result['object_url'], $options);
+  }
+}
+
+/**
+ * Implements hook_preprocess().
+ */
 function islandora_solr_preprocess_islandora_solr_facet(&$variables) {
   $buckets = $variables['buckets'];
   if ($variables['hidden']) {

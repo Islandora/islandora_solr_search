@@ -29,7 +29,7 @@ class IslandoraSolrResultsCSV extends IslandoraSolrResults {
     // not the row number of the upper limit document.  That is, if you
     // want results 40-60, you set solrStart=40, solrLimit=20 -- *not*
     // solrStart=40, solrLimit=60.
-    
+
     global $base_url;
     $result_fields = $this->resultFieldArray;
     // First off, update outer limits
@@ -73,13 +73,13 @@ class IslandoraSolrResultsCSV extends IslandoraSolrResults {
       // This loop is just to update the maximum value counts for each field
       // because if any field in the entire resultset has multiple values,
       // we must break the field into multiple iterated fields.
-      
+
 
       $object_results = $response_data['objects'];
       $object_results = islandora_solr_prepare_solr_doc($object_results);
       foreach ($object_results as $object_result) {
 
-      
+
 /*       foreach ($response_data['objects'] as $object_result) { */
         $doc = $object_result['solr_doc'];
         fputs($docfile, addcslashes(serialize($doc), "\n\r\\") . "\n");

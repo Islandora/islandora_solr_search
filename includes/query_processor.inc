@@ -326,7 +326,7 @@ class IslandoraSolrQueryProcessor {
           // Hook to alter everything.
           drupal_alter('islandora_solr_results', $object_results, $this);
           // Additional Solr doc preparation. Includes field permissions and limitations.
-          $object_results = $this->prepareSolrDoc($object_results, $solr_results['highlighting']);
+          $object_results = $this->prepareSolrDoc($object_results);
         }
       }
       // Save results tailored for Islandora's use.
@@ -341,17 +341,15 @@ class IslandoraSolrQueryProcessor {
   }
 
   /**
-   * Iterates of the Solr doc of every result object and applies filters,
-   * sort orders and highlighting.
+   * Iterates of the Solr doc of every result object and applies permission filters
+   * and sort orders.
    *
    * @param array $object_results
    *   An array containing the prepared object results.
-   * @param array $highlighting
-   *   Contains the highlighting array from the Solr results.
    * @return array
    *   The object results array with updated solr doc values.
    */
-  function prepareSolrDoc($object_results, $highlighting = array()) {
+  function prepareSolrDoc($object_results) {
     // optionally limit results to values given
     $limit_results = variable_get('islandora_solr_limit_result_fields', 0);
     // look for fields with no permission
@@ -362,19 +360,11 @@ class IslandoraSolrQueryProcessor {
     // Loop over object results.
     foreach ($object_results as $object_index => $object_result) {
       $doc = $object_result['solr_doc'];
-      $pid = $object_result['PID'];
       $rows = array();
       // 1. add defined fields
       foreach ($fields_filtered as $field => $label) {
         if (isset($doc[$field]) && !empty($doc[$field])) {
-          // Check highlighting.
-          if (isset($highlighting[$pid][$field])) {
-            $value = $highlighting[$pid][$field];
-          }
-          else {
-            $value = $doc[$field];
-          }
-          $rows[$field] = is_array($value) ? implode(", ", $value) : $value;
+          $rows[$field] = $doc[$field];
         }
       }
       // 2. if limit isn't set, add other fields
@@ -384,7 +374,7 @@ class IslandoraSolrQueryProcessor {
           if (isset($rows[$field]) || in_array($field, $fields_no_permission)) {
             continue;
           }
-          $rows[$field] = is_array($value) ? implode(", ", $value) : $value;
+          $rows[$field] = $doc[$field];
         }
       }
       // Replace Solr doc rows.

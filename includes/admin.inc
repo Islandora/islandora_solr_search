@@ -403,7 +403,7 @@ function islandora_solr_admin_settings($form, &$form_state) {
     '#title' => t('Limit results to specific namespaces'),
     '#size' => 30,
     '#default_value' => variable_get('islandora_solr_namespace_restriction', ''),
-    '#description' => t("Enter a space or comma-separated list of namespaces ie 'demo, default' to restrict results to PIDs within those namespaces."),
+    '#description' => t("Enter a space or comma-separated list of namespaces i.e. 'demo, default' to restrict results to PIDs within those namespaces."),
   );
   $form['islandora_solr_tabs']['query_defaults']['islandora_solr_base_query'] = array(
     '#type' => 'textfield',
@@ -1269,6 +1269,7 @@ function _islandora_solr_handle_solr_field_settings($solr_field_settings = NULL,
       case 'result_fields':
         return array(
           'label' => $solr_field_settings['label'],
+          'link_to_object' => $solr_field_settings['link_to_object'],
           'snippet' => $solr_field_settings['snippet'],
           'permissions' => $solr_field_settings['permissions'],
         );
@@ -1379,7 +1380,13 @@ function islandora_solr_admin_settings_result_fields($form, &$form_state, $varia
     '#default_value' => $values['label'],
     '#description' => t('A human readable name.'),
   );
-  
+
+  $form['options']['link_to_object'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Link to object'),
+    '#default_value' => $values['link_to_object'],
+    '#description' => t('Link this field to the object page.'),
+  );
   $form['options']['snippet'] = array(
     '#type' => 'checkbox',
     '#title' => t('Highlight'),
@@ -1389,9 +1396,9 @@ function islandora_solr_admin_settings_result_fields($form, &$form_state, $varia
   $highlighting_allowed = islandora_solr_check_highlighting_allowed($solr_field);
   if ($highlighting_allowed == FALSE) {
     $form['options']['snippet']['#default_value'] = 0;
-    $form['options']['snippet']['#disabled'] = TRUE;    
+    $form['options']['snippet']['#disabled'] = TRUE;
   }
-  
+
   $form['options']['permissions_fieldset'] = array(
     '#type' => 'fieldset',
     '#title' => t('Permissions'),
@@ -1683,19 +1690,6 @@ function islandora_solr_admin_settings_facet_fields($form, &$form_state, $variab
   );
   return $form;
 }
-
-/**
- * Ajax callback function for range facet checkbox.
- */
-/*
-function _islandora_solr_admin_settings_facet_fields_callback($form, &$form_state) {
-
-  // resize modal
-  ajax_command_invoke(NULL, 'islandoraSolrResizeModal', array());
-
-  return $form['options']['range_facet'];
-}
- */
 
 /**
  * Form for search field settings.

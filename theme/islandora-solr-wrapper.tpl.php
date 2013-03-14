@@ -23,7 +23,7 @@
   <?php print $secondary_profiles; ?>
   <div id="islandora-solr-result-count"><?php print $islandora_solr_result_count; ?></div>
 </div>
-<div class="islandora-solr-content content">
+<div class="islandora-solr-content">
   <?php print $solr_pager; ?>
   <?php print $results; ?>
   <?php print $solr_debug; ?>

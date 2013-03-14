@@ -1,4 +1,7 @@
-/* Script for islandora_solr admin */
+/**
+ * @file
+ * Script for islandora_solr admin.
+ */
 (function ($) {
 
   // function to trigger a form button when clicking on a link element.

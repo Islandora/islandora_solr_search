@@ -1,11 +1,9 @@
 <?php
 
-/*
+/**
  * @file
  * Contains some non-class-specific methods and things I'm not sure where to put.
  */
-
-$values = array("/", "+");
 
 /**
  * Initialize a pager for theme('pager') without running an SQL query.
@@ -112,7 +110,9 @@ function lesser_escape($value) {
   return preg_replace($pattern, $replace, $value);
 }
 
-//escape characters in field names of facets
+/**
+ * Escape characters in field names of facets.
+ */
 function solr_escape($facets) {
   $return_facets = array();
   foreach ($facets as $facet) {
@@ -188,4 +188,57 @@ function islandora_solr_prepare_solr_doc($object_results) {
     $object_results[$object_index]['solr_doc'] = $rows;
   }
   return $object_results;
+}
+
+/**
+ * Prepares Solr results before rendering. Applies highlighting, implodes arrays and
+ * links to objects to Solr result fields.
+ *
+ * @param $array $solr_results
+ *  Array containing the Solr results which are altered trough the query processor.
+ * @return array $solr_results
+ *   Returns the same array but with prepared Solr field values.
+ */
+function islandora_solr_prepare_solr_results($solr_results) {
+  $object_results = $solr_results['response']['objects'];
+  $highlighting = $solr_results['highlighting'];
+  $fields_all = islandora_solr_get_fields('result_fields', FALSE);
+  $link_to_object = islandora_solr_get_link_to_object_fields();
+
+  // Loop over object results.
+  foreach ($object_results as $object_index => $object_result) {
+    $solr_doc = $object_result['solr_doc'];
+    $pid = $object_result['PID'];
+    $rows = array();
+    $options = array('html' => TRUE);
+    if (isset($object_result['object_label'])) {
+      $options['attributes']['title'] = $object_result['object_label'];
+    }
+    if (isset($object_result['object_url_params'])) {
+      $options['query'] = $object_result['object_url_params'];
+    }
+    if (isset($object_result['object_url_fragment'])) {
+      $options['fragment'] = $object_result['object_url_fragment'];
+    }
+
+    foreach ($solr_doc as $field => $value) {
+      // Check highlighting.
+      if (isset($highlighting[$pid][$field])) {
+        $value = $highlighting[$pid][$field];
+      }
+      else {
+        $value = $solr_doc[$field];
+      }
+      // Implode
+      $value = is_array($value) ? implode(", ", $value) : $value;
+      // Add link.
+      if (in_array($field, $link_to_object)) {
+        $value = l($value, $object_result['object_url'], $options);
+      }
+      $solr_doc[$field] = $value;
+    }
+    // Replace Solr doc rows.
+    $solr_results['response']['objects'][$object_index]['solr_doc'] = $solr_doc;
+  }
+  return $solr_results;
 }
