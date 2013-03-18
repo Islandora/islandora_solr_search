@@ -159,8 +159,9 @@ function islandora_solr_admin_settings($form, &$form_state) {
       foreach (array_intersect_key($weight, $profiles) as $key => $value) {
         $profiles_sorted[$key] = $profiles[$key];
       }
+      
       // account for new profiles.
-      foreach (array_diff_assoc($profiles, $profiles_sorted) as $key => $value) {
+      foreach (_islandora_solr_multi_dimensional_array_diff($profiles, $profiles_sorted) as $key => $value) {
         $profiles_sorted[$key] = $value;
         // add weight for new profile (heaviest +1)
         $primary_display_array['weight'][$key] = end($weight) + 1;
@@ -1797,6 +1798,30 @@ function _islandora_solr_permissions_default() {
   return $permissions_default;
 }
 
+function _islandora_solr_multi_dimensional_array_diff($array1, $array2) {
+	
+	// 2 functions for the array walk to serialize, unserialize.
+	$serialize = function (&$arr,$pos){
+		$arr = serialize($arr);
+	};
+	
+	$unserialize = function (&$arr,$pos){
+		$arr = unserialize($arr);
+	};
+		
+	// serialize all sub-arrays
+	array_walk($array1, $serialize);
+	array_walk($array2, $serialize);
+	
+	// array_diff the serialized versions
+	$diff = array_diff_assoc($array1,$array2);
+	
+	// unserialize the result
+	array_walk($diff,$unserialize);
+	
+	// Return the result
+	return $diff;
+}
 /**
  * @} End of "defgroup dialog-forms".
  */
