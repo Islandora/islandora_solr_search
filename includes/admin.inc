@@ -26,7 +26,7 @@ function islandora_solr_admin_settings($form, &$form_state) {
   // Solr connect triggering handler is dismax or not set on page load.
   if ((isset($form_state['triggering_element']) &&
       (($form_state['triggering_element']['#name'] == 'islandora_solr_url') ||
-          ($form_state['triggering_element']['#name'] == 'islandora_solr_request_handler'))) ||
+      ($form_state['triggering_element']['#name'] == 'islandora_solr_request_handler'))) ||
       !isset($form_state['triggering_element'])) {
 
     // Check for the php solr lib class.
@@ -52,11 +52,11 @@ function islandora_solr_admin_settings($form, &$form_state) {
     // get confirmation message
     if ($solr_avail) {
       $confirmation_message = '<img src="' . url('misc/watchdog-ok.png') . '"/>'
-        . t('Successfully connected to Solr server at <a href="!islandora_solr_url_checked" target="_blank">!islandora_solr_url</a> <sub>(!ms ms)</sub>', array('!islandora_solr_url_checked' => islandora_solr_check_http($solr_url), '!islandora_solr_url' => $solr_url, '!ms' => number_format($solr_avail, 2)));
+          . t('Successfully connected to Solr server at <a href="!islandora_solr_url_checked" target="_blank">!islandora_solr_url</a> <sub>(!ms ms)</sub>', array('!islandora_solr_url_checked' => islandora_solr_check_http($solr_url), '!islandora_solr_url' => $solr_url, '!ms' => number_format($solr_avail, 2)));
     }
     else {
       $confirmation_message = '<img src="' . url('misc/watchdog-error.png') . '"/> '
-        . t('Unable to connect to Solr server at !islandora_solr_url', array('!islandora_solr_url' => $solr_url));
+          . t('Unable to connect to Solr server at !islandora_solr_url', array('!islandora_solr_url' => $solr_url));
     }
   }
   // Create form.
@@ -90,7 +90,7 @@ function islandora_solr_admin_settings($form, &$form_state) {
   );
   $form['solr_ajax_wrapper']['islandora_solr_dismax_allowed'] = array(
     '#type' => 'hidden',
-    '#default_value' => isset($dismax_allowed) ? $dismax_allowed:$form_state['complete form']['solr_ajax_wrapper']['islandora_solr_dismax_allowed']['#default_value'],
+    '#default_value' => isset($dismax_allowed) ? $dismax_allowed : $form_state['complete form']['solr_ajax_wrapper']['islandora_solr_dismax_allowed']['#default_value'],
   );
 
   // hidden submit button
@@ -103,7 +103,7 @@ function islandora_solr_admin_settings($form, &$form_state) {
   // Confirmation message.
   $form['solr_ajax_wrapper']['infobox'] = array(
     '#type' => 'item',
-    '#markup' => isset($confirmation_message)? $confirmation_message:$form_state['complete form']['solr_ajax_wrapper']['infobox']['#markup'],
+    '#markup' => isset($confirmation_message) ? $confirmation_message : $form_state['complete form']['solr_ajax_wrapper']['infobox']['#markup'],
   );
 
   // Don't show form item if no request handlers are found.
@@ -415,6 +415,13 @@ function islandora_solr_admin_settings($form, &$form_state) {
       Consider <strong>timestamp:[* TO NOW]</strong> or <strong>*:*</strong><br />'),
     '#default_value' => variable_get('islandora_solr_base_query', 'timestamp:[* TO NOW]'),
   );
+  $form['islandora_solr_tabs']['query_defaults']['islandora_solr_base_sort'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Sort field for default query'),
+    '#size' => 30,
+    '#description' => t('Indicate which field should define the sort order for the default query.<br />Consider <strong>timestamp desc</strong>.<br /><strong>Note:</strong> not all fields are sortable. For more info check the <a href="!url">Solr documentation</a>.', array('!url' => 'http://wiki.apache.org/solr/CommonQueryParameters#sort')),
+    '#default_value' => variable_get('islandora_solr_base_sort', 'score desc'),
+  );
   $form['islandora_solr_tabs']['query_defaults']['islandora_solr_base_filter'] = array(
     '#type' => 'textarea',
     '#title' => t('Solr base filter'),
@@ -551,7 +558,6 @@ function islandora_solr_admin_settings_fields(&$form_state, &$terms, $field_type
   // 2.b. Remove field
   // 2.c. Configure field // prepare array to populate dialog
   // 2.d. Dialog submit // process values from modal dialog: add variables to form_state array and update the table info
-
   // 1. Saved values from the DB
   if ($form_state['rebuild'] == FALSE) {
 
@@ -953,12 +959,12 @@ function _islandora_solr_admin_settings_submit($form, &$form_state) {
 
   // Exclude unnecessary elements. // @TODO: remove once we assigned the values manually.
   unset($form_state['values']['submit'],
-    $form_state['values']['reset'],
-    $form_state['values']['form_id'],
-    $form_state['values']['op'],
-    $form_state['values']['form_token'],
-    $form_state['values']['form_build_id'],
-    $form_state['values']['refresh_page']);
+      $form_state['values']['reset'],
+      $form_state['values']['form_id'],
+      $form_state['values']['op'],
+      $form_state['values']['form_token'],
+      $form_state['values']['form_build_id'],
+      $form_state['values']['refresh_page']);
 
   // if the operation is 'Reset'
   switch ($op) {
@@ -1020,7 +1026,7 @@ function _islandora_solr_admin_settings_submit($form, &$form_state) {
 
       // set save message
       drupal_set_message(t('The solr configuration options have been saved.'));
-    break;
+      break;
     case t('Reset to defaults'):
       // loop over all submitted values
       foreach ($form_state['values'] as $key => $value) {
@@ -1037,7 +1043,7 @@ function _islandora_solr_admin_settings_submit($form, &$form_state) {
 
       // set reset message
       drupal_set_message(t('The configuration options have been reset to their default values.')); // @TODO: these don't seem to work anymore
-    break;
+      break;
   }
 
   // clear caches
@@ -1547,7 +1553,7 @@ function islandora_solr_admin_settings_facet_fields($form, &$form_state, $variab
     '#collapsed' => TRUE,
   );
 
-  $form['options']['range_facet']['range_facet_select'] = array( // @TODO: grey out if LUKE says it's not possible to use as a range field? Add AJAX callback to show more options?
+  $form['options']['range_facet']['range_facet_select'] = array(// @TODO: grey out if LUKE says it's not possible to use as a range field? Add AJAX callback to show more options?
     '#type' => 'checkbox',
     '#title' => t('Range facet'),
     '#default_value' => $values['range_facet_select'],

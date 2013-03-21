@@ -95,6 +95,15 @@ class IslandoraSolrQueryProcessor {
       $this->solrQuery = ' '; //so we can allow empty queries to dismax
       // set base query
       $this->internalSolrQuery = variable_get('islandora_solr_base_query', 'timestamp:[* TO NOW]');
+
+      // set base sort if empty
+      if (!isset($this->internalSolrParams['sort'])) {
+        $this->internalSolrParams['sort'] = variable_get('islandora_solr_base_sort', 'score desc');
+        if (trim($this->internalSolrParams['sort']) == '') {
+          $this->internalSolrParams['sort'] = 'score desc'; 
+        }
+      }
+
       // we must also undo dismax if it's been set
       $this->solrDefType = NULL;
       $this->solrParams['defType'] = NULL;
@@ -200,9 +209,6 @@ class IslandoraSolrQueryProcessor {
     // Set filter parameters - both from url and admin settings.
     if (isset($this->internalSolrParams['f']) && is_array($this->internalSolrParams['f'])) {
       $this->solrParams['fq'] = $this->internalSolrParams['f'];
-      if (!empty($base_filters)) {
-        $this->solrParams['fq'] = array_merge($this->internalSolrParams['f'], $base_filters);
-      }
       if (!empty($base_filters)) {
         $this->solrParams['fq'] = array_merge($this->internalSolrParams['f'], $base_filters);
       }
@@ -341,8 +347,8 @@ class IslandoraSolrQueryProcessor {
   }
 
   /**
-   * Iterates of the Solr doc of every result object and applies permission filters
-   * and sort orders.
+   * Iterates of the Solr doc of every result object and applies filters
+   * sort orders.
    *
    * @param array $object_results
    *   An array containing the prepared object results.

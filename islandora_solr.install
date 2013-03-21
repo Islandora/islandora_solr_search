@@ -76,6 +76,7 @@ function islandora_solr_uninstall() {
     'islandora_solr_num_of_results',
     'islandora_solr_namespace_restriction',
     'islandora_solr_base_query',
+    'islandora_solr_base_sort',
     'islandora_solr_base_filter',
     'islandora_solr_query_fields',
     'islandora_solr_debug_mode',
