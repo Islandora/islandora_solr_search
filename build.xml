@@ -68,8 +68,8 @@
   </target>
 
   <target name="doxygen" description="Generate API documentation with doxygen" depends="prepare">
-    <exec executable="sed">
-      <arg line='-i "s|PROJECT_NUMBER         =|PROJECT_NUMBER         = ""`git log -1 --pretty=format:%h`""|" build/Doxyfile'/>
+    <exec executable="bash">
+        <arg line='-c "sed -i s/PROJECT_NUMBER\ \ \ \ \ \ \ \ \ =/PROJECT_NUMBER\ \ \ \ \ \ \ \ \ =\ `git log -1 --pretty=format:%h`/ build/Doxyfile"'/>
     </exec>
     <exec executable="doxygen">
       <arg line="${basedir}/build/Doxyfile" />
