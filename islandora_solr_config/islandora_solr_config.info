@@ -1,5 +1,5 @@
 name = Islandora Solr display profiles
-description = Display profiles for Islandora Solr. (Grid, Table and CSV)
+description = Display profiles for Islandora Solr (Grid, Table and CSV).
 dependencies[] = islandora_solr
 files[] = includes/csv_results.inc
 files[] = includes/grid_results.inc

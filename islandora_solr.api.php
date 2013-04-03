@@ -20,7 +20,7 @@
 function hook_islandora_solr_primary_display() {
   return array(
     'machine_name' => array(
-      'name' => t('Human readable name'),
+      'name' => t('Human-readable name'),
       'module' => 'module_name',
       'file' => 'FileName.inc',
       'class' => 'ClassName',
@@ -41,7 +41,7 @@ function hook_islandora_solr_primary_display() {
 function hook_islandora_solr_secondary_display() {
   return array(
     'machine_name' => array(
-      'name' => t('Human readable name'),
+      'name' => t('Human-readable name'),
       'module' => 'module_name',
       'file' => 'FileName.inc',
       'class' => 'ClassName',
@@ -87,7 +87,7 @@ function hook_islandora_solr_query($islandora_solr_query) {
 function hook_islandora_solr_query_blocks() {
   return array(
     'machine_name' => array(
-      'name' => t('Human Readable Name'),
+      'name' => t('Human-Readable Name'),
       'module' => 'module_name',
       'file' => 'FileName.inc',
       'class' => 'ClassName',

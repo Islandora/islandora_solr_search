@@ -34,7 +34,7 @@ function islandora_solr_get_fields($field_type = NULL, $filter = TRUE, $simplifi
   }
   catch (Exception $e) {
     if ($e->errorInfo[0] == '42S02') {
-      drupal_set_message(t('Islandora solr fields table not found. Try running <a href="@update_url">update.php</a>.', array('@update_url' => url('update.php'))), 'error');
+      drupal_set_message(t('Islandora Solr fields table not found. Try running <a href="@update_url">update.php</a>.', array('@update_url' => url('update.php'))), 'error');
     }
     else {
       drupal_set_message($e->getMessage(), 'error');
