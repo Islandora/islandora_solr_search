@@ -201,9 +201,10 @@ function islandora_solr_prepare_solr_doc($object_results) {
  */
 function islandora_solr_prepare_solr_results($solr_results) {
   $object_results = $solr_results['response']['objects'];
-  $highlighting = $solr_results['highlighting'];
+  $highlighting = isset($solr_results['highlighting']) ? $solr_results['highlighting'] : array();
   $fields_all = islandora_solr_get_fields('result_fields', FALSE);
   $link_to_object = islandora_solr_get_link_to_object_fields();
+  $date_format = islandora_solr_get_date_format_fields();
 
   // Loop over object results.
   foreach ($object_results as $object_index => $object_result) {
@@ -222,14 +223,21 @@ function islandora_solr_prepare_solr_results($solr_results) {
     }
 
     foreach ($solr_doc as $field => $value) {
-      // Check highlighting.
-      if (isset($highlighting[$pid][$field])) {
-        $value = $highlighting[$pid][$field];
+      // Date formatting.
+      if (isset($date_format[$field])) {
+        $value = format_date(strtotime($value), 'custom', $date_format[$field], 'UTC');
       }
+      // Only apply highlighting when the date isn't formatted.
       else {
-        $value = $solr_doc[$field];
+        // Check highlighting.
+        if (isset($highlighting[$pid][$field])) {
+          $value = $highlighting[$pid][$field];
+        }
+        else {
+          $value = $solr_doc[$field];
+        }
       }
-      // Implode
+      // Implode.
       $value = is_array($value) ? implode(", ", $value) : $value;
       // Add link.
       if (in_array($field, $link_to_object)) {

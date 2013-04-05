@@ -96,14 +96,6 @@ class IslandoraSolrQueryProcessor {
       // set base query
       $this->internalSolrQuery = variable_get('islandora_solr_base_query', 'timestamp:[* TO NOW]');
 
-      // set base sort if empty
-      if (!isset($this->internalSolrParams['sort'])) {
-        $this->internalSolrParams['sort'] = variable_get('islandora_solr_base_sort', 'score desc');
-        if (trim($this->internalSolrParams['sort']) == '') {
-          $this->internalSolrParams['sort'] = 'score desc'; 
-        }
-      }
-
       // we must also undo dismax if it's been set
       $this->solrDefType = NULL;
       $this->solrParams['defType'] = NULL;
@@ -119,6 +111,13 @@ class IslandoraSolrQueryProcessor {
       else {
         // use ascending
         $this->solrParams['sort'] = $sort_explode[0] . ' asc';
+      }
+    }
+    else {
+      $base_sort = variable_get('islandora_solr_base_sort', '');
+      $base_sort = trim($base_sort);
+      if (!empty($base_sort)) {
+        $this->solrParams['sort'] = $base_sort;
       }
     }
 
@@ -143,9 +142,6 @@ class IslandoraSolrQueryProcessor {
     // set variables
     $facet_array = islandora_solr_get_fields('facet_fields');
     $facet_fields = implode(",", array_keys($facet_array));
-    $keys = array();
-    $snippet_array = islandora_solr_get_snippet_fields();
-    $snippets = implode(',', $snippet_array);
 
     // set params
     $params_array = array(
@@ -153,11 +149,6 @@ class IslandoraSolrQueryProcessor {
       'facet.mincount' => variable_get('islandora_solr_facet_min_limit', '2'),
       'facet.limit' => variable_get('islandora_solr_facet_max_limit', '20'),
       'qt' => variable_get('islandora_solr_request_handler', ''),
-      'hl' => isset($snippets) ? 'true' : NULL,
-      'hl.fl' => isset($snippets) ? $snippets : NULL,
-      'hl.fragsize' => 400,
-      'hl.simple.pre' => '<span class="islandora-solr-highlight">',
-      'hl.simple.post' => '</span>',
       // Comma separated list configured in the block config.
       'facet.field' => explode(',', $facet_fields),
     );
@@ -184,6 +175,10 @@ class IslandoraSolrQueryProcessor {
         if ($gap) {
           $params_date_facets["f.{$field}.facet.date.gap"] = $gap;
         }
+        // When the range slider is enabled we always want to return empty values.
+        if ($value['solr_field_settings']['range_facet_slider_enabled'] == 1) {
+          $params_date_facets["f.{$field}.facet.mincount"] = 0;
+        }
         // remove range/date field from facet.field array
         $pos = array_search($field, $params_array['facet.field']);
         unset($params_array['facet.field'][$pos]);
@@ -194,6 +189,20 @@ class IslandoraSolrQueryProcessor {
       $params_date_facets["facet.date.gap"] = '+1YEAR';
 
       $params_array = array_merge($params_array, $params_date_facets);
+    }
+
+    // Highlighting.
+    $highlighting_array = islandora_solr_get_snippet_fields();
+    if (!empty($highlighting_array)) {
+      $highlights = implode(',', $highlighting_array);
+      $highlighting_params = array(
+        'hl' => isset($highlights) ? 'true' : NULL,
+        'hl.fl' => isset($highlights) ? $highlights : NULL,
+        'hl.fragsize' => 400,
+        'hl.simple.pre' => '<span class="islandora-solr-highlight">',
+        'hl.simple.post' => '</span>',
+      );
+      $params_array += $highlighting_params;
     }
 
     // add parameters

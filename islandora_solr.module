@@ -54,13 +54,31 @@ function islandora_solr_menu() {
     'type' => MENU_CALLBACK,
   );
   $items['admin/islandora/search/islandora_solr'] = array(
-    'title' => 'Solr Client',
+    'title' => 'Solr index',
+    'description' => 'Configure Solr index.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('islandora_solr_admin_index_settings'),
+    'access arguments' => array('administer islandora solr'),
+    'file' => 'includes/admin.inc',
+    'type' => MENU_NORMAL_ITEM,
+  );
+  $items['admin/islandora/search/islandora_solr/index'] = array(
+    'title' => 'Solr index',
+    'description' => 'Configure Solr index.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('islandora_solr_admin_index_settings'),
+    'access arguments' => array('administer islandora solr'),
+    'file' => 'includes/admin.inc',
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+  );
+  $items['admin/islandora/search/islandora_solr/settings'] = array(
+    'title' => 'Solr settings',
     'description' => 'Configure Solr search settings.',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('islandora_solr_admin_settings'),
     'access arguments' => array('administer islandora solr'),
     'file' => 'includes/admin.inc',
-    'type' => MENU_NORMAL_ITEM,
+    'type' => MENU_LOCAL_TASK,
   );
   $items['islandora_solr/field'] = array(
     'title' => 'Result field',

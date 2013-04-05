@@ -153,6 +153,20 @@ function islandora_solr_get_link_to_object_fields() {
 }
 
 /**
+ * Return display fields with 'date format' enabled.
+ */
+function islandora_solr_get_date_format_fields() {
+  $records = islandora_solr_get_fields('result_fields', TRUE, FALSE);
+  $date_format = array();
+  foreach ($records as $key => $value) {
+    if (isset($value['solr_field_settings']['date_format']) && !empty($value['solr_field_settings']['date_format'])) {
+      $date_format[$value['solr_field']] = $value['solr_field_settings']['date_format'];
+    }
+  }
+  return $date_format;
+}
+
+/**
  * Return facet fields with range enabled.
  */
 function islandora_solr_get_range_facets() {
