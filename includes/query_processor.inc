@@ -148,10 +148,13 @@ class IslandoraSolrQueryProcessor {
       'facet' => 'true',
       'facet.mincount' => variable_get('islandora_solr_facet_min_limit', '2'),
       'facet.limit' => variable_get('islandora_solr_facet_max_limit', '20'),
-      'qt' => variable_get('islandora_solr_request_handler', ''),
-      // Comma separated list configured in the block config.
       'facet.field' => explode(',', $facet_fields),
     );
+
+    $request_handler = variable_get('islandora_solr_request_handler', FALSE);
+    if ($request_handler) {
+      $params_array['qt'] = $request_handler;
+    }
 
     // check for date facets
     $facet_dates = islandora_solr_get_range_facets();
