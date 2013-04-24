@@ -34,7 +34,7 @@ function islandora_solr_get_fields($field_type = NULL, $filter = TRUE, $simplifi
   }
   catch (Exception $e) {
     if ($e->errorInfo[0] == '42S02') {
-      drupal_set_message(t('Islandora solr fields table not found. Try running <a href="@update_url">update.php</a>.', array('@update_url' => url('update.php'))), 'error');
+      drupal_set_message(t('Islandora Solr fields table not found. Try running <a href="@update_url">update.php</a>.', array('@update_url' => url('update.php'))), 'error');
     }
     else {
       drupal_set_message($e->getMessage(), 'error');
@@ -150,6 +150,20 @@ function islandora_solr_get_link_to_object_fields() {
     }
   }
   return $link_to_object_fields;
+}
+
+/**
+ * Return display fields with 'date format' enabled.
+ */
+function islandora_solr_get_date_format_fields() {
+  $records = islandora_solr_get_fields('result_fields', TRUE, FALSE);
+  $date_format = array();
+  foreach ($records as $key => $value) {
+    if (isset($value['solr_field_settings']['date_format']) && !empty($value['solr_field_settings']['date_format'])) {
+      $date_format[$value['solr_field']] = $value['solr_field_settings']['date_format'];
+    }
+  }
+  return $date_format;
 }
 
 /**

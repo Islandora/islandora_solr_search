@@ -24,7 +24,7 @@ function islandora_solr_config_islandora_solr_primary_display() {
       'file' => 'includes/grid_results.inc',
       'class' => "IslandoraSolrResultsGrid",
       'function' => "displayResults",
-      'description' => t("Search results as a grid view"),
+      'description' => t("Display search results as a grid view"),
     ),
     'table' => array(
       'name' => t('Table'),
@@ -32,7 +32,7 @@ function islandora_solr_config_islandora_solr_primary_display() {
       'file' => 'includes/table_results.inc',
       'class' => "IslandoraSolrResultsTable",
       'function' => "displayResults",
-      'description' => t("Search results as tabular output"),
+      'description' => t("Display search results as tabular output"),
     ),
   );
 }

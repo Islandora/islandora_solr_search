@@ -40,8 +40,6 @@ http://drupal.stackexchange.com/questions/50216/how-to-trigger-a-form-and-pass-v
 
 - make labels translatable: http://drupal.org/node/1114010
 
-- separate preparing results from display
-- result permissions only enforced on default display
 - we could save us some code by storing the primary display settings in a DB table
 - add luke check for date fields (breaks if not)
 - more user friendly controls + advanced option
@@ -52,17 +50,16 @@ http://drupal.stackexchange.com/questions/50216/how-to-trigger-a-form-and-pass-v
 -- look for details (permissions, string handling, css, etc..)
 -- rss feed + config
 
+- update README.txt
+
 Normal Priority
 ---------------
 
-- Try to fix popup resizing.
 - rename 'solr_field_settings' to 'settings'
-- really need to clean IslandoraSolrResults. All of it, but especially facets.
+- clean up IslandoraSolrResults.
 - use libraries module for flot
-- fix snippet field highlighting
 - Facet settings: add checkbox to display facet as a separate block. Can be nice for sliders to display in the content top or bottom.
 - improve settings display. add little icon with settings in tooltip? misc/message-16-help.png
-- split out highlighting true by default. Don't include unless at least one field is given.
 - add ability to add permission callback or permission id to solr display profiles
 - add a check to see if the context is the search results page. Currently we
 check if IslandoraSolrQueryProcessor::display is set, which is not ideal.
@@ -71,22 +68,16 @@ check if IslandoraSolrQueryProcessor::display is set, which is not ideal.
 - check if spaces could be replaced by + or %20 , which would simplify some functions (splitting strings)
 http://wiki.apache.org/solr/CommonQueryParameters#sort
 - don't hardcode php solr library, instead override it.
-- table display works but should be rendered through a template file.
 - add ajax_command_changed() to the vertical tabs to show something has changed.
 - add watchdog messages on error.
-- on query without filter parameters the delete link adds a ? or &
 - some snippets of markup could go in theme functions
 
 Low Priority
 ------------
 
-- update README.txt
 - tabledrag should update the table with ajax.
 - hook_alter instead of module invoke all for object manipulation
 - provide integration with display suite
-- expose result limit controls
-- put object url's in one variable?
 - Boolean operators as query seem to choke
 
 - when changing primary display, keep &limit in the url or should it show the default? Displays can override this though.
-- empty query with dismax seems to return the same as no dismax (maybe it's just how solrconfig is defined)

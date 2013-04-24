@@ -1,6 +1,6 @@
 name = Islandora Solr
 dependencies[] = islandora
-description = Searches an islandora solr index
+description = Searches an Islandora Solr index
 package = Islandora Search
 configure = admin/config/islandora_solr
 version = 7.x-dev

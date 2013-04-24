@@ -16,32 +16,25 @@
 function islandora_solr_ping($solr_url) {
   // check for 'http://' or 'https://' prefix
   $solr_url = islandora_solr_check_http($solr_url);
-
   // check for valid url string.
   if (!filter_var($solr_url, FILTER_VALIDATE_URL)) {
     return FALSE;
   }
-
   // split url in host/port/path
   $solr_url_parsed = parse_url($solr_url);
-
   // if it's not a correct url for solr to check, return false.
   if (!isset($solr_url_parsed['host']) || !isset($solr_url_parsed['port'])) {
     return FALSE;
   }
-
   // call solr
   $solr_service = new Apache_Solr_Service($solr_url_parsed['host'], $solr_url_parsed['port'], $solr_url_parsed['path'] . '/');
-
   // ping solr
   $ping = $solr_service->ping();
-
   // if a ping time is returned
   if ($ping) {
     // Add 0.1 ms to the ping time so we never return 0.0.
     return $ping + 0.01;
   }
-
   return FALSE;
 }
 
@@ -55,7 +48,6 @@ function islandora_solr_ping($solr_url) {
  *   include the url with added 'http://' scheme.
  */
 function islandora_solr_check_http($url) {
-
   // check for 'http://' or 'https://' prefix - if not found, add it.
   if (strpos($url, "http://") === FALSE && strpos($url, "https://") === FALSE) {
     $url = 'http://' . $url;
@@ -80,20 +72,16 @@ function islandora_solr_check_http($url) {
  *   returns FALSE.
  */
 function islandora_solr_get_luke($solr_url = NULL, $field = NULL, $num_terms = 0) {
-
   if (!$solr_url) {
     // create url
     $solr_url = variable_get('islandora_solr_url', 'localhost:8080/solr');
   }
-
   // if solr is available get luke
   if (islandora_solr_ping($solr_url)) {
-
     // create url
     $luke_url = $solr_url . '/admin/luke';
     // check for http://
     $luke_url = islandora_solr_check_http($luke_url);
-
     $luke_query = array(
       'wt' => 'json',
       'numTerms' => $num_terms,
@@ -101,16 +89,12 @@ function islandora_solr_get_luke($solr_url = NULL, $field = NULL, $num_terms = 0
     if ($field) {
       $luke_query['fl'] = $field;
     }
-
     // generate nice url
     $luke_url = url($luke_url, array('absolute' => TRUE, 'query' => $luke_query));
-
     // get file content (= json string)
     $luke_json = file_get_contents($luke_url, 0, NULL, NULL);
-
     // decode json to php array
     $luke_array = json_decode($luke_json, TRUE);
-
     return $luke_array;
   }
   else {
@@ -149,7 +133,6 @@ function islandora_solr_get_sortable($solr_url = NULL) {
   if (empty($sortable)) {
     return  FALSE;
   }
-
   return $sortable;
 }
 
@@ -173,7 +156,6 @@ function islandora_solr_check_sortable($solr_url = NULL, $field = NULL) {
     // check if fields are available
     if (!empty($luke['fields'])) {
       $schema = $luke['fields'][$field]['schema'];
-
       // scheck if field is sortable
       // must be indexed and can't be multivalued
       // http://wiki.apache.org/solr/CommonQueryParameters#sort

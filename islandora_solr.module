@@ -54,17 +54,35 @@ function islandora_solr_menu() {
     'type' => MENU_CALLBACK,
   );
   $items['admin/islandora/search/islandora_solr'] = array(
-    'title' => 'Solr client',
+    'title' => 'Solr index',
+    'description' => 'Configure Solr index.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('islandora_solr_admin_index_settings'),
+    'access arguments' => array('administer islandora solr'),
+    'file' => 'includes/admin.inc',
+    'type' => MENU_NORMAL_ITEM,
+  );
+  $items['admin/islandora/search/islandora_solr/index'] = array(
+    'title' => 'Solr index',
+    'description' => 'Configure Solr index.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('islandora_solr_admin_index_settings'),
+    'access arguments' => array('administer islandora solr'),
+    'file' => 'includes/admin.inc',
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+  );
+  $items['admin/islandora/search/islandora_solr/settings'] = array(
+    'title' => 'Solr settings',
     'description' => 'Configure Solr search settings.',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('islandora_solr_admin_settings'),
     'access arguments' => array('administer islandora solr'),
     'file' => 'includes/admin.inc',
-    'type' => MENU_NORMAL_ITEM,
+    'type' => MENU_LOCAL_TASK,
   );
   $items['islandora_solr/field'] = array(
     'title' => 'Result field',
-    'description' => 'Configuration for result field',
+    'description' => 'Configuration for Solr result field',
     'page callback' => 'islandora_solr_admin_settings_field',
     'page arguments' => array(2, 3),
     'access arguments' => array('administer islandora solr'),
@@ -252,7 +270,7 @@ function islandora_solr($query = NULL) {
   $_islandora_solr_queryclass->buildAndExecuteQuery($query, $params);
 
   if (empty($_islandora_solr_queryclass->islandoraSolrResult)) {
-    return t('Error searching solr index.');
+    return t('Error searching Solr index.');
   }
 
   // TODO: Also filter secondary displays against those checked in the configuration options.
@@ -263,7 +281,7 @@ function islandora_solr($query = NULL) {
     $profile = $primary_profiles[$islandora_solr_primary_display];
   }
   else {
-    drupal_set_message(check_plain(t('There is an error in the solr search configuration: the display profile is not found.')), 'error');
+    drupal_set_message(check_plain(t('There is an error in the Solr search configuration: the display profile is not found.')), 'error');
     $profile = $primary_profiles['default'];
   }
   // Include the file for the display profile
@@ -294,7 +312,7 @@ function islandora_solr($query = NULL) {
 
   // debug dump
   if (variable_get('islandora_solr_debug_mode', 0)) {
-    $message = t('Params: <br /><pre>!debug</pre>', array('!debug' => print_r($_islandora_solr_queryclass->solrParams, TRUE)));
+    $message = t('Parameters: <br /><pre>!debug</pre>', array('!debug' => print_r($_islandora_solr_queryclass->solrParams, TRUE)));
     drupal_set_message(filter_xss($message, array('pre', 'br')), 'status');
   }
 

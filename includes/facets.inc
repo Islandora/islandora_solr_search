@@ -189,7 +189,7 @@ function islandora_solr_date_filter_form_validate($form, &$form_state) {
 
     // check from date
     if (!checkdate(intval($from[1]), intval($from[2]), intval($from[0]))) {
-      form_set_error($form_key . '][date_filter_from', t('From date isn\'t formatted correctly.'));
+      form_set_error($form_key . '][date_filter_from', t('<em>From</em> date isn\'t formatted correctly.'));
     }
   }
   // if the 'to' value is '*' just skip all checks
@@ -203,7 +203,7 @@ function islandora_solr_date_filter_form_validate($form, &$form_state) {
     }
     // check to date
     if (!checkdate(intval($to[1]), intval($to[2]), intval($to[0]))) {
-      form_set_error($form_key . '][date_filter_to', t('To date isn\'t formatted correctly.'));
+      form_set_error($form_key . '][date_filter_to', t('<em>To</em> date isn\'t formatted correctly.'));
     }
   }
 }
