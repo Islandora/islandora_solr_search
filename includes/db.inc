@@ -42,22 +42,28 @@ function islandora_solr_get_fields($field_type = NULL, $filter = TRUE, $simplifi
     $records = array();
   }
   // unserialize solr field settings blob
-  foreach ($records as $key => $value) {
-    $records[$key]['solr_field_settings'] = unserialize($records[$key]['solr_field_settings']);
+  foreach ($records as &$value) {
+    $value['solr_field_settings'] = unserialize($value['solr_field_settings']);
   }
   // filter
   if ($filter == TRUE) {
     $records = _islandora_solr_filter_fields($records);
   }
+
+  if (module_exists('i18n_string')) {
+    islandora_solr_translate_field_labels($records);
+  }
+
   // simplify
   if ($simplified == TRUE) {
     $records = _islandora_solr_simplify_fields($records);
   }
   // fields as keys
   if ($keys == TRUE && $simplified == FALSE) {
-    foreach ($records as $key => $value) {
+    $original = $records;
+    $records = array();
+    foreach ($original as $value) {
       $records[$value['solr_field']] = $value;
-      unset($records[$key]);
     }
   }
   return $records;
@@ -178,4 +184,20 @@ function islandora_solr_get_range_facets() {
     }
   }
   return $range_facets;
+}
+
+/**
+ * Function used with optional i18n_string integration.
+ */
+function islandora_solr_translate_field_labels(array &$records) {
+  foreach ($records as &$record) {
+    $settings = &$record['solr_field_settings'];
+    if (isset($settings['label'])) {
+      $string_id = format_string("islandora_solr:field_settings:@type:label:@field", array(
+        '@type' => $record['field_type'],
+        '@field' => $record['solr_field'],
+      ));
+      $settings['label'] = i18n_string_translate($string_id, $settings['label']);
+    }
+  }
 }

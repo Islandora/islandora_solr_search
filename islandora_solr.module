@@ -340,3 +340,17 @@ function islandora_solr_results_page($islandora_solr_query) {
     return FALSE;
   }
 }
+
+/**
+ * Implements hook_i18n_string_info().
+ */
+function islandora_solr_i18n_string_info() {
+  return array(
+    'islandora_solr' => array(
+      'title' => t('Islandora Solr'),
+      'description' => t('Translatable result and facet field labels.'),
+      'format' => FALSE,
+      'list' => TRUE,
+    ),
+  );
+}

@@ -763,10 +763,12 @@ function islandora_solr_admin_settings_fields(&$form_state, &$terms, $field_type
       // settings
       $solr_field_settings = NULL;
       if (isset($form_state['solr_field_settings']['islandora_solr_' . $field_type][$solr_field]['label'])) {
-        $solr_field_settings = $form_state['solr_field_settings']['islandora_solr_' . $field_type][$solr_field]['label'];
+        $solr_field_settings = function_exists('i18n_string') ?
+          i18n_string("islandora_solr:field_settings:$field_type:label:$solr_field", $form_state['solr_field_settings']['islandora_solr_' . $field_type][$solr_field]['label']) :
+          $form_state['solr_field_settings']['islandora_solr_' . $field_type][$solr_field]['label'];
       }
       $term['solr_field_settings'] = array(
-        '#markup' => $solr_field_settings ? t('Label') . ': ' . $solr_field_settings : '',
+        '#markup' => $solr_field_settings ? t('Label: @label', array('@label' => $solr_field_settings)) : '',
       );
       $term['weight'] = array(
         '#type' => 'weight',
@@ -1063,6 +1065,14 @@ function _islandora_solr_admin_settings_submit($form, &$form_state) {
             if (isset($form_state['solr_field_settings']['islandora_solr_' . $field_type][$solr_field])) {
               $solr_field_settings = $form_state['solr_field_settings']['islandora_solr_' . $field_type][$solr_field];
             }
+            if (module_exists('i18n_string')) {
+              if (isset($solr_field_settings['label'])) {
+                i18n_string_update("islandora_solr:field_settings:$field_type:label:$solr_field", $solr_field_settings['label']);
+              }
+              else {
+                i18n_string_remove("islandora_solr:field_settings:$field_type:label:$solr_field");
+              }
+            }
             $insert_values[] = array(
               'solr_field' => $solr_field,
               'field_type' => $field_type,
@@ -1301,7 +1311,8 @@ function _islandora_solr_admin_settings_field_configure($form, &$form_state) {
   $title = t('Configure field:') . ' ' . $solr_field;
   $commands[] = ajax_command_invoke('#islandora-solr-admin-dialog-title', 'html', array($title));
   // dialog body
-  $body = drupal_render(drupal_get_form($form_function, $variables));
+  $form = drupal_get_form($form_function, $variables);
+  $body = drupal_render($form);
   $commands[] = ajax_command_invoke('#islandora-solr-admin-dialog-body', 'html', array($body));
   // attach behaviors (re-attaches javascript)
   $commands[] = ajax_command_invoke(NULL, 'islandoraSolrAttachBehaviors', array());
@@ -1361,20 +1372,26 @@ function _islandora_solr_handle_solr_field_settings($solr_field_settings = NULL,
         );
         break;
       case 'facet_fields':
-        return array(
-          'label' => trim($solr_field_settings['label']),
-          'range_facet_select' => $solr_field_settings['range_facet_select'],
-          'range_facet_variable_gap' => $solr_field_settings['range_facet_variable_gap'],
-          'range_facet_start' => $solr_field_settings['range_facet_start'],
-          'range_facet_end' => $solr_field_settings['range_facet_end'],
-          'range_facet_gap' => $solr_field_settings['range_facet_gap'],
-          'date_facet_format' => $solr_field_settings['date_facet_format'],
-          'range_facet_slider_enabled' => $solr_field_settings['range_facet_slider_enabled'],
-          'range_facet_slider_color' => $solr_field_settings['range_facet_slider_color'],
-          'date_filter_datepicker_enabled' => $solr_field_settings['date_filter_datepicker_enabled'],
-          'date_filter_datepicker_range' => $solr_field_settings['date_filter_datepicker_range'],
-          'permissions' => $solr_field_settings['permissions'],
-        );
+        $fields = drupal_map_assoc(array(
+          'label',
+          'range_facet_select',
+          'range_facet_variable_gap',
+          'range_facet_start',
+          'range_facet_end',
+          'range_facet_gap',
+          'date_facet_format',
+          'range_facet_slider_enabled',
+          'range_facet_slider_color',
+          'date_filter_datepicker_enabled',
+          'date_filter_datepicker_range',
+          'permissions',
+        ));
+        $relevant_values = array_intersect_key($solr_field_settings, $fields);
+        $relevant_values['label'] = isset($relevant_values['label']) ?
+          trim($relevant_values['label']):
+          '';
+
+        return $relevant_values;
         break;
       case 'search_fields':
         return array(
