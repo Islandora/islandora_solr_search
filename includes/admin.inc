@@ -28,7 +28,7 @@ function islandora_solr_admin_index_settings($form, &$form_state) {
     }
 
     // get request handler
-    $handler = !empty($form_state['values']['islandora_solr_request_handler']) ? $form_state['values']['islandora_solr_request_handler'] : variable_get('islandora_solr_request_handler', '');
+    $handler = !empty($form_state['values']['islandora_solr_request_handler']) ? $form_state['values']['islandora_solr_request_handler'] : variable_get('islandora_solr_request_handler', FALSE);
     // Check if Solr is available.
     $solr_avail = islandora_solr_ping($solr_url);
 
@@ -1145,19 +1145,19 @@ function _islandora_solr_admin_settings_submit($form, &$form_state) {
  *   instance
  */
 function _islandora_solr_get_handlers($solr_url) {
-  $url = $solr_url . '/admin/file/?file=solrconfig.xml';
-  $ch = curl_init();
-  curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
-  curl_setopt($ch, CURLOPT_URL, $url);
-  $xml = simplexml_load_string(curl_exec($ch));
-  foreach ($xml->requestHandler as $handler) {
-    if ($handler['class'] == 'solr.SearchHandler') {
-      $handler_name = (string) $handler['name'];
-      $slashed = preg_match('/^\//', $handler_name);
-      if ($handler_name != 'dismax' && $handler_name != 'partitioned' & !$slashed) {
-        $handlers[$handler_name] = $handler_name;
-      }
+  $xml = islandora_solr_get_solrconfig_xml($solr_url);
+  $handlers = array(
+    FALSE => t('Let Solr decide'),
+  );
+  if ($xml) {
+    $xpath = '//requestHandler[@class="solr.SearchHandler" and not(starts-with(@name, "/")) and not(@name="dismax") and not(@name="partitioned")]';
+    foreach ($xml->xpath($xpath) as $handler) {
+      $handler_name = (string)$handler['name'];
+      $handlers[$handler_name] = $handler_name;
     }
+  }
+  else {
+    drupal_set_message(t('Error retrieving @file from Solr.', array('@file' => 'solrconfig.xml')), 'warning');
   }
   return $handlers;
 }
@@ -1207,26 +1207,42 @@ function _islandora_solr_admin_refresh($form, &$form_state) {
  * @see islandora_solr_admin_settings()
  */
 function _islandora_solr_check_dismax($solr_url, $selected_handler) {
-  $dismax = FALSE;
-  $url = $solr_url . '/admin/file/?file=solrconfig.xml';
-  $ch = curl_init();
-  curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
-  curl_setopt($ch, CURLOPT_URL, $url);
-  $xml = simplexml_load_string(curl_exec($ch));
-  foreach ($xml->requestHandler as $handler) {
-    if ($handler['class'] == 'solr.SearchHandler') {
-      if ((string) $handler['name'] == $selected_handler) {
-        foreach ($handler->lst as $first) {
-          foreach ($first->str as $str) {
-            if ($str['name'] == 'qf') {
-              $dismax = TRUE;
-            }
-          }
+  $xml = islandora_solr_get_solrconfig_xml($solr_url);
+
+  $handlers = array();
+  if ($xml) {
+    if ($selected_handler) {
+      $handlers = $xml->xpath("//requestHandler[@class='solr.SearchHandler' and @name='$selected_handler']");
+    }
+    else {
+      $potential_handlers = $xml->xpath("//requestHandler[@class='solr.SearchHandler' and @default='true']");
+      if ($potential_handlers) {
+        // We don't have a handler name, but we do have a the default handler.
+        $handlers = $potential_handlers;
+      }
+      else {
+        $potential_handlers = $xml->xpath("//requestHandler[@class='solr.SearchHandler' and @name='/select']");
+        if ($potential_handlers) {
+          // We don't have a name or a declared, so look at the implied default.
+          // Solr 3.6 seems to be able to store settings here which get applied to
+          // all request handlers...
+          // XXX: Might have to make this always get checked for completeness, if it
+          // can really provide general defaults.
+          $handlers = $potential_handlers;
         }
       }
     }
   }
-  return $dismax;
+  else {
+    drupal_set_message(t('Error retrieving @file from Solr.', array('@file' => 'solrconfig.xml')), 'warning');
+  }
+
+  // An empty array evaluates to false... Let's coerce into a boolean.
+  return TRUE == array_filter($handlers, function ($handler) {
+    // XPath return an array of elements, and empty array evaluates to FALSE...
+    // Coerce into a boolean, just because.
+    return TRUE == $handler->xpath('lst/str[@name="qf"]');
+  });
 }
 
 /**
@@ -1906,6 +1922,43 @@ function _islandora_solr_permissions_default() {
     }
   }
   return $permissions_default;
+}
+
+/**
+ * Get the Solr config from the given installation.
+ *
+ * Seem to get the Solr config a couple places... We cache statically, just
+ * because.
+ *
+ * @param string $solr_url
+ *   The Solr URL from which to try to grab the solrconfig.xml.
+ *
+ * @return SimpleXMLElement
+ *   A SimpleXMLElement representing the contents of the solrconfig.xml, or
+ *   NULL if it could not be retrieved.
+ */
+function islandora_solr_get_solrconfig_xml($solr_url) {
+  $xml = &drupal_static(__FUNCTION__, array());
+
+  if (!array_key_exists($solr_url, $xml) || $xml[$solr_url] === NULL) {
+    $url = $solr_url . '/admin/file/?file=solrconfig.xml';
+
+    // XXX: The Solr URL should be made to contain the URI scheme in the actual
+    // configuration.
+    if (strpos($solr_url, 'http') !== 0) {
+      $url = "http://$url";
+    }
+
+    $req = drupal_http_request($url);
+    if ($req->code / 100 === 2) {
+      $xml[$solr_url] = simplexml_load_string($req->data);
+    }
+    else {
+      $xml[$solr_url] = NULL;
+    }
+  }
+
+  return $xml[$solr_url];
 }
 
 /**
