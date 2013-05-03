@@ -218,9 +218,6 @@ function islandora_solr_simple_search_form_submit($form, &$form_state) {
 function islandora_solr_advanced_search_form($form, &$form_state) {
   global $_islandora_solr_queryclass;
 
-  // include common.inc
-  module_load_include('inc', 'islandora_solr', 'includes/common');
-
   // check form states
   // 1. form update using ajax
   // 2. populate with current query on search results page

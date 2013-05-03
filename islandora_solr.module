@@ -10,7 +10,7 @@ DEFINE('SOLR_SEARCH_PATH', 'islandora/search');
 // Includes functions for common db queries.
 require_once dirname(__FILE__) . '/includes/db.inc';
 // Includes functions for common tasks.
-require_once dirname(__FILE__) . '/includes/common.inc';
+require_once dirname(__FILE__) . '/includes/utilities.inc';
 // Includes functions to create Islandora Solr blocks.
 require_once dirname(__FILE__) . '/includes/blocks.inc';
 // Includes functions for advanced facet functionality.
