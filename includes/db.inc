@@ -62,8 +62,8 @@ function islandora_solr_get_fields($field_type = NULL, $filter = TRUE, $simplifi
   if ($keys == TRUE && $simplified == FALSE) {
     $original = $records;
     $records = array();
-    foreach ($original as $value) {
-      $records[$value['solr_field']] = $value;
+    foreach ($original as $field) {
+      $records[$field['solr_field']] = $field;
     }
   }
   return $records;
