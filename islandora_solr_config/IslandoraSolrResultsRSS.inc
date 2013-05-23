@@ -28,7 +28,6 @@ class IslandoraSolrResultsRSS extends IslandoraSolrResults {
   function printRSS($solrQueryProcessor, $title = "Search Results") {
 
     global $base_url;
-
     // get raw results
     $solr_result = $solrQueryProcessor->solrResult;
     $raw_response = $solr_result->getRawResponse();
@@ -57,11 +56,12 @@ class IslandoraSolrResultsRSS extends IslandoraSolrResults {
       }
       // get the variables for the <item> element
       $item = $this->rssItem($doc);
+      drupal_alter('islandora_solr_search_rss_item', $item, $doc);         
       
       // render rss item and add to items string
       $items .= format_rss_item($item['title'], $item['link'], $item['description'], $item['items']);
     }
-
+    
     // query search terms:
     $query = $solrQueryProcessor->solrQuery;
 
@@ -112,7 +112,7 @@ class IslandoraSolrResultsRSS extends IslandoraSolrResults {
     $result['description'] = $rss_item['description'] ? $doc[$rss_item['description']] : '';
     $result['items'] = array(
       array('key' => 'author', 'value' => $rss_item['author'] ? $doc[$rss_item['author']] : ''),
-      array('key' => 'guid', 'value' => $doc['PID'], 'attributes' => array('isPermaLink' => 'false',)),
+      array('key' => 'guid', 'value' => $doc['PID'], 'attributes' => array('isPermaLink' => 'false', )),
       array('key' => 'pubDate', 'value' => $rss_item['pubDate'] ? $doc[$rss_item['pubDate']] : ''),
       array('key' => 'category', 'value' => $rss_item['category'] ? $doc[$rss_item['category']] : ''),                             
       array('key' => 'enclosure', 'value' => '', 'attributes' => array('url' => $enclosure_url, 'length' => '', 'type' => '')),
