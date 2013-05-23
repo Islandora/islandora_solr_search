@@ -281,12 +281,16 @@ class IslandoraSolrQueryProcessor {
       // execute query
       $results = $solr->search($solr_query, $this->solrStart, $this->solrLimit, $this->solrParams);
     } catch (Exception $e) {
+
       drupal_set_message(check_plain(t('error searching')) . ' ' . $e->getMessage());
     }
+    
     // save results in class property
     $this->solrResult = $results;
     // set error
+
     if (empty($results)) {
+
       drupal_set_message(t('Error searching solr index. Is the solr search block configured properly?'), 'error');
       return;
     }

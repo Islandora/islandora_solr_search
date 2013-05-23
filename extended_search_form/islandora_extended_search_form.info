@@ -3,5 +3,5 @@ dependencies[] = islandora_solr_search
 dependencies[] = php_lib
 description = An improved 'Advanced Search' form.
 package = Islandora Search
-version = 6.x-dev
+version = 6.x-13.1
 core = 6.x

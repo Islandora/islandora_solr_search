@@ -2,5 +2,5 @@ name = Islandora Solr Search
 dependencies[] = fedora_repository
 description = searches a solr index
 package = Islandora Search
-version = 6.x-dev
+version = 6.x-13.1
 core = 6.x

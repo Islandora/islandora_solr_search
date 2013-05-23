@@ -44,7 +44,6 @@ class IslandoraSolrResults {
     $results = NULL;
     $secondary_profiles = NULL;
     $elements = array();
-
     // set title
     if (!is_null($title)) {
       drupal_set_title($title);
@@ -148,7 +147,6 @@ class IslandoraSolrResults {
     // set variables
     $results_array = array();
     $elements = array();
-
     // total
     $elements['solr_total'] = $results->response->numFound;
 
