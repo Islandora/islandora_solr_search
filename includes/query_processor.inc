@@ -272,7 +272,7 @@ class IslandoraSolrQueryProcessor {
    * @return NULL
    *   Nothing to return.
    */
-  function executeQuery($alter_results = TRUE) {
+  function executeQuery($alter_results = TRUE, $use_post = FALSE) {
     // Init Apache_Solr_Service object.
     $path_parts = parse_url(variable_get('islandora_solr_url', 'localhost:8080/solr'));
     $solr = new Apache_Solr_Service($path_parts['host'], $path_parts['port'], $path_parts['path'] . '/');
@@ -281,7 +281,8 @@ class IslandoraSolrQueryProcessor {
     // Query is executed.
     try {
       $solr_query = ($this->internalSolrQuery) ? $this->internalSolrQuery : $this->solrQuery;
-      $results = $solr->search($solr_query, $this->solrStart, $this->solrLimit, $this->solrParams);
+      $method = $use_post ? 'POST' : 'GET';
+      $results = $solr->search($solr_query, $this->solrStart, $this->solrLimit, $this->solrParams, $method);
     } catch (Exception $e) {
       drupal_set_message(check_plain(t('Error searching Solr index')) . ' ' . $e->getMessage(), 'error');
     }
