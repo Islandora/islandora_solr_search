@@ -6,31 +6,33 @@
  */
 
 /**
- * Pings a solr instance for availability.
+ * Pings a Solr instance for availability.
  *
- * @param $solr_url
- *   A url that points to Solr.
- * @return
- *   Returns ping time in milliseconds or a FALSE boolean
+ * @param string $solr_url
+ *   A URL that points to Solr.
+ *
+ * @return int|bool
+ *   Returns ping time in milliseconds on success or boolean FALSE if Solr
+ *   could not be reached.
  */
 function islandora_solr_ping($solr_url) {
-  // check for 'http://' or 'https://' prefix
+  // Check that scheme specifier is present.
   $solr_url = islandora_solr_check_http($solr_url);
-  // check for valid url string.
+  // Check for valid URL string.
   if (!filter_var($solr_url, FILTER_VALIDATE_URL)) {
     return FALSE;
   }
-  // split url in host/port/path
+
   $solr_url_parsed = parse_url($solr_url);
-  // if it's not a correct url for solr to check, return false.
+  // If it's not a correct URL for Solr to check, return FALSE.
   if (!isset($solr_url_parsed['host']) || !isset($solr_url_parsed['port'])) {
     return FALSE;
   }
-  // call solr
+  // Call Solr.
   $solr_service = new Apache_Solr_Service($solr_url_parsed['host'], $solr_url_parsed['port'], $solr_url_parsed['path'] . '/');
-  // ping solr
+  // Ping Solr.
   $ping = $solr_service->ping();
-  // if a ping time is returned
+  // If a ping time is returned.
   if ($ping) {
     // Add 0.1 ms to the ping time so we never return 0.0.
     return $ping + 0.01;
@@ -39,16 +41,17 @@ function islandora_solr_ping($solr_url) {
 }
 
 /**
- * Check for url scheme
+ * Check for URL scheme.
  *
  * @param string $url
- *   A url to check
+ *   A URL to check.
+ *
  * @return string
  *   If the url doesn't include a scheme ('http://' or 'https://') then it will
  *   include the url with added 'http://' scheme.
  */
 function islandora_solr_check_http($url) {
-  // check for 'http://' or 'https://' prefix - if not found, add it.
+  // Check for 'http://' or 'https://' prefix - if not found, add "http://".
   if (strpos($url, "http://") === FALSE && strpos($url, "https://") === FALSE) {
     $url = 'http://' . $url;
   }
@@ -56,31 +59,32 @@ function islandora_solr_check_http($url) {
 }
 
 /**
- * Function to get Solr luke as a php array.
+ * Get Luke info.
  *
  * @param string $solr_url
- *   url which points to solr
+ *   URL which points to Solr.
  * @param string $field
- *   limit luke results by entering a single solr field
+ *   Limit luke results by entering a single Solr field.
  * @param int $num_terms
- *   number of terms to include per solr field. Terms are indexed strings which
- *   include the number of occurrences in the solr index. Higher occurrences are
+ *   Number of terms to include per Solr field. Terms are indexed strings which
+ *   include the number of occurrences in the Solr index. Higher occurrences are
  *   listed first. Defaults to 0 because including this can add a siginificant
- *   perfomance hit.
- * @return
- *   if solr is available it returns Solr Luke data as a php array, if not it
- *   returns FALSE.
+ *   performance hit.
+ *
+ * @return array|bool
+ *   Returns Solr Luke data, or boolean FALSE if there was an error (Solr not
+ *   available?).
  */
 function islandora_solr_get_luke($solr_url = NULL, $field = NULL, $num_terms = 0) {
   if (!$solr_url) {
-    // create url
+    // Create URL.
     $solr_url = variable_get('islandora_solr_url', 'localhost:8080/solr');
   }
-  // if solr is available get luke
+  // If Solr is available get Luke.
   if (islandora_solr_ping($solr_url)) {
-    // create url
+    // Create URL.
     $luke_url = $solr_url . '/admin/luke';
-    // check for http://
+    // Check for scheme specifier.
     $luke_url = islandora_solr_check_http($luke_url);
     $luke_query = array(
       'wt' => 'json',
@@ -89,13 +93,18 @@ function islandora_solr_get_luke($solr_url = NULL, $field = NULL, $num_terms = 0
     if ($field) {
       $luke_query['fl'] = $field;
     }
-    // generate nice url
+    // Generate nice URL.
     $luke_url = url($luke_url, array('absolute' => TRUE, 'query' => $luke_query));
-    // get file content (= json string)
-    $luke_json = file_get_contents($luke_url, 0, NULL, NULL);
-    // decode json to php array
-    $luke_array = json_decode($luke_json, TRUE);
-    return $luke_array;
+    $r = drupal_http_request($luke_url);
+    if ($r->code / 100 === 2) {
+      $luke_json = $r->data;
+      // Parse JSON.
+      $luke_array = json_decode($luke_json, TRUE);
+      return $luke_array;
+    }
+    else {
+      return FALSE;
+    }
   }
   else {
     return FALSE;
@@ -105,60 +114,58 @@ function islandora_solr_get_luke($solr_url = NULL, $field = NULL, $num_terms = 0
 /**
  * Returns an array containing all fields in Luke that are sortable.
  *
+ * Must be indexed and can't be multivalued.
+ * @link http://wiki.apache.org/solr/CommonQueryParameters#sort More info on constraints. @endlink
+ *
  * @param string $solr_url
- *   url which points to solr
- * @return boolean
- *   returns an array containing all fields in Luke that are sortable. If no
- *   fields are sortable, it returns FALSE
+ *   URL which points to Solr.
+ *
+ * @return array|bool
+ *   An array containing all fields in Luke that are sortable. If no
+ *   fields are sortable, it returns FALSE.
  */
 function islandora_solr_get_sortable($solr_url = NULL) {
-  // set variable
   $sortable = array();
   $luke = islandora_solr_get_luke($solr_url);
-  // check if fields are available
+  // Check if fields are available.
   if (isset($luke['fields']) && !empty($luke['fields'])) {
-    // loop over fields
     foreach ($luke['fields'] as $field => $value) {
-      // scheck if field is sortable
-      // must be indexed and can't be multivalued
-      // http://wiki.apache.org/solr/CommonQueryParameters#sort
+      // Check if field is sortable.
       if (strstr($value['schema'], "I") != FALSE && strstr($value['schema'], "M") == FALSE) {
-        // add field
         $sortable[] = $field;
       }
-
     }
   }
-  // return FALSE if no sortable fields are returned
+  // Return FALSE if no sortable fields are returned.
   if (empty($sortable)) {
-    return  FALSE;
+    return FALSE;
   }
   return $sortable;
 }
 
 /**
- * Checks a single solr field if it's sortable.
+ * Checks a single Solr field if it's sortable.
+ *
+ * Must be indexed and can't be multivalued.
+ * @link http://wiki.apache.org/solr/CommonQueryParameters#sort More info on constraints. @endlink
  *
  * @param string $solr_url
- *   url which points to solr
+ *   URL which points to Solr.
  * @param string $field
- *   solr field to be checked for being sortable
- * @return boolean
+ *   Solr field to be checked for being sortable.
+ *
+ * @return bool
  *   Returns TRUE if the given field is sortable, returns FALSE if the field is
  *   not sortable or if field is not set.
  */
 function islandora_solr_check_sortable($solr_url = NULL, $field = NULL) {
-  // set variable
   $sortable = FALSE;
 
   if ($field) {
     $luke = islandora_solr_get_luke($solr_url, $field);
-    // check if fields are available
+    // Check if fields are available.
     if (!empty($luke['fields'])) {
       $schema = $luke['fields'][$field]['schema'];
-      // scheck if field is sortable
-      // must be indexed and can't be multivalued
-      // http://wiki.apache.org/solr/CommonQueryParameters#sort
       if (strstr($schema, "I") != FALSE && strstr($schema, "M") == FALSE) {
         $sortable = TRUE;
       }
@@ -172,12 +179,14 @@ function islandora_solr_check_sortable($solr_url = NULL, $field = NULL) {
  *
  * @param string $solr_field
  *   Solr field to check if highlighting is allowed.
+ *
  * @return bool
  *   Returns TRUE if the Solr field is both tokenized and stored.
  */
 function islandora_solr_check_highlighting_allowed($solr_field = NULL) {
-  // Can't find proper documentation on which field types included in highlighting breaks Solr and what
-  // types don't. For now add them to this array.
+  // Can't find proper documentation on which field types included in
+  // highlighting breaks Solr and what types don't. For now add them to this
+  // array.
   $types_breaking_solr = array('date');
   $luke_field = islandora_solr_get_luke(NULL, $solr_field);
   if (isset($luke_field['fields'][$solr_field]['schema']) && isset($luke_field['fields'][$solr_field]['type'])) {

@@ -2,36 +2,11 @@
 
 /**
  * @file
- *
  * Includes functions for advanced facet functionality.
  */
 
 /**
- * Implements hook_forms().
- */
-function islandora_solr_forms($form_id, $args) {
-
-  // Check if the form_id passed to drupal_get_form() contains the string 'islandora_solr_search_date_filter_form'
-  if (strpos($form_id, 'islandora_solr_date_filter_form') !== FALSE) {
-    $forms[$form_id] = array(
-      'callback' => 'islandora_solr_date_filter_form',
-      'callback arguments' => array($args[0]),
-    );
-    return $forms;
-  }
-
-  // Check if the form_id passed to drupal_get_form() contains the string 'islandora_solr_range_slider_form'
-  if (strpos($form_id, 'islandora_solr_range_slider_form') !== FALSE) {
-    $forms[$form_id] = array(
-      'callback' => 'islandora_solr_range_slider_form',
-      'callback arguments' => array($args[0]),
-    );
-    return $forms;
-  }
-}
-
-/**
- * Date filter form
+ * Date filter form.
  */
 function islandora_solr_date_filter_form($form, &$form_state, $elements) {
   global $_islandora_solr_queryclass;
@@ -42,15 +17,15 @@ function islandora_solr_date_filter_form($form, &$form_state, $elements) {
     '#prefix' => '<div class="islandora-solr-date-filter">',
     '#suffix' => '</div>',
   );
-  // Field
+  // Field.
   $form['date_filter_facet_field'] = array(
     '#type' => 'hidden',
     '#value' => $facet_field,
     '#name' => 'date_filter_facet_field_' . $form_key,
   );
 
-  // check if default value is possible
-  // parameters set in url
+  // Check if default value is possible.
+  // Parameters set in URL.
   $params = isset($_islandora_solr_queryclass->internalSolrParams) ? $_islandora_solr_queryclass->internalSolrParams : array();
   $filter_count = 0;
   if (isset($params['f'])) {
@@ -58,22 +33,22 @@ function islandora_solr_date_filter_form($form, &$form_state, $elements) {
     foreach ($params['f'] as $key => $filter) {
       if (strpos($filter, $facet_field) === 0) {
         $filter_count++;
-        // split the filter into field and value
+        // Split the filter into field and value.
         $filter_split = explode(':', $filter, 2);
-        // trim brackets
+        // Trim brackets.
         $filter_split[1] = trim($filter_split[1], "\"");
-        // split range filter string to return formatted date values
+        // Split range filter string to return formatted date values.
         $filter_str = $filter_split[1];
 
         $filter_str = trim($filter_str, '[');
         $filter_str = trim($filter_str, ']');
         $filter_array = explode(' TO ', $filter_str);
 
-        // get timestamps
+        // Get timestamps.
         $from_unix = strtotime(trim($filter_array[0]));
         $to_unix = strtotime(trim($filter_array[1]));
 
-        // only set default times if from date is lower than to date
+        // Only set default times if from date is lower than to date.
         if ($from_unix < $to_unix) {
           if ($from_unix !== FALSE) {
             $from_default = (strpos($filter_array[0], '*') !== FALSE) ? '*' : format_date($from_unix, 'custom', $format, 'UTC');
@@ -114,16 +89,13 @@ function islandora_solr_date_filter_form($form, &$form_state, $elements) {
     '#prefix' => '<span class="date-filter-toggle-text">',
     '#suffix' => '</span>',
   );
-  // Show/hide link
   $form['date_filter'] = array(
     '#prefix' => '<div class="date-range-filter-wrapper">',
     '#suffix' => '</div>',
   );
-  // description
   $form['date_filter']['date_filter'] = array(
     '#markup' => '<div class="description">' . t('Format: @date', array('@date' => date("Y/m/d"))) . '</div>',
   );
-  // From
   $form['date_filter']['date_filter_from'] = array(
     '#type' => 'textfield',
     '#title' => t('From'),
@@ -132,7 +104,6 @@ function islandora_solr_date_filter_form($form, &$form_state, $elements) {
     '#maxsize' => 10,
     '#attributes' => array('class' => array('islandora-solr-datepicker-' . $form_key)),
   );
-  // To
   $form['date_filter']['date_filter_to'] = array(
     '#type' => 'textfield',
     '#title' => t('To'),
@@ -141,7 +112,6 @@ function islandora_solr_date_filter_form($form, &$form_state, $elements) {
     '#maxsize' => 10,
     '#attributes' => array('class' => array('islandora-solr-datepicker-' . $form_key)),
   );
-  // Submit
   $form['date_filter']['date_filter_submit'] = array(
     '#type' => 'submit',
     '#value' => t('Filter'),
@@ -149,37 +119,35 @@ function islandora_solr_date_filter_form($form, &$form_state, $elements) {
     '#form_key' => $form_key,
   );
   $form['#submit'][] = 'islandora_solr_date_filter_form_submit';
-  // Validate
   $form['#validate'][] = 'islandora_solr_date_filter_form_validate';
 
-  // include datepicker js
   drupal_add_library('system', 'ui.datepicker');
-  // add datepicker css
   drupal_add_css('misc/ui/jquery.ui.datepicker.css');
-  // add js settings
   drupal_add_js(array(
     'islandoraSolrDatepickerRange' => array(
       $facet_field => array(
         'datepickerRange' => trim($datepicker_range),
         'formKey' => $form_key,
-    ))), 'setting');
+      ),
+    ),
+  ), 'setting');
 
   return $form;
 }
 
 /**
- * Date filter form validate
+ * Date filter form validate.
  */
 function islandora_solr_date_filter_form_validate($form, &$form_state) {
   $from = explode('/', $form_state['values']['date_filter']['date_filter_from']);
   $to = explode('/', $form_state['values']['date_filter']['date_filter_to']);
   $form_key = $form_state['triggering_element']['#form_key'];
-  // default for month and day
+  // Default for month and day.
   $default = '01';
 
-  // if the 'from' value is '*' just skip all checks
-  if (trim($from[0]) != '*' ) {
-    // Apply some defaults
+  // If the 'from' value is '*' just skip all checks.
+  if (trim($from[0]) != '*') {
+    // Apply some defaults.
     if (!isset($from[1])) {
       $from[1] = $default;
     }
@@ -187,82 +155,71 @@ function islandora_solr_date_filter_form_validate($form, &$form_state) {
       $from[2] = $default;
     }
 
-    // check from date
+    // Check from date.
     if (!checkdate(intval($from[1]), intval($from[2]), intval($from[0]))) {
-      form_set_error($form_key . '][date_filter_from', t('<em>From</em> date isn\'t formatted correctly.'));
+      form_set_error($form_key . '][date_filter_from', t('<em>From</em> date is not formatted correctly.'));
     }
   }
-  // if the 'to' value is '*' just skip all checks
-  if (trim($to[0]) != '*' ) {
-    // Apply some defaults
+  // If the 'to' value is '*' just skip all checks.
+  if (trim($to[0]) != '*') {
+    // Apply some defaults.
     if (!isset($to[1])) {
       $to[1] = $default;
     }
     if (!isset($to[2])) {
       $to[2] = $default;
     }
-    // check to date
+    // Check to date.
     if (!checkdate(intval($to[1]), intval($to[2]), intval($to[0]))) {
-      form_set_error($form_key . '][date_filter_to', t('<em>To</em> date isn\'t formatted correctly.'));
+      form_set_error($form_key . '][date_filter_to', t('<em>To</em> date is not formatted correctly.'));
     }
   }
 }
 
 /**
- * Date filter form submit
+ * Date filter form submit.
  */
 function islandora_solr_date_filter_form_submit($form, &$form_state) {
   global $_islandora_solr_queryclass;
+
   $form_state['rebuild'] = TRUE;
   $params = isset($_islandora_solr_queryclass->internalSolrParams) ? $_islandora_solr_queryclass->internalSolrParams : array();
-  $path = SOLR_SEARCH_PATH . '/' . replace_slashes($_islandora_solr_queryclass->solrQuery);
+  $path = SOLR_SEARCH_PATH . '/' . islandora_solr_replace_slashes($_islandora_solr_queryclass->solrQuery);
   $facet_field = $form_state['values']['date_filter_facet_field'];
   $form_key = $form_state['triggering_element']['#form_key'];
 
-  // date
+  // Date.
   $from = explode('/', $form_state['values']['date_filter']['date_filter_from']);
   $to = explode('/', $form_state['values']['date_filter']['date_filter_to']);
 
-  // if the 'from' value is '*' just skip all checks
-  if (trim($from[0]) != '*' ) {
-    // Apply some defaults
-    $default = '01';
-    if (!isset($from[1])) {
-      $from[1] = $default;
+  $build_date = function (array $date_values) {
+    if (trim($date_values[0]) != '*') {
+      // Apply some defaults.
+      $default = '01';
+      if (!isset($date_values[1])) {
+        $date_values[1] = $default;
+      }
+      if (!isset($date_values[2])) {
+        $date_values[2] = $default;
+      }
+      // Create date string.
+      return format_string('!year-!month-!dayT00:00:00Z', array_combine(
+        array('!year', '!month', '!day'),
+        $date_values
+      ));
     }
-    if (!isset($from[2])) {
-      $from[2] = $default;
+    else {
+      return $date_values[0];
     }
-    // create date string
-    // example:
-    // timestamp:[1900-01-01T00:00:00Z TO 1990-01-01T00:00:00Z]
-    $from_str = "{$from[0]}-{$from[1]}-{$from[2]}T00:00:00Z";
-  }
-  else {
-    $from_str = $from[0];
-  }
+  };
 
-  // if the 'to' value is '*' just skip all checks
-  if (trim($to[0]) != '*' ) {
-    // Apply some defaults
-    if (!isset($to[1])) {
-      $to[1] = $default;
-    }
-    if (!isset($to[2])) {
-      $to[2] = $default;
-    }
-    // create date string
-    // example:
-    // timestamp:[1900-01-01T00:00:00Z TO 1990-01-01T00:00:00Z]
-    $to_str = "{$to[0]}-{$to[1]}-{$to[2]}T00:00:00Z";
-  }
-  else {
-    $to_str = $to[0];
-  }
-  // create filter
+  $from_str = $build_date($from);
+  $to_str = $build_date($to);
+
+  // Create filter.
   $filter = "{$facet_field}:[{$from_str} TO {$to_str}]";
 
-  // set date filter key if there are no date filters included
+  // Set date filter key if there are no date filters included.
   if (isset($params['f'])) {
     foreach ($params['f'] as $key => $f) {
       if (strpos($f, $facet_field) !== FALSE) {
@@ -276,7 +233,6 @@ function islandora_solr_date_filter_form_submit($form, &$form_state) {
     $query = array_merge_recursive($params, array('f' => array($filter)));
   }
 
-  // redirect
   drupal_goto($path, array('query' => $query));
 }
 
@@ -297,7 +253,7 @@ function islandora_solr_range_slider_form($form, &$form_state, $elements) {
     '#prefix' => '<div class="islandora-solr-range-slider">',
     '#suffix' => '</div>',
   );
-  // Field
+  // Field.
   $form['range_slider_term'] = array(
     '#type' => 'hidden',
     '#value' => $facet_field,
@@ -312,19 +268,18 @@ function islandora_solr_range_slider_form($form, &$form_state, $elements) {
   $form['markup'] = array(
     '#markup' => theme('islandora_solr_range_slider', $slider_variables),
   );
-  // hidden from
+  // Hidden from.
   $form['range_slider_hidden_from'] = array(
     '#type' => 'hidden',
-    '#default_value' => $from_default['date'], // lowest value
+    '#default_value' => $from_default['date'],
     '#attributes' => array('class' => array('range-slider-hidden-from-' . $form_key)),
   );
-  // hidden to
+  // Hidden to.
   $form['range_slider_hidden_to'] = array(
     '#type' => 'hidden',
-    '#default_value' => $to_default['date'], // highest value
+    '#default_value' => $to_default['date'],
     '#attributes' => array('class' => array('range-slider-hidden-to-' . $form_key)),
   );
-  // Submit
   $form['range_slider_submit'] = array(
     '#type' => 'submit',
     '#value' => t('Filter'),
@@ -333,19 +288,22 @@ function islandora_solr_range_slider_form($form, &$form_state, $elements) {
   );
   $form['#submit'][] = 'islandora_solr_range_slider_form_submit';
 
-  // include jquery ui slider
   drupal_add_library('system', 'ui.slider');
-  // include flot
+  // Include flot.
   // @TODO: use the libraries module for this!
-  // @TODO: use the new version of flot. Didn't work out of the box, so needs some extra attention.
+  // @TODO: use the new version of flot. Didn't work out of the box, so needs
+  // some extra attention.
   drupal_add_js(drupal_get_path('module', 'islandora_solr') . '/js/flot/jquery.flot.min.js');
   // @TODO: find a good way to call this for IE8 and lower
-  // <!--[if lte IE 8]><![endif]-->
-//  drupal_add_js(drupal_get_path('module', 'islandora_solr') . '/js/flot/excanvas.min.js');
+  // @code
+  // <!--[if lte IE 8]>
+  // $mod_path = drupal_get_path('module', 'islandora_solr')
+  // drupal_add_js($mod_path . '/js/flot/excanvas.min.js')
+  // <![endif]-->
+  // @endcode
 
-  // include jquery ui css
   drupal_add_css('misc/ui/jquery.ui.slider.css');
-  // include slider settings
+  // Include slider settings.
   $js_settings = array(
     'islandoraSolrRangeSlider' => array(
       $facet_field => array(
@@ -369,24 +327,21 @@ function islandora_solr_range_slider_form($form, &$form_state, $elements) {
 function islandora_solr_range_slider_form_submit($form, &$form_state) {
   $form_state['rebuild'] = TRUE;
 
-  // set variables
+  // Set variables.
   global $_islandora_solr_queryclass;
   $params = isset($_islandora_solr_queryclass->internalSolrParams) ? $_islandora_solr_queryclass->internalSolrParams : array();
-  // set path
-  $path = SOLR_SEARCH_PATH . '/' . replace_slashes($_islandora_solr_queryclass->solrQuery);
-  // form key
+  $path = SOLR_SEARCH_PATH . '/' . islandora_solr_replace_slashes($_islandora_solr_queryclass->solrQuery);
   $form_key = $form_state['triggering_element']['#form_key'];
-  // term
+
   $term = $form_state['values']['range_slider_term'];
 
-  // date
+  // Date.
   $from = $form_state['values']['range_slider_hidden_from'];
   $to = $form_state['values']['range_slider_hidden_to'];
 
-  // create filter
   $filter = "{$term}:[{$from} TO {$to}]";
 
-  // set date filter key if there are no date filters included
+  // Set date filter key if there are no date filters included.
   if (isset($params['f'])) {
     foreach ($params['f'] as $key => $f) {
       if (strpos($f, $term) !== FALSE) {
@@ -400,7 +355,5 @@ function islandora_solr_range_slider_form_submit($form, &$form_state) {
     $query = array_merge_recursive($params, array('f' => array($filter)));
   }
 
-  // redirect
   drupal_goto($path, array('query' => $query));
 }
-

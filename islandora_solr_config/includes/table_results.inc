@@ -2,8 +2,8 @@
 
 /**
  * @file
- *   Contains methods to search solr and display results. Depends on
- *   Apache_Solr_Php client.
+ * Contains methods to search solr and display results. Depends on
+ * Apache_Solr_Php client.
  */
 
 /**
@@ -18,16 +18,19 @@ class IslandoraSolrResultsTable extends IslandoraSolrResults {
    *
    * @param array $solr_results
    *   The raw Solr results from
-   *   IslandoraSolrQueryProcessor::islandoraSolrResult
+   *   IslandoraSolrQueryProcessor::islandoraSolrResult.
    *
    * @return string
    *   Rendered Solr results
    */
-  function printResults($solr_results) {
-    drupal_add_css(drupal_get_path('module', 'islandora_solr_config') . '/css/islandora_solr_config.theme.css');
+  public function printResults($solr_results) {
+    $mod_path = drupal_get_path('module', 'islandora_solr_config');
+    drupal_add_css("$mod_path/css/islandora_solr_config.theme.css");
+
     $solr_results = islandora_solr_prepare_solr_results($solr_results);
     $object_results = $solr_results['response']['objects'];
     $object_results = islandora_solr_prepare_solr_doc($object_results);
+
     $record_start = (int) $solr_results['response']['start'];
     $fields = $this->resultFieldArray;
     $empty = array();
@@ -42,7 +45,7 @@ class IslandoraSolrResultsTable extends IslandoraSolrResults {
       foreach ($fields as $field => $field_label) {
         if (isset($doc[$field]['value'])) {
           $value = $doc[$field]['value'];
-          // @TODO: this should probably a config option to truncate the value.
+          // @todo This should probably a config option to truncate the value.
           if (strlen($value) > 150) {
             $value = substr(filter_xss($value, array()), 0, 150) . ' ...';
           }

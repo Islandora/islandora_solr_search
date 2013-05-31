@@ -1,7 +1,7 @@
 <?php
 /**
  * @file
- *   Islandora solr table template
+ * Islandora solr table template
  *
  * Variables available:
  * - $header: Header results

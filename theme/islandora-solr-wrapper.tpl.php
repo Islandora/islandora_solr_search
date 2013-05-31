@@ -1,11 +1,11 @@
 <?php
-
 /**
- * @file islandora-solr-wrapper.tpl.php
+ * @file
  * Islandora solr search results wrapper template
  *
  * Variables available:
- * - $variables: all array elements of $variables can be used as a variable. e.g. $base_url equals $variables['base_url']
+ * - $variables: all array elements of $variables can be used as a variable.
+ *   e.g. $base_url equals $variables['base_url']
  * - $base_url: The base url of the current website. eg: http://example.com .
  * - $user: The user object.
  *

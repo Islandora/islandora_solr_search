@@ -25,27 +25,58 @@ class IslandoraSolrQueryProcessor {
   public $solrParams = array();
   // Solr results tailored for Islandora's use.
   public $islandoraSolrResult;
-  // the current display (for modules wanting to alter the query of a display)
+  // The current display (for modules wanting to alter the query of a display).
   public $display;
-  // parameters from url
+  // Parameters from URL.
   public $internalSolrParams;
-  public $different_kinds_of_nothing = array(' ', '%20', '%252F', '%2F', '%252F-', '');
+  public $differentKindsOfNothing = array(
+    ' ',
+    '%20',
+    '%252F',
+    '%2F',
+    '%252F-',
+    '',
+  );
+
+  /**
+   * Handle deprectation of old class member gracefully.
+   */
+  public function __get($name) {
+    $map = array(
+      'different_kinds_of_nothing' => 'differentKindsOfNothing',
+    );
+
+    if (isset($map[$name])) {
+      $new_name = $map[$name];
+      $trace = debug_backtrace();
+
+      $message = t('Use of variable name "@class->@old_name" on line @line of @file deprecated as of version @version. Refactor to use "@class->@name" before the next release.', array(
+        '@old_name' => $name,
+        '@name' => $new_name,
+        '@class' => __CLASS__,
+        '@version' => '7.x-1.2',
+        '@line' => $trace[0]['line'],
+        '@file' => $trace[0]['file'],
+      ));
+
+      trigger_error($message, E_USER_DEPRECATED);
+
+      return $this->$new_name;
+    }
+  }
 
   /**
    * Build and execute a query.
    *
    * @param string $query
    *   The query string provided in the url.
-   * @param type $params
-   *   All url parameters from the solr results page.
-   * @param boolean $alter_results
+   * @param array $params
+   *   All URL parameters from the solr results page.
+   * @param bool $alter_results
    *   Whether or not to send out hooks to alter the islandora_solr_results.
-   *
-   * @return NULL
-   *   Nothing to return.
    */
-  function buildAndExecuteQuery($query, $params = NULL, $alter_results = TRUE) {
-    // set empty string
+  public function buildAndExecuteQuery($query, $params = NULL, $alter_results = TRUE) {
+    // Set empty string.
     if (variable_get('islandora_solr_request_handler', '') == 'standard') {
       if (!$query || $query == ' ') {
         $query = '%252F';
@@ -56,60 +87,60 @@ class IslandoraSolrQueryProcessor {
 
     // Execute the query.
     $this->executeQuery($alter_results);
-
-    return;
   }
 
   /**
-   * Builds Solr query and performs checks based on url parameters and
+   * Builds Solr query.
+   *
+   * Build the query and performs checks based on URL parameters and
    * defaults set in the Islandora Solr admin form. Populates the properties to
    * be used for the query execution. Includes a module_invoke_all to make
    * changes to the query.
    *
    * @see IslandoraSolrQueryProcessor::buildAndExecuteQuery()
    *
-   * @param type $query
-   *   The query string provided in the url.
+   * @param string $query
+   *   The query string provided in the URL.
    * @param array $params
-   *   All URL parameters from the solr results page.
+   *   All URL parameters from the Solr results page.
    */
-  function buildQuery($query, $params = array()) {
-    // Set internal parameters gathered from the URL but not q and page.
-
+  public function buildQuery($query, $params = array()) {
+    // Set internal parameters gathered from the URL but not 'q' and 'page'.
     $this->internalSolrParams = $params;
     unset($this->internalSolrParams['q']);
     unset($this->internalSolrParams['page']);
 
-    // Set Solr type (dismax)
+    // Set Solr type (dismax).
     if (isset($this->internalSolrParams['type']) && ($this->internalSolrParams['type'] == 'dismax' || $this->internalSolrParams['type'] == 'edismax')) {
       $this->solrDefType = $this->internalSolrParams['type'];
       $this->solrParams['defType'] = $this->internalSolrParams['type'];
     }
 
-    // Set query
-    // fix the query as some characters will break the search : and / slash are examples
-    $this->solrQuery = urldecode(restore_slashes($query));
+    // XXX: Fix the query as some characters will break the search : and / are
+    // examples.
+    $this->solrQuery = urldecode(islandora_solr_restore_slashes($query));
 
-    // if the query is empty
-    if (empty($this->solrQuery) || in_array($this->solrQuery, $this->different_kinds_of_nothing)) {
-      $this->solrQuery = ' '; //so we can allow empty queries to dismax
-      // set base query
+    // If the query is empty.
+    if (empty($this->solrQuery) || in_array($this->solrQuery, $this->differentKindsOfNothing)) {
+      // So we can allow empty queries to dismax.
+      $this->solrQuery = ' ';
+      // Set base query.
       $this->internalSolrQuery = variable_get('islandora_solr_base_query', 'timestamp:[* TO NOW]');
 
-      // we must also undo dismax if it's been set
+      // We must also undo dismax if it has been set.
       $this->solrDefType = NULL;
       $this->solrParams['defType'] = NULL;
     }
 
-    // set sort
+    // Set sort.
     if (isset($this->internalSolrParams['sort'])) {
       $sort_explode = explode(' ', $this->internalSolrParams['sort']);
-      // check if an order is given and if the order value is asc or desc
+      // Check if an order is given and if the order value is 'asc' or 'desc'.
       if (isset($sort_explode[1]) && ($sort_explode[1] == 'asc' || $sort_explode[1] == 'desc')) {
         $this->solrParams['sort'] = $this->internalSolrParams['sort'];
       }
       else {
-        // use ascending
+        // Use ascending.
         $this->solrParams['sort'] = $sort_explode[0] . ' asc';
       }
     }
@@ -121,7 +152,8 @@ class IslandoraSolrQueryProcessor {
       }
     }
 
-    // set display property (so display plugin modules can use this in a conditional to alter the query class)
+    // Set display property (so display plugin modules can use this in a
+    // conditional to alter the query class).
     if (isset($this->internalSolrParams['display'])) {
       $this->display = $this->internalSolrParams['display'];
     }
@@ -129,21 +161,20 @@ class IslandoraSolrQueryProcessor {
       $this->display = variable_get('islandora_solr_primary_display', 'default');
     }
 
-    // get pager variable
-    $startPage = isset($_GET['page']) ? $_GET['page'] : 0;
+    // Get pager variable.
+    $start_page = isset($_GET['page']) ? $_GET['page'] : 0;
 
-    // set results limit
+    // Set results limit.
     $this->solrLimit = isset($this->internalSolrParams['limit']) ? $this->internalSolrParams['limit'] : variable_get('islandora_solr_num_of_results', 20);
 
-    // set solr start
-    $this->solrStart = max(0, $startPage) * $this->solrLimit;
+    // Set solr start.
+    $this->solrStart = max(0, $start_page) * $this->solrLimit;
 
-    // set facet parameters
-    // set variables
+    // Set facet parameters.
     $facet_array = islandora_solr_get_fields('facet_fields');
     $facet_fields = implode(",", array_keys($facet_array));
 
-    // set params
+    // Set params.
     $params_array = array(
       'facet' => 'true',
       'facet.mincount' => variable_get('islandora_solr_facet_min_limit', '2'),
@@ -156,19 +187,19 @@ class IslandoraSolrQueryProcessor {
       $params_array['qt'] = $request_handler;
     }
 
-    // check for date facets
+    // Check for date facets.
     $facet_dates = islandora_solr_get_range_facets();
     if (!empty($facet_dates)) {
-      // set range/date variables
+      // Set range/date variables.
       $params_date_facets = array();
       foreach ($facet_dates as $key => $value) {
         $field = $value['solr_field'];
         $start = $value['solr_field_settings']['range_facet_start'];
         $end = $value['solr_field_settings']['range_facet_end'];
         $gap = $value['solr_field_settings']['range_facet_gap'];
-        // add date facet
+        // Add date facet.
         $params_date_facets["facet.date"][] = $field;
-        // custom field settings
+        // Custom field settings.
         if ($start) {
           $params_date_facets["f.{$field}.facet.date.start"] = $start;
         }
@@ -178,15 +209,16 @@ class IslandoraSolrQueryProcessor {
         if ($gap) {
           $params_date_facets["f.{$field}.facet.date.gap"] = $gap;
         }
-        // When the range slider is enabled we always want to return empty values.
+        // When the range slider is enabled we always want to return empty
+        // values.
         if ($value['solr_field_settings']['range_facet_slider_enabled'] == 1) {
           $params_date_facets["f.{$field}.facet.mincount"] = 0;
         }
-        // remove range/date field from facet.field array
+        // Remove range/date field from facet.field array.
         $pos = array_search($field, $params_array['facet.field']);
         unset($params_array['facet.field'][$pos]);
       }
-      // default settings
+      // Default settings.
       $params_date_facets["facet.date.start"] = 'NOW/YEAR-20YEARS';
       $params_date_facets["facet.date.end"] = 'NOW';
       $params_date_facets["facet.date.gap"] = '+1YEAR';
@@ -208,13 +240,14 @@ class IslandoraSolrQueryProcessor {
       $params_array += $highlighting_params;
     }
 
-    // add parameters
+    // Add parameters.
     $this->solrParams = array_merge($this->solrParams, $params_array);
 
     // Set base filters.
     $base_filters = preg_split("/\\r\\n|\\n|\\r/", variable_get('islandora_solr_base_filter', ''), -1, PREG_SPLIT_NO_EMPTY);
 
-    // adds ability for modules to include facets which will not show up in breadcrumb trail
+    // Adds ability for modules to include facets which will not show up in
+    // breadcrumb trail.
     if (isset($params['hidden_filter'])) {
       $base_filters = array_merge($base_filters, $params['hidden_filter']);
     }
@@ -252,27 +285,22 @@ class IslandoraSolrQueryProcessor {
   }
 
   /**
-   * Reset Results
-   *
-   * @return NULL
-   *   Nothing to return.
+   * Reset results.
    */
-  function resetResults() {
+  public function resetResults() {
     unset($this->islandoraSolrResult);
     return;
   }
 
   /**
-   * Connects to Solr and executes the query. Populates islandoraSolrResults
-   * property with the raw Solr results.
+   * Connects to Solr and executes the query.
    *
-   * @param boolean $alter_results
+   * Populates islandoraSolrResults property with the raw Solr results.
+   *
+   * @param bool $alter_results
    *   Whether or not to send out hooks to alter the islandora_solr_results.
-   *
-   * @return NULL
-   *   Nothing to return.
    */
-  function executeQuery($alter_results = TRUE, $use_post = FALSE) {
+  public function executeQuery($alter_results = TRUE, $use_post = FALSE) {
     // Init Apache_Solr_Service object.
     $path_parts = parse_url(variable_get('islandora_solr_url', 'localhost:8080/solr'));
     $solr = new Apache_Solr_Service($path_parts['host'], $path_parts['port'], $path_parts['path'] . '/');
@@ -283,7 +311,8 @@ class IslandoraSolrQueryProcessor {
       $solr_query = ($this->internalSolrQuery) ? $this->internalSolrQuery : $this->solrQuery;
       $method = $use_post ? 'POST' : 'GET';
       $results = $solr->search($solr_query, $this->solrStart, $this->solrLimit, $this->solrParams, $method);
-    } catch (Exception $e) {
+    }
+    catch (Exception $e) {
       drupal_set_message(check_plain(t('Error searching Solr index')) . ' ' . $e->getMessage(), 'error');
     }
 
@@ -310,7 +339,9 @@ class IslandoraSolrQueryProcessor {
             $object_results[$object_index]['datastreams'] = $object_result[$datastream_field];
           }
           else {
-            watchdog('islandora_solr', "The datastream Solr field is missing for $pid.");
+            watchdog('islandora_solr', 'The datastream Solr field is missing for @pid.', array(
+              '@pid' => $pid,
+            ));
           }
           if (isset($object_result[$object_label])) {
             $object_label_value = $object_result[$object_label];
@@ -331,7 +362,9 @@ class IslandoraSolrQueryProcessor {
           module_load_include('inc', 'islandora', 'includes/utilities');
           foreach ($object_results as $object_index => $object_result) {
             if (!isset($object_result['content_models'])) {
-              watchdog('islandora_solr', "The CModel Solr field is missing for $pid.");
+              watchdog('islandora_solr', 'The content model Solr field is missing for @pid.', array(
+                '@pid' => $pid,
+              ));
             }
             else {
               foreach ($object_result['content_models'] as $content_model_uri) {
@@ -344,7 +377,8 @@ class IslandoraSolrQueryProcessor {
           }
           // Hook to alter everything.
           drupal_alter('islandora_solr_results', $object_results, $this);
-          // Additional Solr doc preparation. Includes field permissions and limitations.
+          // Additional Solr doc preparation. Includes field permissions and
+          // limitations.
           $object_results = $this->prepareSolrDoc($object_results);
         }
       }
@@ -360,18 +394,21 @@ class IslandoraSolrQueryProcessor {
   }
 
   /**
+   * Filter all Solr docs.
+   *
    * Iterates of the Solr doc of every result object and applies filters
    * sort orders.
    *
    * @param array $object_results
    *   An array containing the prepared object results.
+   *
    * @return array
    *   The object results array with updated solr doc values.
    */
-  function prepareSolrDoc($object_results) {
-    // optionally limit results to values given
+  public function prepareSolrDoc($object_results) {
+    // Optionally limit results to values given.
     $limit_results = variable_get('islandora_solr_limit_result_fields', 0);
-    // look for fields with no permission
+    // Look for fields with no permission.
     $fields_all = islandora_solr_get_fields('result_fields', FALSE);
     $fields_filtered = islandora_solr_get_fields('result_fields');
     $fields_no_permission = array_diff($fields_all, $fields_filtered);
@@ -380,16 +417,16 @@ class IslandoraSolrQueryProcessor {
     foreach ($object_results as $object_index => $object_result) {
       $doc = $object_result['solr_doc'];
       $rows = array();
-      // 1. add defined fields
+      // 1: Add defined fields.
       foreach ($fields_filtered as $field => $label) {
         if (isset($doc[$field]) && !empty($doc[$field])) {
           $rows[$field] = $doc[$field];
         }
       }
-      // 2. if limit isn't set, add other fields
+      // 2: If limit is not set, add other fields.
       if ($limit_results == 0) {
         foreach ($doc as $field => $value) {
-          // skip if added by the first loop already OR if no permission
+          // Skip if added by the first loop already OR if no permission.
           if (isset($rows[$field]) || in_array($field, $fields_no_permission)) {
             continue;
           }

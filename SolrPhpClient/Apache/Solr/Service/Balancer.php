@@ -1,4 +1,6 @@
 <?php
+// @codingStandardsIgnoreStart
+// XXX: This is an included library... Shouldn't change.
 /**
  * Copyright (c) 2007-2009, Conduit Internet Technologies, Inc.
  * All rights reserved.
@@ -772,3 +774,4 @@ class Apache_Solr_Service_Balancer
 		return false;
 	}
 }
+// @codingStandardsIgnoreEnd

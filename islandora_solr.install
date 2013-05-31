@@ -2,34 +2,18 @@
 
 /**
  * @file
- * islandora_solr install file
+ * Implementations of installation hooks.
  */
 
 /**
  * Implements hook_requirements().
- *
- * @param type $phase
- *
- * @return array
- *   An array describing the status of the site regarding available updates.
- *   If there is no update data, only one record will be returned, indicating
- *   that the status of core can't be determined. If data is available, there
- *   will be two records: one for core, and another for all of contrib
- *   (assuming there are any contributed modules or themes enabled on the
- *   site). In addition to the fields expected by hook_requirements ('value',
- *   'severity', and optionally 'description'), this array will contain a
- *   'reason' attribute, which is an integer constant to indicate why the
- *   given status is being returned (UPDATE_NOT_SECURE, UPDATE_NOT_CURRENT, or
- *   UPDATE_UNKNOWN). This is used for generating the appropriate e-mail
- *   notification messages during update_cron(), and might be useful for other
- *   modules that invoke update_requirements() to find out if the site is up
- *   to date or not.
  */
 function islandora_solr_requirements($phase) {
   $t = get_t();
   $requirements = array();
 
-  // @TODO: figure out if in the install file we should load this manually or if it loads it from the .info file
+  // @todo Figure out if in the install file we should load this manually or if
+  //   it loads it from the .info file.
   module_load_include('php', 'islandora_solr', 'SolrPhpClient/Apache/Solr/Service');
 
   if ($phase == 'install') {
@@ -37,7 +21,7 @@ function islandora_solr_requirements($phase) {
       $requirements['islandora_solr'] = array(
         'title' => $t('Missing Apache Client'),
         'description' => $t('This module requires the !client_link.  Please install the client in the root directory of this module before continuing.', array(
-          '!client_link' => l('Apache Solr PHP Client', 'http://code.google.com/p/solr-php-client'),
+          '!client_link' => l($t('Apache Solr PHP Client'), 'http://code.google.com/p/solr-php-client'),
         )),
         'severity' => REQUIREMENT_ERROR,
       );
@@ -51,7 +35,10 @@ function islandora_solr_requirements($phase) {
  * Implements hook_install().
  */
 function islandora_solr_install() {
-  $message = st('Islandora Solr <a href="!link">configuration page</a>.', array('!link' => url('admin/settings/islandora_solr')));
+  $t = get_t();
+  $message = $t('Islandora Solr <a href="!link">configuration page</a>.', array(
+    '!link' => url('admin/settings/islandora_solr'),
+  ));
   drupal_set_message(filter_xss($message));
 }
 
@@ -130,14 +117,14 @@ function islandora_solr_schema() {
 }
 
 /**
- * Convert old textarea variables defining solr fields and moving them into the new DB table.
+ * Migrate old Drupal variables defining Solr fields into the new DB table.
  */
 function islandora_solr_update_7000() {
-  // create table
+  // Create table.
   $schema = islandora_solr_schema();
   db_create_table('islandora_solr_fields', $schema['islandora_solr_fields']);
 
-  // old variable name => field type
+  // Old variable name => field type.
   $old_variables = array(
     'islandora_solr_result_fields' => 'result_fields',
     'islandora_solr_search_sortby_terms' => 'sort_fields',
@@ -149,10 +136,10 @@ function islandora_solr_update_7000() {
   $weight = 0;
   $duplicate_check = array();
   foreach ($old_variables as $old_variable => $type) {
-    // get and split up variable strings
+    // Get and split up variable strings.
     $old_value = variable_get($old_variable, NULL);
     $lines = preg_split('/[,|\n|\r]/', $old_value);
-    // process each value to prepare for DB insert
+    // Process each value to prepare for DB insert.
     foreach ($lines as $line) {
       if ($line) {
         $line_array = explode('~', $line);
@@ -161,12 +148,12 @@ function islandora_solr_update_7000() {
         if (!$label) {
           $label = $term;
         }
-        // check for duplicate entry
+        // Check for duplicate entry.
         if (in_array($term, $duplicate_check[$type])) {
           continue;
         }
         $duplicate_check[$type][] = $term;
-        // basic values
+        // Basic values.
         $insert_value = array(
           'solr_field' => $term,
           'field_type' => $type,
@@ -176,7 +163,7 @@ function islandora_solr_update_7000() {
             'permissions' => array_keys(user_roles()),
           ),
         );
-        // add aditional settings for result and facet fields
+        // Add aditional settings for result and facet fields.
         if ($type == 'result_fields') {
           if (strpos($term, variable_get('islandora_solr_snippet_field')) !== FALSE) {
             $insert_value['solr_field_settings']['snippet'] = '1';
@@ -191,24 +178,29 @@ function islandora_solr_update_7000() {
             $insert_value['solr_field_settings']['date_facet_format'] = variable_get('islandora_solr_facet_date_format', 'Y');
           }
         }
-        // serialize field settings
+        // Serialize field settings.
         $insert_value['solr_field_settings'] = serialize($insert_value['solr_field_settings']);
         $insert_values[] = $insert_value;
       }
     }
   }
-  // Populate DB table
-  $insert = db_insert('islandora_solr_fields')->fields(array('solr_field', 'field_type', 'weight', 'solr_field_settings'));
+  // Populate DB table.
+  $insert = db_insert('islandora_solr_fields')->fields(array(
+    'solr_field',
+    'field_type',
+    'weight',
+    'solr_field_settings',
+  ));
   foreach ($insert_values as $record) {
     $insert->values($record);
   }
   $insert->execute();
 
-  // remove old solr field variables
+  // Remove old solr field variables.
   foreach ($old_variables as $old_variable => $type) {
     variable_del($old_variable);
   }
-  // remove old unused variables
+  // Remove old unused variables.
   $old_variables_other = array(
     'islandora_solr_facet_date_end',
     'islandora_solr_facet_date_format',
@@ -230,4 +222,3 @@ function islandora_solr_update_7000() {
     variable_del($old_variable_other);
   }
 }
-

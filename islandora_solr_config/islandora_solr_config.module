@@ -10,14 +10,6 @@
  */
 function islandora_solr_config_islandora_solr_primary_display() {
   return array(
-    // 'machien-name' = array(
-    //   'name' => 'Human Readable Name',
-    //   'module' => 'module_name',
-    //   'file' => 'FileName.inc',
-    //   'class' => 'ClassName',
-    //   'function' => 'function_name',
-    //   'description' => 'A description of the display profile',
-    // );
     'grid' => array(
       'name' => t('Grid'),
       'module' => 'islandora_solr_config',
@@ -41,7 +33,6 @@ function islandora_solr_config_islandora_solr_primary_display() {
  * Implements hook_islandora_solr_secondary_display().
  */
 function islandora_solr_config_islandora_solr_secondary_display() {
-  // set path
   global $base_path;
   $path = $base_path . drupal_get_path('module', 'islandora_solr_config');
   return array(
@@ -61,21 +52,22 @@ function islandora_solr_config_islandora_solr_secondary_display() {
  * Implements hook_theme().
  */
 function islandora_solr_config_theme() {
-  // set path
   $path = drupal_get_path('module', 'islandora_solr_config');
 
   return array(
-    // grid results display
     'islandora_solr_grid' => array(
       'path' => $path . '/theme',
       'template' => 'islandora-solr-grid',
       'variables' => array('results' => NULL, 'elements' => array()),
     ),
-    // table results display
     'islandora_solr_table' => array(
       'path' => $path . '/theme',
       'template' => 'islandora-solr-table',
-      'variables' => array('header' => NULL, 'rows' => NULL, 'elements' => array()),
+      'variables' => array(
+        'header' => NULL,
+        'rows' => NULL,
+        'elements' => array(),
+      ),
     ),
   );
 }
@@ -87,30 +79,26 @@ function islandora_solr_config_theme() {
  * finds the closed number that is dividable by 4 and 3, so when the layout is
  * sized down in a responsive layout, the last row of results won't show
  * 'trailing' results.
- *
- * @param object $islandora_solr_query
- *   The IslandoraSolrQueryProcessor object which includes the current query
- *   settings but at the beginning of IslandoraSolrQueryProcessor::executeQuery().
  */
 function islandora_solr_config_islandora_solr_query($islandora_solr_query) {
 
-  // we're dealing with the grid display
+  // We're dealing with the grid display.
   if ($islandora_solr_query->display == 'grid') {
 
-    // set results limit
+    // Set results limit.
     $limit = $islandora_solr_query->solrLimit;
 
-    // not dividable yet
+    // Not dividable yet.
     $dividable = FALSE;
     while ($dividable == FALSE) {
-      // dividable by 4 and 3
+      // Dividable by 4 and 3.
       if (($limit % 4) == 0 && ($limit % 3) == 0) {
         $dividable = TRUE;
         $solr_limit = $limit;
       }
       $limit++;
     }
-    // set new limit
+    // Set new limit.
     $islandora_solr_query->solrLimit = $solr_limit;
   }
 }

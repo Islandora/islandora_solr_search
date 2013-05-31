@@ -1,7 +1,7 @@
 <?php
 /**
  * @file
- *   Islandora Solr grid template
+ * Islandora Solr grid template
  *
  * Variables available:
  * - $results: Primary profile results array

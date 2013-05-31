@@ -1,4 +1,7 @@
 <?php
+// @codingStandardsIgnoreStart
+// XXX: This is an included library... Should have minimal changes from
+// upstream.
 /**
  * Copyright (c) 2007-2009, Conduit Internet Technologies, Inc.
  * All rights reserved.
@@ -360,3 +363,4 @@ class Apache_Solr_Document implements IteratorAggregate
 		unset($this->_fieldBoosts[$key]);
 	}
 }
+// @codingStandardsIgnoreEnd
