@@ -6,8 +6,8 @@
  * Depends on Apache_Solr_Php client.
  */
 
-DEFINE('SOLR_SEARCH_PATH','islandora/solr/search');
-DEFINE('SOLR_BASE_QUERY','*:*');
+DEFINE('SOLR_SEARCH_PATH', 'islandora/solr/search');
+DEFINE('SOLR_BASE_QUERY', '*:*');
 
 /**
  * Islandora Solr Query Processor
@@ -21,7 +21,7 @@ class IslandoraSolrQueryProcessor {
   static $facetSeparator = '~'; //used to separate facets in url
   static $slashReplacement = '~slsh~'; // a pattern used to replace / in url's the slash breaks drupal clean url's
   public static $SEARCH_CLASS_ADVANCED_SEARCH_NUMBER_FIELDS = 5;
-  
+
   public $solrQuery;
   public $internalSolrQuery; // query alternative set if solrQuery is empty
   public $solrParams = array();
@@ -33,7 +33,7 @@ class IslandoraSolrQueryProcessor {
   public $solrResult;
 
   public $display;
-  public $different_kinds_of_nothing = array( ' ', '%20', '%252F', '%2F', '%252F-', ''); 
+  public $different_kinds_of_nothing = array( ' ', '%20', '%252F', '%2F', '%252F-', '');
 
   /**
    * Constructor
@@ -62,7 +62,7 @@ class IslandoraSolrQueryProcessor {
       }
     }
     $this->buildQuery($query, $params);
-    
+
     return $this->executeQuery();
   }
 
@@ -70,20 +70,20 @@ class IslandoraSolrQueryProcessor {
    * Default implementation for solr search.  You can configure others in the block config settings
    */
   function buildQuery($query, $params = array() ) {
-    
+
     // set internal parameters gathered from the url
     $this->internalSolrParams = $params;
-    
+
     // don't store the q and page parameter internally
     unset($this->internalSolrParams['q']);
     unset($this->internalSolrParams['page']);
-    
+
     // Set Solr type (dismax)
     if ($this->internalSolrParams['type'] == 'dismax') {
       $this->solrDefType = $this->internalSolrParams['type'];
       $this->solrParams['defType'] = $this->internalSolrParams['type'];
     }
-    
+
     // Set query
     // fix the query as some characters will break the search : and / slash are examples
     $this->solrQuery = urldecode(restoreSlashes($query));
@@ -91,14 +91,14 @@ class IslandoraSolrQueryProcessor {
     // if the query is empty
     if (empty($this->solrQuery) || in_array($this->solrQuery, $this->different_kinds_of_nothing)) {
       $this->solrQuery = ' '; //so we can allow empty queries to dismax
-      
+
       // set base query
       $this->internalSolrQuery = variable_get('islandora_solr_search_base_query', SOLR_BASE_QUERY);
       // we must also undo dismax if it's been set
       $this->solrDefType = NULL;
       $this->solrParams['defType'] = NULL;
     }
-    
+
     // set sort
     if (isset($this->internalSolrParams['sort'])) {
       $sort_explode = explode(' ', $this->internalSolrParams['sort']);
@@ -111,7 +111,7 @@ class IslandoraSolrQueryProcessor {
         $this->solrParams['sort'] = $sort_explode[0] . ' asc';
       }
     }
-    
+
     // Set display variable
     if (isset($this->internalSolrParams['display'])) {
       $display = $this->internalSolrParams['display'];
@@ -126,7 +126,7 @@ class IslandoraSolrQueryProcessor {
       $this->display = $display;
       unset($this->internalSolrParams['display']);
     }
-   
+
     // display profiles can contain parameters. // @TODO: document that this is possible.
     $profiles = module_invoke_all("islandora_solr_primary_display");
     $profile = $profiles[$display];
@@ -142,17 +142,17 @@ class IslandoraSolrQueryProcessor {
         $this->solrParams = array_merge($this->solrParams, $profile_params);
       }
     }
-    
+
     // get pager variable
     $startPage = isset($_GET['page']) ? $_GET['page'] : 0;
-    
+
     // set results limit
     $this->solrLimit = isset($this->internalSolrParams['limit']) ? $this->internalSolrParams['limit'] : variable_get('islandora_solr_search_num_of_results', 25);
-        
+
     // set solr start
     $this->solrStart = max(0, $startPage) * $this->solrLimit;
 
-    
+
     // Include the file for the display profile // @TODO: figure out why
     require_once(drupal_get_path('module', $profile['module']) . '/' . $profile['file']);
 
@@ -161,7 +161,7 @@ class IslandoraSolrQueryProcessor {
     $solrFunction = $profile['function'];
 
 
-    
+
     // set facet parameters
     // set variables
     $raw_facet_vals = variable_get("islandora_solr_search_block_facets", 'dc.subject ~ Subject,dc.type ~ Type');
@@ -191,7 +191,7 @@ class IslandoraSolrQueryProcessor {
       $facet_date = variable_get('islandora_solr_facet_date' , NULL);
       $facet_date_arr = islandora_build_substitution_list($facet_date);
       $facet_date = implode(",", array_keys($facet_date_arr));
-      
+
       $params_date_facets = array(
         'facet.date' => explode(',', $facet_date),
       );
@@ -203,7 +203,7 @@ class IslandoraSolrQueryProcessor {
 
       // date date facets to parameters
       $params_array = array_merge($params_array, $params_date_facets);
-      
+
       // if date range fields are set, don't include them in the normal facet list. Results in unexpected behaviour
       $facet_date_arr = array_keys($facet_date_arr);
       if (isset($params_array['facet.field'])) {
@@ -219,8 +219,8 @@ class IslandoraSolrQueryProcessor {
 
     // set base filters
     $base_filters = preg_split("/\\r\\n|\\n|\\r/", variable_get('islandora_solr_search_base_filter', ''), -1, PREG_SPLIT_NO_EMPTY);
-    
-    
+
+
     // set filter parameters - both from url and admin settings.
     if (is_array($this->internalSolrParams['f']) OR !empty($base_filters)) {
       $this->solrParams['fq'] = array();
@@ -233,7 +233,7 @@ class IslandoraSolrQueryProcessor {
     if (!empty($base_filters)) {
       $this->solrParams['fq'] = array_merge($this->solrParams['fq'], $base_filters);
     }
-    
+
     // restrict results based on specified namespace
     $namespace = trim(variable_get('islandora_solr_search_namespace_restriction', NULL));
     if ($namespace) {
@@ -262,7 +262,7 @@ class IslandoraSolrQueryProcessor {
    * @return type
    */
   function executeQuery() {
-    
+
     // @TODO: add possibility to alter the query right before it gets excecuted.
 
     // set variables
@@ -277,7 +277,7 @@ class IslandoraSolrQueryProcessor {
     try {
       // solrQuery
       $solr_query = ($this->internalSolrQuery) ? $this->internalSolrQuery : $this->solrQuery;
-      
+
       // execute query
       $results = $solr->search($solr_query, $this->solrStart, $this->solrLimit, $this->solrParams);
     } catch (Exception $e) {

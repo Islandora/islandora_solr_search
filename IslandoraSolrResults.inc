@@ -205,7 +205,7 @@ class IslandoraSolrResults {
       // append array to results array
       $results_array[] = $rows;
     }
-    
+
     // make pids accessible without interfering with results
     $elements['pids'] = $pids;
 
@@ -627,7 +627,7 @@ class IslandoraSolrResults {
     // object to json
     $facets_json = json_encode($facets);
     // json  to array
-    $facets = json_decode($facets_json, true);
+    $facets = json_decode($facets_json, TRUE);
 
     // get date facet values
     $date_facets = isset($solrQueryProcessor->solrResult->facet_counts->facet_dates) ? $solrQueryProcessor->solrResult->facet_counts->facet_dates : array();
@@ -642,7 +642,7 @@ class IslandoraSolrResults {
     // object to json
     $date_facets_json = json_encode($date_facets);
     // json to array
-    $date_facets_arr = json_decode($date_facets_json, true);
+    $date_facets_arr = json_decode($date_facets_json, TRUE);
 
     // get date format
     $format = variable_get('islandora_solr_facet_date_format', 'Y');
@@ -1050,7 +1050,7 @@ class IslandoraSolrResults {
     // object to json
     $date_facets_json = json_encode($date_facets);
     // json to array
-    $date_facets_arr = json_decode($date_facets_json, true);
+    $date_facets_arr = json_decode($date_facets_json, TRUE);
 
     // populate with terms that needed a second solr call to update facets
     $solr_call = array();

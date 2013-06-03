@@ -12,15 +12,15 @@
  * @return array
  */
 function islandora_solr_rss_admin_settings(&$form_state) {
-  
+
   // get variables
   $rss_item = variable_get('islandora_solr_config_rss_item', array());
   $rss_channel = variable_get('islandora_solr_config_rss_channel', array());
-  
+
   $form = array(
     '#tree' => TRUE,
   );
-  
+
   $form['rss_item'] = array(
     '#type' => 'fieldset',
     '#title' => t('Item settings'),
@@ -66,9 +66,9 @@ function islandora_solr_rss_admin_settings(&$form_state) {
     '#default_value' => $rss_item['enclosure_dsid'] ? $rss_item['enclosure_dsid'] : 'TN',
   );
 
-  
-  
-  
+
+
+
   $form['rss_channel'] = array(
     '#type' => 'fieldset',
     '#title' => t('Channel settings'),
@@ -111,7 +111,7 @@ function islandora_solr_rss_admin_settings(&$form_state) {
 
 
 function islandora_solr_rss_admin_settings_validate($form, &$form_state) {
-  
+
 }
 
 function islandora_solr_rss_admin_settings_submit($form, &$form_state) {
@@ -127,10 +127,10 @@ function islandora_solr_rss_admin_settings_submit($form, &$form_state) {
     variable_set('islandora_solr_config_rss_item', $rss_item);
     variable_set('islandora_solr_config_rss_channel', $rss_channel);
   }
-  
+
   // on reset
   if ($form_state['clicked_button']['#value'] == t('Reset to defaults')) {
     variable_del('islandora_solr_config_rss_item');
     variable_del('islandora_solr_config_rss_channel');
-  } 
+  }
 }

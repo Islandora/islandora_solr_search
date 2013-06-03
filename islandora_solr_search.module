@@ -20,21 +20,21 @@ function islandora_solr_search_init() {
   module_load_include('inc', 'islandora_solr_search', 'islandora_solr_search.admin');
   module_load_include('inc', 'islandora_solr_search', 'includes/common');
   module_load_include('inc', 'islandora_solr_search', 'IslandoraSolrQueryProcessor');
-    
-  static $islandora_solr_search_init = false;
+
+  static $islandora_solr_search_init = FALSE;
   if (!$islandora_solr_search_init) {
     drupal_add_css(drupal_get_path('module', 'islandora_solr_search') . '/css/islandora_solr_search.css');
     global $queryClass;
     if (empty($queryClass)) {
       $queryClass = new IslandoraSolrQueryProcessor();
     }
-    $islandora_solr_search_init = true;
+    $islandora_solr_search_init = TRUE;
   }
 }
 
 /**
- * 
- * @global type $conf 
+ *
+ * @global type $conf
  */
 function islandora_solr_search_boot() {
   global $conf;
@@ -50,7 +50,7 @@ function islandora_solr_search_boot() {
       'islandora_solr_searchterms'
     );
 
-    $conf['i18n_variables'] = (isset($conf['i18n_variables']) && is_array($conf['i18n_variables'])) ? 
+    $conf['i18n_variables'] = (isset($conf['i18n_variables']) && is_array($conf['i18n_variables'])) ?
       array_merge($vars, $conf['i18n_variables']):
       $vars;
   }
@@ -288,7 +288,8 @@ function islandora_solr_search_block($op = 'list', $delta = 0, $edit = array()) 
       if (!empty($solr_blocks[$delta])) {
 
         // First we'll set the block title.
-        $block['subject'] = $solr_blocks[$delta]['name'];
+        $block['subject'] = check_plain($solr_blocks[$delta]['name']);
+
 
         // Include the file from which the block originates.
         require_once( drupal_get_path('module', $solr_blocks[$delta]['module']) . '/' . $solr_blocks[$delta]['file'] );
@@ -339,10 +340,10 @@ function islandora_solr_simple_search_form_submit($form, &$form_state) {
   $form_state['rebuild'] = TRUE;
   $searchString = $form_state['values']['islandora_simple_search_query'];
   $searchString = str_replace('/', '~slsh~', $searchString); //replace the slash so url doesn't break
-  
+
   // set query
   $query = array('type' => 'dismax');
-  
+
   drupal_goto("islandora/solr/search/$searchString", $query);
 }
 
@@ -387,7 +388,7 @@ function islandora_solr_search_block_form_validate($form, &$form_state) {
   $message = t("Please enter search term.");
   for ($fieldNum = 1; $fieldNum <= $repeat; $fieldNum++) {
     if (!empty($form_state['values']["fedora_terms$fieldNum"])) {
-      if($form_state['values']["fedora_terms$fieldNum"][0]== '*'){
+      if ($form_state['values']["fedora_terms$fieldNum"][0] == '*') {
        unset($form_state['values']["fedora_terms$fieldNum"]);
        $message = t("If  !char  is used in search field it must follow other characters.", array('!char' => '<bold>*</bold>'));
        continue;
@@ -431,7 +432,7 @@ function islandora_solr_search_block_form_submit($form, &$form_state) {
     //FIXME (minor): t() should be changed to format_string() in this instance, in Drupal 7
     //  The string isn't really translatable, just templated.
     $searchString .= t("!field:(!query) !bool ", array(
-        '!field' => $types[$iteration], 
+        '!field' => $types[$iteration],
         '!query' => $fedora_terms[$iteration],
         '!bool' => $booleans[$iteration]
     ));
@@ -446,23 +447,23 @@ function islandora_solr_search_block_form_submit($form, &$form_state) {
  */
 function islandora_solr_search_display() {
   global $queryClass;
-  
+
   // set variables
   $output = '';
-  
+
   // check if the page is dealing with search results
   if (isset($queryClass->display)) {
-    
+
     // parameters set in url
     $params = $queryClass->internalSolrParams;
     // set path
     $path = SOLR_SEARCH_PATH . '/' . replaceSlashes($queryClass->solrQuery);
-    
+
     // get profiles
     $profiles = module_invoke_all("islandora_solr_primary_display");
     // get the table settings
     $primary_display_array = variable_get('islandora_solr_primary_display_table', array());
-    
+
     if (!empty($primary_display_array)) {
 
       $weight = $primary_display_array['weight'];
@@ -485,13 +486,13 @@ function islandora_solr_search_display() {
           else {
             $current_display = $default;
           }
-          
+
           // title
           $display_name = $profiles[$key]['name'];
-          
+
           // query
           $query = array_merge($params, array('display' => $key));
-          
+
           // set attributes
           $attr = array();
           // set class
@@ -504,11 +505,11 @@ function islandora_solr_search_display() {
           $attr['title'] = $display_name;
           // url
           $attr['href'] = url($path, array('query' => $query));
-          
+
           // create link
           // we're not using l() because of active classes: http://drupal.org/node/41595
           $item = '<a' . drupal_attributes($attr) . '>' . check_plain($display_name) . '</a>';
-          
+
           // add link to list
           $list_items[] = $item;
         }
@@ -534,24 +535,24 @@ function islandora_solr_search_display() {
  */
 function islandora_solr_search_limit() {
   global $queryClass;
-  
+
   // set variables
   $output = '';
-  
+
   // check if the page is dealing with search results
   if (isset($queryClass->display)) {
-    
+
     // parameters set in url
     $params = $queryClass->internalSolrParams;
     // set path
     $path = SOLR_SEARCH_PATH . '/' . replaceSlashes($queryClass->solrQuery);
-    
+
     // get limit results values
     $limit_results = variable_get('islandora_solr_search_limit_results_exposed', '10, 25, 50, 100');
-    
+
     // conver to array
     $limit_results = explode(',', $limit_results);
-    
+
     if (!empty($limit_results)) {
 
       // set variables
@@ -560,7 +561,7 @@ function islandora_solr_search_limit() {
       foreach ($limit_results as $limit) {
         // trim value
         $limit = trim($limit);
-        
+
         if (is_numeric($limit)) {
 
           // current display
@@ -570,10 +571,10 @@ function islandora_solr_search_limit() {
           else {
             $current_limit = variable_get('islandora_solr_search_num_of_results', '25');
           }
-          
+
           // query
           $query = array_merge($params, array('limit' => $limit));
-          
+
           // set attributes
           $attr = array();
           // set class
@@ -586,11 +587,11 @@ function islandora_solr_search_limit() {
           $attr['title'] = t('Show @limit results', array('@limit' => $limit));
           // url
           $attr['href'] = url($path, array('query' => $query));
-          
+
           // create link
           // we're not using l() because of active classes: http://drupal.org/node/41595
           $item = '<a' . drupal_attributes($attr) . '>' . $limit . '</a>';
-          
+
           // add link to list
           $list_items[] = $item;
         }
@@ -760,10 +761,10 @@ function islandora_solr_search_date_filter_form(&$form_state, $form_key, $solr_f
 
   // set variables
   $form = array();
- 
+
   $form['#tree'] = TRUE;
-  
-  
+
+
   // Field
   $form['date_filter_term'] = array(
     '#type' => 'hidden',
@@ -786,7 +787,7 @@ function islandora_solr_search_date_filter_form(&$form_state, $form_key, $solr_f
         $filter_split[1] = trim($filter_split[1], "\"");
         // split range filter string to return formatted date values
         $filter_str = $filter_split[1];
-        
+
         $filter_str = trim($filter_str, '[');
         $filter_str = trim($filter_str, ']');
         $filter_array = explode(' TO ', $filter_str);
@@ -811,7 +812,7 @@ function islandora_solr_search_date_filter_form(&$form_state, $form_key, $solr_f
     $from_default = NULL;
     $to_default = NULL;
   }
-  
+
   if ($from_default != NULL OR $to_default != NULL OR $noslider) {
     $class = 'date-range-expanded';
     $value = t('Hide');
@@ -839,8 +840,8 @@ function islandora_solr_search_date_filter_form(&$form_state, $form_key, $solr_f
     '#type' => 'markup',
     '#value' => '<div class="description">' . t('Format: @date', array('@date' => date("Y/m/d"))) . '</div>',
   );
-  
-  
+
+
   // From
   $form[$form_key]['date_filter_from'] = array(
     '#type' => 'textfield',
@@ -868,10 +869,10 @@ function islandora_solr_search_date_filter_form(&$form_state, $form_key, $solr_f
     '#name' => 'date_filter_term_' . $form_key,
   );
   $form['#submit'][] = 'islandora_solr_search_date_filter_form_submit';
-  
+
   // Validate
   $form['#validate'][] = 'islandora_solr_search_date_filter_form_validate';
-  
+
   return $form;
 }
 
@@ -883,7 +884,7 @@ function islandora_solr_search_date_filter_form_validate($form, &$form_state) {
 
   // default for month and day
   $default = '01';
-  
+
   // if the 'from' value is '*' just skip all checks
   if (trim($from[0]) != '*' ) {
     // Apply some defaults
@@ -893,13 +894,13 @@ function islandora_solr_search_date_filter_form_validate($form, &$form_state) {
     if (!isset($from[2])) {
       $from[2] = $default;
     }
-    
+
     // check from date
     if (!checkdate(intval($from[1]), intval($from[2]), intval($from[0]))) {
       form_set_error($form_key . '][date_filter_from', t('From date isn\'t formatted correctly.'));
     }
   }
-  
+
   // if the 'to' value is '*' just skip all checks
   if (trim($to[0]) != '*' ) {
     // Apply some defaults
@@ -909,7 +910,7 @@ function islandora_solr_search_date_filter_form_validate($form, &$form_state) {
     if (!isset($to[2])) {
       $to[2] = $default;
     }
-    
+
     // check to date
     if (!checkdate(intval($to[1]), intval($to[2]), intval($to[0]))) {
       form_set_error($form_key . '][date_filter_to', t('To date isn\'t formatted correctly.'));
@@ -920,7 +921,7 @@ function islandora_solr_search_date_filter_form_validate($form, &$form_state) {
 function islandora_solr_search_date_filter_form_submit($form, &$form_state) {
 
   $form_state['rebuild'] = TRUE;
-  
+
   // set variables
   global $queryClass;
   $params = isset($queryClass->internalSolrParams) ? $queryClass->internalSolrParams : array();
@@ -948,7 +949,7 @@ function islandora_solr_search_date_filter_form_submit($form, &$form_state) {
     // create date string
     // example:
     // timestamp:[1900-01-01T00:00:00Z TO 1990-01-01T00:00:00Z]
-    $from_str = "$from[0]-$from[1]-$from[2]T00:00:00Z";  
+    $from_str = "$from[0]-$from[1]-$from[2]T00:00:00Z";
   }
   else {
     $from_str = $from[0];
@@ -971,7 +972,7 @@ function islandora_solr_search_date_filter_form_submit($form, &$form_state) {
   else {
     $to_str = $to[0];
   }
-  
+
   // create filter
   $filter = "$term:[$from_str TO $to_str]";
 
@@ -1003,20 +1004,20 @@ function islandora_solr_search_range_slider_form(&$form_state, $form_key, $solr_
   // set variables
   $from_default = current($facet_data);
   $to_default = end($facet_data);
-  
+
   $gap = ($gap) ? "($gap)" : $gap;
-  
+
   $form = array();
- 
+
   $form['#tree'] = TRUE;
-  
+
   // Field
   $form['range_slider_term'] = array(
     '#type' => 'hidden',
     '#value' => $solr_field,
     '#name' => 'range_slider_term_' . $form_key,
   );
-  
+
   // Field
   // @TODO: throw all this markup in a theme function
   // total from - to
@@ -1028,7 +1029,7 @@ function islandora_solr_search_range_slider_form(&$form_state, $form_key, $solr_
     '#type' => 'markup',
     '#value' => '<div class="range-slider-fromto" id="range-slider-fromto-' . $form_key . '"><span class="range-slider-from">' . format_date(strtotime(trim($from_default['date'])) + 1, 'custom', $date_format, 0) . '</span> - <span class="range-slider-to">' . format_date(strtotime(trim($to_default['date'])), 'custom', $date_format, 0) . '</span></div><div class="date-range-slider-gap">' . $gap . '</div><div id="slider-amount-' . $form_key . '"></div><div id="date-range-slider-canvas-' . $form_key . '" class="date-range-slider-canvas-wrapper"></div><div id="date-range-slider-' . $form_key . '"></div>', // call theme function instead
   );
-  
+
   // hidden from
   $form[$form_key]['range_slider_hidden_from'] = array(
     '#type' => 'hidden',
@@ -1042,7 +1043,7 @@ function islandora_solr_search_range_slider_form(&$form_state, $form_key, $solr_
     '#default_value' => $to_default['date'], // highest value
     '#attributes' => array('class' => 'range-slider-hidden-to-' . $form_key),
   );
-        
+
   // Submit
   $form[$form_key]['range_slider_submit'] = array(
     '#type' => 'submit',
@@ -1050,10 +1051,10 @@ function islandora_solr_search_range_slider_form(&$form_state, $form_key, $solr_
     '#name' => 'range_slider_submit_' . $form_key,
   );
   $form['#submit'][] = 'islandora_solr_search_range_slider_form_submit';
-  
+
   // Validate
   $form['#validate'][] = 'islandora_solr_search_range_slider_form_validate';
-  
+
   // include jquery ui slider
   jquery_ui_add(array('ui.slider'));
   // include flot
@@ -1061,7 +1062,7 @@ function islandora_solr_search_range_slider_form(&$form_state, $form_key, $solr_
   // @TODO: find a good way to call this for IE8 and lower
   // <!--[if lte IE 8]><![endif]-->
   //drupal_add_js(drupal_get_path('module', 'islandora_solr_search') . '/js/flot/excanvas.min.js');
-  
+
   // include jquery ui css
   drupal_add_css('sites/all/libraries/jquery.ui/themes/base/ui.slider.css');
   // include slider settings
@@ -1074,18 +1075,18 @@ function islandora_solr_search_range_slider_form(&$form_state, $form_key, $solr_
         'slider_color' => $slider_color,
       ))
   ), 'setting');
-  
+
   return $form;
 }
 
 function islandora_solr_search_range_slider_form_validate($form, &$form_state) {
-  
+
 }
 
 
 function islandora_solr_search_range_slider_form_submit($form, &$form_state) {
   $form_state['rebuild'] = TRUE;
-  
+
   // set variables
   global $queryClass;
   $params = isset($queryClass->internalSolrParams) ? $queryClass->internalSolrParams : array();
@@ -1099,7 +1100,7 @@ function islandora_solr_search_range_slider_form_submit($form, &$form_state) {
   // date
   $from = $form_state['values'][$form_key]['range_slider_hidden_from'];
   $to = $form_state['values'][$form_key]['range_slider_hidden_to'];
-  
+
   // create filter
   $filter = "$term:[$from TO $to]";
 
@@ -1134,17 +1135,17 @@ function islandora_solr_search_range_slider_form_submit($form, &$form_state) {
  */
 function islandora_solr_search($query = NULL) {
   global $queryClass;
-  
+
   // set title
   drupal_set_title(t('Search Results'));
-  
+
   // get all url parameters
   $params = $_GET;
- 
+
   // get profiles
   $primary_profiles = module_invoke_all('islandora_solr_primary_display');
   $secondary_profiles = module_invoke_all('islandora_solr_secondary_display');
-  
+
 // Get the preferred display profile
   // Order: First choice is what's in the ?profile query var
   //        Second choice is the primary display profile
@@ -1171,8 +1172,8 @@ function islandora_solr_search($query = NULL) {
     // unset invalid parameter
     unset($params['display']);
   }
-  
-  
+
+
   // Build and execute Apache Solr query
   $queryResult = $queryClass->buildAndExecuteQuery($query, $params);
 

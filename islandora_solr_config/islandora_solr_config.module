@@ -1,8 +1,4 @@
 <?php
-
-
-
-
 /**
  * @file
  * Configuration module for islandora_solr_search.module

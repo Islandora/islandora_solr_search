@@ -37,10 +37,10 @@ class IslandoraSolrResultsRSS extends IslandoraSolrResults {
     // json  to array
     $results_array = json_decode($results_json, TRUE);
     $results_array = json_decode($results_array, TRUE); // not sure why I need to decode it twice to make it work properly.
-    
+
     // all results
     $docs = $results_array['response']['docs'];
-    
+
     // loop over results
     $items = NULL;
     foreach ($docs as $doc) {
@@ -57,7 +57,10 @@ class IslandoraSolrResultsRSS extends IslandoraSolrResults {
       }
       // get the variables for the <item> element
       $item = $this->rssItem($doc);
-      
+
+      //hook alter to change the rssItem before formatting.
+      drupal_alter('islandora_solr_search_rss_item', $item, $doc);
+
       // render rss item and add to items string
       $items .= format_rss_item($item['title'], $item['link'], $item['description'], $item['items']);
     }
@@ -83,7 +86,7 @@ class IslandoraSolrResultsRSS extends IslandoraSolrResults {
     print $output;
     exit;
   }
-  
+
 
   /**
    * Function for setting the values of the <item> elements for the RSS secondary display.
@@ -97,7 +100,7 @@ class IslandoraSolrResultsRSS extends IslandoraSolrResults {
     global $base_url;
 
     $rss_item = variable_get('islandora_solr_config_rss_item', array());
-    
+
     // object url
     $object_url = $base_url . '/fedora/repository/' . htmlspecialchars($doc['PID'], ENT_QUOTES, 'utf-8');
 
@@ -112,13 +115,13 @@ class IslandoraSolrResultsRSS extends IslandoraSolrResults {
     $result['description'] = $rss_item['description'] ? $doc[$rss_item['description']] : '';
     $result['items'] = array(
       array('key' => 'author', 'value' => $rss_item['author'] ? $doc[$rss_item['author']] : ''),
-      array('key' => 'guid', 'value' => $doc['PID'], 'attributes' => array('isPermaLink' => 'false',)),
+      array('key' => 'guid', 'value' => $doc['PID'], 'attributes' => array('isPermaLink' => 'false')),
       array('key' => 'pubDate', 'value' => $rss_item['pubDate'] ? $doc[$rss_item['pubDate']] : ''),
-      array('key' => 'category', 'value' => $rss_item['category'] ? $doc[$rss_item['category']] : ''),                             
+      array('key' => 'category', 'value' => $rss_item['category'] ? $doc[$rss_item['category']] : ''),
       array('key' => 'enclosure', 'value' => '', 'attributes' => array('url' => $enclosure_url, 'length' => '', 'type' => '')),
       array('key' => 'comments', 'value' => ''),
       array('key' => 'source', 'value' => ''),
-    ); 
+    );
     return $result;
   }
 
@@ -133,7 +136,7 @@ class IslandoraSolrResultsRSS extends IslandoraSolrResults {
     // set variables
     global $base_url;
     $rss_channel = variable_get('islandora_solr_config_rss_channel', array());
-    
+
     // set the variables to be rendered as elements in the <channel> element
     $result = array();
     $result['title'] = t('@site_name aggregator', array('@site_name' => variable_get('site_name', 'Drupal')));

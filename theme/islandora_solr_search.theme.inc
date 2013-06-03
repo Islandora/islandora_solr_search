@@ -70,7 +70,7 @@ function islandora_solr_search_preprocess_islandora_solr_search(&$variables) {
     $variables[$key] = $value;
   }
   // detect existing datastreams and create a linked thumbnail if TN exists
-  foreach($variables['results'] as $key => $value) {
+  foreach ($variables['results'] as $key => $value) {
     $pid = $variables['pids'][$key];
     if ($object = new Fedora_Item($pid)) {
       $ds_array = $object->get_datastreams_list_as_array();

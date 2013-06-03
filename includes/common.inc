@@ -57,20 +57,20 @@ function replaceSlashes($str) {
 
 //a better explode method allows quotes in the returned strings.  taken from the php.net site
 function csv_explode($delim=',', $str, $enclose='"', $preserve=FALSE) {
-  $resArr = array();
+  $res_arr = array();
   $n = 0;
-  $expEncArr = explode($enclose, $str);
-  foreach ($expEncArr as $EncItem) {
+  $exp_enc_arr = explode($enclose, $str);
+  foreach ($exp_enc_arr as $enc_item) {
     if ($n++ %2) {
-      array_push($resArr, array_pop($resArr) . ($preserve?$enclose:'') . $EncItem . ($preserve?$enclose:''));
+      array_push($res_arr, array_pop($res_arr) . ($preserve?$enclose:'') . $enc_item . ($preserve?$enclose:''));
     }
     else {
-      $expDelArr = explode($delim, $EncItem);
-      array_push($resArr, array_pop($resArr) . array_shift($expDelArr));
-      $resArr = array_merge($resArr, $expDelArr);
+      $exp_del_arr = explode($delim, $enc_item);
+      array_push($res_arr, array_pop($res_arr) . array_shift($exp_del_arr));
+      $res_arr = array_merge($res_arr, $exp_del_arr);
     }
   }
-  return $resArr;
+  return $res_arr;
 }
 
 //copied from apache solr service and added space as a value to escape.  We are using this to escape the field being searched not the text being searched for so we need both.
@@ -88,49 +88,49 @@ function lesser_escape($value) {
 
 //escape characters in field names of facets
 function solr_escape($facets) {
-  $returnFacets = array();
+  $return_facets = array();
   foreach ($facets as $facet) {
     $tmp = drupal_substr($facet, 0, strpos($facet, ':"'));
     $tmp = lesser_escape(trim($tmp));
 
-    $returnFacets[] = $tmp . drupal_substr($facet, strpos($facet, ':"'), drupal_strlen($facet));
+    $return_facets[] = $tmp . drupal_substr($facet, strpos($facet, ':"'), drupal_strlen($facet));
 
   }
-  return $returnFacets;
+  return $return_facets;
 }
 
 
-function islandora_build_substitution_list($rawFieldList) {
-  $facetArray = array();
-  $facetFields = '';
-  $lines = preg_split('/[,|\n|\r]/', $rawFieldList);
+function islandora_build_substitution_list($raw_field_list) {
+  $facet_array = array();
+  $facet_fields = '';
+  $lines = preg_split('/[,|\n|\r]/', $raw_field_list);
   foreach ($lines as $line) {
-    if( $line ) {
-      $lineArray = explode('~', $line);
-      $key = trim($lineArray[0]);
-      $value = trim($lineArray[1]);
+    if ( $line ) {
+      $line_array = explode('~', $line);
+      $key = trim($line_array[0]);
+      $value = trim($line_array[1]);
       if (!$value) {
         $value = $key;
       }
-      $facetArray[$key] = $value;
-      if ($facetFields) {
-        $facetFields .= ",";
+      $facet_array[$key] = $value;
+      if ($facet_fields) {
+        $facet_fields .= ",";
       }
-      $facetFields .= $key;
+      $facet_fields .= $key;
     }
   }
-  return $facetArray;
+  return $facet_array;
 }
 
 /**
    * checks to see if browser is IE and is less then the specified version
-   * 
-   * user agent can be spoofed but we are only using this to determine 
+   *
+   * user agent can be spoofed but we are only using this to determine
    * whether or not we should show the Date facet with the canvas graph
-   * 
+   *
    * @param mixed $version_number
    *   version number ie 8
-   * @return boolean 
+   * @return boolean
    *   TRUE if browser is IE and version is less then $version_number
    *   otherwise FALSE
    */

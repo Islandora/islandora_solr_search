@@ -101,8 +101,8 @@ function islandora_solr_admin_settings(&$form_state) {
   $form['display_profiles']['islandora_solr_primary_display_table'] = array(
     '#tree' => TRUE, // this attribute is important to return the submitted values in a deeper nested arrays in
   );
-  
-  
+
+
   // get the table settings
   $primary_display_array = variable_get('islandora_solr_primary_display_table', array());
   $enabled = array();
@@ -125,7 +125,7 @@ function islandora_solr_admin_settings(&$form_state) {
       foreach (array_intersect_assoc($profiles, $weight) as $key => $value) {
         $profiles_sorted[$key] = $value;
       }
-	  
+
       //Account for new profiles.
       foreach (array_diff_assoc($profiles, $profiles_sorted) as $key => $value) {
         $profiles_sorted[$key] = $value;
@@ -255,8 +255,8 @@ function islandora_solr_admin_settings(&$form_state) {
     '#default_value' => variable_get('islandora_solr_search_limit_results_exposed_styling', 0),
     '#description' => t('Styles the exposed result limit links horizontally with separators.'),
   );
-  
-  
+
+
   // Sort
   $form['sort'] = array(
     '#type' => 'fieldset',
@@ -274,7 +274,7 @@ function islandora_solr_admin_settings(&$form_state) {
     '#default_value' => variable_get('islandora_solr_search_sort_terms', 'score ~ Relevance, PID ~ PID'),
     '#wysiwyg' => FALSE,
   );
-  
+
 
   // Facets
   $form['facet_settings'] = array(
@@ -315,8 +315,8 @@ function islandora_solr_admin_settings(&$form_state) {
       For example, if there are 100 possible subjects in a faceted result, you may wish to return only the top 10.'),
     '#default_value' => variable_get('islandora_solr_search_block_facet_limit', '20'),
   );
-  $form['facet_settings']['islandora_facet_display_table'] = array();  
-  
+  $form['facet_settings']['islandora_facet_display_table'] = array();
+
   $form['facet_settings']['facet_dates'] = array(
     '#type' => 'fieldset',
     '#title' => t('Date facets'),
@@ -362,7 +362,7 @@ function islandora_solr_admin_settings(&$form_state) {
     '#description' => t('The format of the date as it will be displayed in the facet block. Use the <a href="!url">PHP date()</a> formatting.', array('!url' => 'http://lucene.apache.org/solr/api/org/apache/solr/util/DateMathParser.html')),
     '#default_value' => variable_get('islandora_solr_facet_date_format' , 'Y'),
   );
-  
+
   // Range slider
   $form['facet_settings']['facet_dates']['range_slider'] = array(
     '#type' => 'fieldset',
@@ -430,12 +430,12 @@ function islandora_solr_admin_settings(&$form_state) {
       '#suffix' => '</p>',
     );
   }
-  
 
-  
-  
-  
-  
+
+
+
+
+
   // Advanced search block
   $form['advanced_search_block'] = array(
     '#type' => 'fieldset',
@@ -462,8 +462,8 @@ function islandora_solr_admin_settings(&$form_state) {
   );
 
 
-  
-  
+
+
   // Query defaults
   $form['query_defaults'] = array(
     '#type' => 'fieldset',
@@ -496,8 +496,8 @@ function islandora_solr_admin_settings(&$form_state) {
     '#default_value' => variable_get('islandora_solr_search_base_filter', ''),
     '#wysiwyg' => FALSE,
   );
-  
-  
+
+
   // Debug
   $form['islandora_solr_search_debug_mode'] = array(
     '#type' => 'checkbox',
@@ -506,8 +506,8 @@ function islandora_solr_admin_settings(&$form_state) {
     '#default_value' => variable_get('islandora_solr_search_debug_mode', 0),
     '#description' => t('Dumps solr query to the screen for testing. Warning: if you have the Drupal Apache Solr module enabled alongside this one then the debug function will not work.'),
   );
-  
-  
+
+
   $form['buttons']['submit'] = array(
     '#type' => 'submit',
     '#value' => t('Save Solr Configuration'),
@@ -606,10 +606,10 @@ function theme_islandora_solr_search_admin_settings($form) {
   // render form
   $output = '';
   $output .= drupal_render($form);
-  
+
   // add tabledrag features
   drupal_add_tabledrag('solr-primary-display-table', 'order', 'sibling', 'solr-weight');
-  
+
   return $output;
 }
 
@@ -625,8 +625,8 @@ function solr_available($solr_url) {
   $handle = curl_init($solr_url . '/admin/ping');
   curl_setopt($handle, CURLOPT_RETURNTRANSFER, TRUE);
   $response = curl_exec($handle);
-  $httpCode = curl_getinfo($handle, CURLINFO_HTTP_CODE);
-  $retval = ((int)($httpCode / 100) === 2);
+  $http_code = curl_getinfo($handle, CURLINFO_HTTP_CODE);
+  $retval = ((int)($http_code / 100) === 2);
   curl_close($handle);
   return $retval;
 }
@@ -644,10 +644,10 @@ function get_handlers($solr_url) {
   $xml = simplexml_load_string(curl_exec($ch));
   foreach ($xml->requestHandler as $handler) {
     if ($handler['class'] == 'solr.SearchHandler') {
-      $handlerName = (string) $handler['name'];
-      $slashed = preg_match('/^\//', $handlerName);
-      if ($handlerName != 'dismax' && $handlerName != 'partitioned' & !$slashed) {
-        $handlers[$handlerName] = $handlerName;
+      $handler_name = (string) $handler['name'];
+      $slashed = preg_match('/^\//', $handler_name);
+      if ($handler_name != 'dismax' && $handler_name != 'partitioned' & !$slashed) {
+        $handlers[$handler_name] = $handler_name;
       }
     }
   }
@@ -695,7 +695,7 @@ function callback_prep() {
  */
 function islandora_solr_admin_settings_validate($form, &$form_state) {
   $form_state['values']['islandora_solr_search_namespace_restriction'] = preg_replace('/:$/', '', $form_state['values']['islandora_solr_search_namespace_restriction']);
-  
+
   $limit_results_exposed = explode(',', $form_state['values']['islandora_solr_search_limit_results_exposed']);
 
   foreach ($limit_results_exposed as $limit) {
@@ -773,7 +773,7 @@ function solr_admin_refresh($form, &$form_state) {
  * Checks for dismax
  * @param type $solr_url
  * @param type $selected_handler
- * @return boolean 
+ * @return boolean
  */
 function check_dismax($solr_url, $selected_handler) {
   $dismax = FALSE;
