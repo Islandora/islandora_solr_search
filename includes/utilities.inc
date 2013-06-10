@@ -323,6 +323,7 @@ function islandora_solr_prepare_solr_results($solr_results) {
  * @see islandora_solr_build_substitution_list()
  */
 function islandora_build_substitution_list($value) {
+  module_load_include('inc', 'islandora', 'includes/utilities');
   $message = islandora_deprecated('7.x-1.2', t('Refactor to use islandora_solr_build_substitution_list().'));
   trigger_error(filter_xss($message), E_USER_DEPRECATED);
 
@@ -337,6 +338,7 @@ function islandora_build_substitution_list($value) {
  * @see islandora_solr_escape()
  */
 function solr_escape($facets) {
+  module_load_include('inc', 'islandora', 'includes/utilities');
   $message = islandora_deprecated('7.x-1.2', t('Refactor to use islandora_solr_escape().'));
   trigger_error(filter_xss($message), E_USER_DEPRECATED);
 
@@ -351,6 +353,7 @@ function solr_escape($facets) {
  * @see islandora_solr_lesser_escape()
  */
 function lesser_escape($value) {
+  module_load_include('inc', 'islandora', 'includes/utilities');
   $message = islandora_deprecated('7.x-1.2', t('Refactor to use islandora_solr_lesser_escape().'));
   trigger_error(filter_xss($message), E_USER_DEPRECATED);
 
@@ -365,6 +368,7 @@ function lesser_escape($value) {
  * @see islandora_solr_csv_explode()
  */
 function csv_explode($value) {
+  module_load_include('inc', 'islandora', 'includes/utilities');
   $message = islandora_deprecated('7.x-1.2', t('Refactor to use islandora_solr_csv_explode().'));
   trigger_error(filter_xss($message), E_USER_DEPRECATED);
 
@@ -379,6 +383,7 @@ function csv_explode($value) {
  * @see islandora_solr_restore_slashes()
  */
 function restore_slashes($value) {
+  module_load_include('inc', 'islandora', 'includes/utilities');
   $message = islandora_deprecated('7.x-1.2', t('Refactor to use islandora_solr_restore_slashes().'));
   trigger_error(filter_xss($message), E_USER_DEPRECATED);
 
@@ -393,6 +398,7 @@ function restore_slashes($value) {
  * @see islandora_solr_replace_slashes()
  */
 function replace_slashes($value) {
+  module_load_include('inc', 'islandora', 'includes/utilities');
   $message = islandora_deprecated('7.x-1.2', t('Refactor to use islandora_solr_replace_slashes().'));
   trigger_error(filter_xss($message), E_USER_DEPRECATED);
 
