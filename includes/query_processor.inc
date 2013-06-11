@@ -348,6 +348,9 @@ class IslandoraSolrQueryProcessor {
             $object_results[$object_index]['object_label'] = is_array($object_label_value) ? implode(", ", $object_label_value) : $object_label_value;
           }
           if (!isset($object_result[$datastream_field]) || in_array('TN', $object_result[$datastream_field])) {
+            // XXX: Would be good to have an access check on the TN here...
+            // Doesn't seem to a nice way without loading the object, which
+            // this methods seems to explicitly avoid doing...
             $object_results[$object_index]['thumbnail_url'] = $object_results[$object_index]['object_url'] . '/datastream/TN/view';
           }
           else {
