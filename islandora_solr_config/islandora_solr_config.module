@@ -45,9 +45,33 @@ function islandora_solr_config_islandora_solr_secondary_display() {
       'description' => 'Download complete resultset as a CSV Spreadsheet',
       'logo' => '<img src="' . $path . '/images/csv.png" class="secondary-display-csv">',
     ),
+    'rss' => array(
+      'name' => t('RSS'),
+      'module' => 'islandora_solr_config',
+      'file' => 'includes/rss_results.inc',
+      'class' => 'IslandoraSolrResultsRSS',
+      'function' => 'printRSS',
+      'description' => 'Show search results as RSS feed',
+      'logo' => '<img src="' . $path . '/images/rss.png" class="secondary-display-csv">',
+    ),
   );
 }
 
+/**
+ * Implements hook_menu().
+ */
+function islandora_solr_config_menu() {
+  $items['admin/islandora/search/islandora_solr/rss'] = array(
+    'title' => 'RSS settings',
+    'description' => 'Configure rss search settings.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('islandora_solr_config_admin_rss_settings'),
+    'access arguments' => array('administer islandora solr'),
+    'file' => 'includes/admin.inc',
+    'type' => MENU_LOCAL_TASK,
+  );
+  return $items;
+}
 /**
  * Implements hook_theme().
  */

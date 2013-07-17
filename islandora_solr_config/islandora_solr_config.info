@@ -4,6 +4,7 @@ dependencies[] = islandora_solr
 files[] = includes/csv_results.inc
 files[] = includes/grid_results.inc
 files[] = includes/table_results.inc
+files[] = includes/rss_results.inc
 package = Islandora Search
 version = 7.x-dev
 core = 7.x

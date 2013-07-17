@@ -55,6 +55,7 @@ function islandora_solr_menu() {
     'file' => 'includes/admin.inc',
     'type' => MENU_LOCAL_TASK,
   );
+
   $items['islandora_solr/field'] = array(
     'title' => 'Result field',
     'description' => 'Configuration for Solr result field',
