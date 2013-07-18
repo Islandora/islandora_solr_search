@@ -27,150 +27,130 @@ class IslandoraSolrResultsCSV extends IslandoraSolrResults {
    */
   public function printCSV($islandora_solr_query) {
     global $base_url;
-    $result_fields = $this->resultFieldArray;
-
-    // First off, update outer limits.
-    $upper_limit = $islandora_solr_query->islandoraSolrResult['response']['numFound'];
-    $lower_limit = 0;
-
-    // Typical failure point for an unbounded query seems to be around
-    // 10000-15000, but we must allow for the every-growing output memory
-    // structure.
-    $increment = 5000;
-
-    $row_count = 0;
-    $field_counts = array();
-    $values = array();
-
-    $seperator = ",";
-    $wrap = '"';
-    $replace_value = '""';
-
-    // Note: solrLimit is really stating the number of rows wanted,
-    // not the row number of the upper limit document.  That is, if you
-    // want results 40-60, you set solrStart=40, solrLimit=20 -- *not*
-    // solrStart=40, solrLimit=60.
-    $islandora_solr_query->solrStart = $lower_limit;
-    $islandora_solr_query->solrLimit = $increment;
-
-    $docfile = tmpfile();
-
-    while ($islandora_solr_query->solrStart < $upper_limit) {
-
-      // Perform the incremental re-query.
-      $islandora_solr_query->resetResults();
-      $islandora_solr_query->executeQuery();
-
-      // Update incremental limits for the next round.
-      $lower_limit += $increment;
-      $islandora_solr_query->solrStart = $lower_limit;
-
-      // If there are no results, skip ahead (i.e. exit).
-      if (empty($islandora_solr_query->islandoraSolrResult)) {
-        continue;
-      }
-
-      // Do the work for this iteration.
-      $response_data = $islandora_solr_query->islandoraSolrResult['response'];
-
-      // This loop is just to update the maximum value counts for each field
-      // because if any field in the entire resultset has multiple values,
-      // we must break the field into multiple iterated fields.
-      $object_results = $response_data['objects'];
-      $object_results = islandora_solr_prepare_solr_doc($object_results);
-      foreach ($object_results as $object_result) {
-
-        $doc = $object_result['solr_doc'];
-        fwrite($docfile, addcslashes(serialize($doc), "\n\r\\") . "\n");
-        foreach ($doc as $field => $value) {
-
-          $field_count = is_array($value['value']) ? count($value['value']) : 1;
-
-          if (!isset($field_counts[$field])) {
-            $field_counts[$field] = $field_count;
-          }
-          else {
-            $field_counts[$field] = max($field_counts[$field], $field_count);
-          }
-        }
-        $row_count++;
-      }
-
-      // Let's try writing a serialized version of the each doc to a file and
-      // removing it from memory, then digging through said file line by line
-      // at the output stage.
-    }
-
-    fseek($docfile, 0);
-
-    $header = array();
-    $rows = array();
-
-    // Generate Header
-    // For fields with a single value, the header is simply wrapped.
-    // For fields where at least one multiple value was found across
-    // the resultset, the field is iterated the maximum number of times.
-    foreach ($field_counts as $field => $count) {
-      $label = isset($result_fields[$field]) ?
-        $result_fields[$field] :
-        $field;
-      if ($count == 1) {
-        $header[] = $wrap . str_replace('"', $replace_value, $label) . $wrap;
-      }
-      else {
-        $i = 1;
-        while ($i <= $count) {
-          $header[] = $wrap . str_replace('"', $replace_value, $label . "_" . $i) . $wrap;
-          $i++;
-        }
-      }
-    }
-
-    // Generate refactored output matrix.
-    $row_count = 0;
-    while ($line = fgets($docfile)) {
-      $doc = unserialize(stripcslashes($line));
-      foreach ($field_counts as $field => $count) {
-        $i = 0;
-        // @todo Make it write to another file, and output the file.
-        while ($i < $count) {
-          if (isset($doc[$field]['value'])) {
-            if ($i === 0 && is_string($doc[$field]['value'])) {
-              $rows[$row_count][] = $wrap . str_replace('"', $replace_value, $doc[$field]['value']) . $wrap;
-            }
-            elseif (isset($doc[$field][$i])) {
-              $rows[$row_count][] = $wrap . str_replace('"', $replace_value, $doc[$field]['value'][$i]) . $wrap;
-            }
-            else {
-              $rows[$row_count][] = "";
-            }
-          }
-          else {
-            $rows[$row_count][] = "";
-          }
-          $i++;
-        }
-      }
-      $row_count++;
-    }
-
-    fclose($docfile);
-
-    drupal_add_http_header('Content-Type', 'text/csv; utf-8');
-    drupal_add_http_header('Content-Disposition', 'attachment; filename="searchresults.csv');
-
-    print implode($seperator, $header) . "\r\n";
-    foreach ($rows as $row) {
-      print implode($seperator, $row) . "\r\n";
-    }
-
-    drupal_set_message(format_plural(
-      count($rows),
-      'Exported 1 record from the index to CSV.',
-      'Exported @count records from the index to CSV.'
+    $redirect = drupal_parse_url(request_uri());
+    // We want to unset the display profile of CSV, but keep everything else.
+    $params = $redirect['query'];
+    unset($params['solr_profile']);
+    $redirect_url = "islandora/search/$islandora_solr_query->solrQuery";
+    batch_set($this->batchSolrResults($islandora_solr_query));
+    batch_process(array(
+      $redirect_url,
+      array(
+        'query' => $params,
+      ),
     ));
-
-    drupal_exit();
   }
 
+  /**
+   * Constructs a batch that creates a CSV for export.
+   *
+   * @param object $islandora_solr_query
+   *   The Islandora Solr Query processor.
+   */
+  public function batchSolrResults($islandora_solr_query) {
+    return array(
+      'operations' => array(
+        array('islandora_solr_config_csv_batch_update_operation', array($islandora_solr_query)),
+      ),
+      'title' => t('Exporting search results as CSV...'),
+      'init_message' => t('Preparing to construct CSV.'),
+      'progress_message' => t('Time elapsed: @elapsed <br/>Estimated time remaning @estimate.'),
+      'error_message' => t('An error has occurred.'),
+      'file' => drupal_get_path('module', 'islandora_solr_config') . '/includes/csv_results.inc',
+      'finished' => 'islandora_solr_config_csv_download_csv',
+    );
+  }
+}
+
+/**
+ * Constructs the update operation for the CSV search result export.
+ *
+ * Batch in 1000 increments so Solr doesn't go kaboooom.
+ *
+ * @param object $islandora_solr_query
+ *   An Islandora Solr Query processor object.
+ * @param array $context
+ *   The context array for the current batch.
+ */
+function islandora_solr_config_csv_batch_update_operation($islandora_solr_query, &$context) {
+  $csv_batch_limit = 5000;
+  $sandbox = &$context['sandbox'];
+
+  if (!isset($sandbox['offset'])) {
+    $csv_file_uri = drupal_tempnam('temporary://', 'csv');
+    $context['results']['islandora_solr_csv_file'] = $csv_file_uri;
+    $sandbox['offset'] = 0;
+    $context['results']['islandora_solr_csv_headers'] = array();
+    $sandbox['total'] = $islandora_solr_query->islandoraSolrResult['response']['numFound'];
+    if ($sandbox['total'] === 0) {
+      return;
+    }
+  }
+  $context['message'] = t('Processing results @start to @end.', array(
+    '@start' => $sandbox['offset'],
+    '@end' => min($sandbox['offset'] + $csv_batch_limit, $sandbox['total']),
+  ));
+  $fp = fopen($context['results']['islandora_solr_csv_file'], 'a');
+  // Set the starting offset for this iteration.
+  $islandora_solr_query->solrStart = $sandbox['offset'];
+  $islandora_solr_query->solrLimit = $csv_batch_limit;
+  $islandora_solr_query->executeQuery();
+  $response_data = $islandora_solr_query->islandoraSolrResult['response'];
+  $object_results = $response_data['objects'];
+  // We do this to limit results to just the fields defined in the solr config
+  // if "limit results" is selected. If it's not we will return all the fields.
+  $object_results = islandora_solr_prepare_solr_doc($object_results);
+  $headers = &$context['results']['islandora_solr_csv_headers'];
+  foreach ($object_results as $object) {
+    $csv_array = array();
+    foreach ($headers as $field => $label) {
+      $csv_array[] = isset($object['solr_doc'][$field]['value']) ?
+        implode('; ', (array) $object['solr_doc'][$field]['value']) :
+        '';
+    }
+    foreach (array_diff_key($object['solr_doc'], $headers) as $field => $values) {
+      $headers[$field] = $values['label'];
+      $csv_array[] = implode('; ', (array) $values['value']);
+    }
+    fputcsv($fp, $csv_array);
+  }
+  fclose($fp);
+
+  $sandbox['offset'] += $csv_batch_limit;
+  $context['finished'] = $sandbox['offset'] / $sandbox['total'];
+}
+
+/**
+ * Copies file from tmp and appends headers on the front for export.
+ *
+ * @global type $user
+ *
+ * @param array $success
+ *   The success array from the batch.
+ * @param array $results
+ *   The results array from the batch.
+ * @param array $operations
+ *   The operations array from the batch.
+ */
+function islandora_solr_config_csv_download_csv($success, $results, $operations) {
+  global $user;
+  $export_uri = 'public://csv_export_' . time() . '.csv';
+  // We register this file into Drupal so it will be deleted.
+  $file = new stdClass();
+  $file->fid = NULL;
+  $file->uri = $export_uri;
+  $file->filename = drupal_basename($export_uri);
+  $file->filemime = file_get_mimetype($file->uri);
+  $file->uid = $user->uid;
+  $fp = fopen($export_uri, 'w');
+  fputcsv($fp, $results['islandora_solr_csv_headers']);
+
+  $tmp_file = fopen($results['islandora_solr_csv_file'], 'r');
+  stream_copy_to_stream($tmp_file, $fp);
+  fclose($fp);
+  fclose($tmp_file);
+  file_unmanaged_delete($results['islandora_solr_csv_file']);
+  drupal_set_message(filter_xss(t('The exported results CSV is avaialable for download !url.', array(
+    '!url' => l(t('here'), file_create_url($export_uri)),
+  ))));
 }
