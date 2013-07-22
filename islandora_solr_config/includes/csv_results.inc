@@ -73,7 +73,7 @@ class IslandoraSolrResultsCSV extends IslandoraSolrResults {
  *   The context array for the current batch.
  */
 function islandora_solr_config_csv_batch_update_operation($islandora_solr_query, &$context) {
-  $csv_batch_limit = 5000;
+  $csv_batch_limit = 100;
   $sandbox = &$context['sandbox'];
 
   if (!isset($sandbox['offset'])) {
