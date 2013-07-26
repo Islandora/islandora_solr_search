@@ -29,6 +29,9 @@ class IslandoraSolrResultsRSS extends IslandoraSolrResults {
   public function printRSS($islandora_solr_query, $title = "Search Results") {
 
     global $base_url;
+
+    drupal_add_http_header('Content-Type', 'application/rss+xml; charset=utf-8');
+
     // Get raw results.
     $solr_result = $islandora_solr_query->islandoraSolrResult;
 
@@ -108,11 +111,14 @@ class IslandoraSolrResultsRSS extends IslandoraSolrResults {
     $object_url = url('islandora/object/' . htmlspecialchars($doc['PID'], ENT_QUOTES, 'utf-8'), array('absolute' => TRUE));
     // Enclosure file url (thumbnail by default).
     $dsid = ($rss_item['enclosure_dsid'] && isset($rss_item['enclosure_dsid'])) ? $rss_item['enclosure_dsid'] : 'TN';
+    $doc['datastreams'] = isset($doc['datastreams']) ? $doc['datastreams'] : array();
     $is_datastream = in_array($dsid, $doc['datastreams']);
 
     if ($is_datastream) {
       $enclosure_url = $object_url . '/datastream/' . $dsid;
     }
+
+    $rss_source = variable_get('site_name', "Default site name");
 
     // Set the variables to be rendered as elements in the <item> element.
     $result = array();
@@ -138,7 +144,7 @@ class IslandoraSolrResultsRSS extends IslandoraSolrResults {
         'value' => ''),
       array(
         'key' => 'source',
-        'value' => ''),
+        'value' => $rss_source, 'attributes' => array('url' => $base_url)),
     );
 
     if ($is_datastream) {
