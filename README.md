@@ -1,3 +1,14 @@
+BUILD STATUS
+------------
+Current build status:
+[![Build Status](https://travis-ci.org/Islandora/islandora_solr_search.png?branch=7.x)](https://travis-ci.org/Islandora/islandora_solr_search)
+
+CI Server:
+http://jenkins.discoverygarden.ca
+
+ISLANDORA SOLR SEARCH
+==================
+
 SUMMARY
 -------
 
