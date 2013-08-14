@@ -289,7 +289,6 @@ class IslandoraSolrQueryProcessor {
    */
   public function resetResults() {
     unset($this->islandoraSolrResult);
-    return;
   }
 
   /**
@@ -393,7 +392,6 @@ class IslandoraSolrQueryProcessor {
     else {
       $this->islandoraSolrResult = NULL;
     }
-    return;
   }
 
   /**

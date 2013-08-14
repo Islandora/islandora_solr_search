@@ -112,7 +112,7 @@ class IslandoraSolrResults {
     $secondary_display_profiles = module_invoke_all('islandora_solr_secondary_display');
 
     // $_GET['q'] didn't seem to work here.
-    $path = SOLR_SEARCH_PATH . '/' . islandora_solr_replace_slashes($islandora_solr_query->solrQuery);
+    $path = ISLANDORA_SOLR_SEARCH_PATH . '/' . islandora_solr_replace_slashes($islandora_solr_query->solrQuery);
 
     // Parameters set in URL.
     $params = $islandora_solr_query->internalSolrParams;
@@ -192,7 +192,7 @@ class IslandoraSolrResults {
    */
   public function currentQuery($islandora_solr_query) {
     $output = '';
-    $path = SOLR_SEARCH_PATH . '/' . islandora_solr_replace_slashes($islandora_solr_query->solrQuery);
+    $path = ISLANDORA_SOLR_SEARCH_PATH . '/' . islandora_solr_replace_slashes($islandora_solr_query->solrQuery);
 
     $format = variable_get('islandora_solr_facet_date_format', 'Y');
 
@@ -301,7 +301,7 @@ class IslandoraSolrResults {
    */
   public function setBreadcrumbs($islandora_solr_query) {
     // $_GET['q'] didn't seem to work here.
-    $path = SOLR_SEARCH_PATH . '/' . islandora_solr_replace_slashes($islandora_solr_query->solrQuery);
+    $path = ISLANDORA_SOLR_SEARCH_PATH . '/' . islandora_solr_replace_slashes($islandora_solr_query->solrQuery);
     // Get date format.
     $format = variable_get('islandora_solr_facet_date_format', 'Y');
 
@@ -907,7 +907,7 @@ class IslandoraSolrFacets {
       }
       // Current path including query, for example islandora/solr/query.
       // $_GET['q'] didn't seem to work here.
-      $path = SOLR_SEARCH_PATH . '/' . islandora_solr_replace_slashes($islandora_solr_query->solrQuery);
+      $path = ISLANDORA_SOLR_SEARCH_PATH . '/' . islandora_solr_replace_slashes($islandora_solr_query->solrQuery);
       // Parameters set in URL.
       $params = $islandora_solr_query->internalSolrParams;
       // Set filter key if there are no filters included.

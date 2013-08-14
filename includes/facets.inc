@@ -184,7 +184,7 @@ function islandora_solr_date_filter_form_submit($form, &$form_state) {
 
   $form_state['rebuild'] = TRUE;
   $params = isset($_islandora_solr_queryclass->internalSolrParams) ? $_islandora_solr_queryclass->internalSolrParams : array();
-  $path = SOLR_SEARCH_PATH . '/' . islandora_solr_replace_slashes($_islandora_solr_queryclass->solrQuery);
+  $path = ISLANDORA_SOLR_SEARCH_PATH . '/' . islandora_solr_replace_slashes($_islandora_solr_queryclass->solrQuery);
   $facet_field = $form_state['values']['date_filter_facet_field'];
   $form_key = $form_state['triggering_element']['#form_key'];
 
@@ -330,7 +330,7 @@ function islandora_solr_range_slider_form_submit($form, &$form_state) {
   // Set variables.
   global $_islandora_solr_queryclass;
   $params = isset($_islandora_solr_queryclass->internalSolrParams) ? $_islandora_solr_queryclass->internalSolrParams : array();
-  $path = SOLR_SEARCH_PATH . '/' . islandora_solr_replace_slashes($_islandora_solr_queryclass->solrQuery);
+  $path = ISLANDORA_SOLR_SEARCH_PATH . '/' . islandora_solr_replace_slashes($_islandora_solr_queryclass->solrQuery);
   $form_key = $form_state['triggering_element']['#form_key'];
 
   $term = $form_state['values']['range_slider_term'];
