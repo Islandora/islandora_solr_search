@@ -399,3 +399,18 @@ function islandora_solr_forms($form_id, $args) {
 
   return $forms;
 }
+
+/**
+ * Implements hook_features_api().
+ */
+function islandora_solr_features_api() {
+  $mod_path = drupal_get_path('module', 'islandora_solr');
+  return array(
+    'islandora_solr_fields' => array(
+      'name' => t('Islandora Solr Fields Configuration'),
+      'file' => "$mod_path/includes/fields.features.inc",
+      'default_hook' => 'islandora_solr_fields_features_default_fields',
+      'feature_source' => TRUE,
+    ),
+  );
+}

@@ -1103,7 +1103,8 @@ function _islandora_solr_admin_settings_submit($form, &$form_state) {
 
       // Prepare all field variables to be saved to the DB.
       $insert_values = array();
-      $field_types = array('result_fields',
+      $field_types = array(
+        'result_fields',
         'sort_fields',
         'facet_fields',
         'search_fields',
