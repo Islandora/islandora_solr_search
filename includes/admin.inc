@@ -39,8 +39,6 @@ function islandora_solr_admin_index_settings($form, &$form_state) {
     if ($solr_avail) {
       // Find request handlers (~500ms).
       $handlers = _islandora_solr_get_handlers($solr_url);
-      // Check if dismax is allowed (~400ms).
-      $dismax_allowed = _islandora_solr_check_dismax($solr_url, $handler);
     }
     // Get confirmation message.
     if ($solr_avail) {
@@ -95,12 +93,6 @@ function islandora_solr_admin_index_settings($form, &$form_state) {
       'event' => 'blur',
       'progress' => array('type' => 'throbber'),
     ),
-  );
-  $form['solr_ajax_wrapper']['islandora_solr_dismax_allowed'] = array(
-    '#type' => 'hidden',
-    '#default_value' => (isset($dismax_allowed) ?
-      $dismax_allowed :
-      $form_state['complete form']['solr_ajax_wrapper']['islandora_solr_dismax_allowed']['#default_value']),
   );
 
   // Hidden submit button.
@@ -184,17 +176,19 @@ function _islandora_solr_admin_index_settings_submit($form, &$form_state) {
     case 'edit-submit':
       variable_set('islandora_solr_url', $form_state['values']['islandora_solr_url']);
       variable_set('islandora_solr_request_handler', $form_state['values']['islandora_solr_request_handler']);
-      variable_set('islandora_solr_dismax_allowed', $form_state['values']['islandora_solr_dismax_allowed']);
       drupal_set_message(t('The Solr configuration options have been saved.'));
       break;
 
     case 'edit-reset':
       variable_del('islandora_solr_url');
       variable_del('islandora_solr_request_handler');
-      variable_del('islandora_solr_dismax_allowed');
       drupal_set_message(t('The configuration options have been reset to their default values.'));
       break;
   }
+
+  // Force renewal of the cached value, as the request handler might have
+  // changed.
+  islandora_solr_check_dismax(TRUE);
 }
 
 /**

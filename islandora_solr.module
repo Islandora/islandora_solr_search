@@ -414,3 +414,35 @@ function islandora_solr_features_api() {
     ),
   );
 }
+
+/**
+ * Check if dismax is configured for the currently selected request handler.
+ *
+ * Results are cached, to reduce chatter between Drupal and Solr.
+ *
+ * @param bool $reset
+ *   Force cache revalidation.
+ *
+ * @return bool
+ *   TRUE if the current request handler supports dismax, FALSE if it does not.
+ */
+function islandora_solr_check_dismax($reset = FALSE) {
+  $cache_id = 'islandora_solr_dismax';
+  $cache = $reset ? FALSE : cache_get($cache_id);
+
+  if (!$cache) {
+    module_load_include('inc', 'islandora_solr', 'includes/admin');
+    $solr_url = variable_get('islandora_solr_url', 'localhost:8080/solr');
+    $handler = variable_get('islandora_solr_request_handler', FALSE);
+    $dismax = _islandora_solr_check_dismax($solr_url, $handler);
+    cache_set($cache_id, $dismax, 'cache', CACHE_TEMPORARY);
+
+    // XXX: This Drupal variable should be deprecated.
+    variable_set('islandora_solr_dismax_allowed', $dismax);
+
+    return $dismax;
+  }
+  else {
+    return $cache->data;
+  }
+}
