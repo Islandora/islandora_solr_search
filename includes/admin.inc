@@ -253,7 +253,7 @@ function islandora_solr_admin_settings($form, &$form_state) {
         $profiles_sorted[$key] = $profiles[$key];
       }
       // Account for new profiles.
-      foreach (array_diff_assoc($profiles, $profiles_sorted) as $key => $value) {
+      foreach (array_diff_key($profiles, $profiles_sorted) as $key => $value) {
         $profiles_sorted[$key] = $value;
         // Add weight for new profile (heaviest +1).
         $primary_display_array['weight'][$key] = end($weight) + 1;
