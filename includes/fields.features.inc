@@ -23,7 +23,7 @@ function islandora_solr_fields_features_export($data, &$export, $module_name = '
   $export['dependencies']['islandora_solr'] = 'islandora_solr';
 
   foreach ($data as $component) {
-    $export['features']['islandora_solr_fields'][$component] = TRUE;
+    $export['features']['islandora_solr_fields'][$component] = $component;
   }
 }
 
