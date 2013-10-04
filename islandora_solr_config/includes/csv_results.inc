@@ -150,7 +150,7 @@ function islandora_solr_config_csv_download_csv($success, $results, $operations)
   fclose($fp);
   fclose($tmp_file);
   file_unmanaged_delete($results['islandora_solr_csv_file']);
-  drupal_set_message(filter_xss(t('The exported results CSV is avaialable for download !url.', array(
+  drupal_set_message(filter_xss(t('The exported results CSV is available for download !url.', array(
     '!url' => l(t('here'), file_create_url($export_uri)),
   ))));
 }
