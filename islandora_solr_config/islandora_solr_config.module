@@ -72,15 +72,18 @@ function islandora_solr_config_menu() {
   );
   return $items;
 }
+
 /**
  * Implements hook_theme().
  */
 function islandora_solr_config_theme() {
   $path = drupal_get_path('module', 'islandora_solr_config');
+  $file = 'theme.inc';  
 
   return array(
     'islandora_solr_grid' => array(
       'path' => $path . '/theme',
+      'file' => $file,
       'template' => 'islandora-solr-grid',
       'variables' => array('results' => NULL, 'elements' => array()),
     ),
