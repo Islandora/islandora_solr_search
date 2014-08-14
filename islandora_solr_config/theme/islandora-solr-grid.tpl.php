@@ -28,6 +28,11 @@
           ?>
         </dt>
         <?php foreach($result['solr_doc'] as $key => $value): ?>
+          <?php if ($key != $value['label']): ?>
+            <dt class="solr-label <?php print $value['class']; ?>">
+              <?php print $value['label']; ?>
+            </dt>
+          <?php endif; ?>
           <dd class="solr-grid-caption <?php print $value['class']; ?>">
             <?php print $value['value']; ?>
           </dd>
