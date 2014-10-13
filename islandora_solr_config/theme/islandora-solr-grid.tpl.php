@@ -27,15 +27,16 @@
             ));
           ?>
         </dt>
-        <dd class="solr-grid-caption">
-          <?php
-            $object_label = isset($result['object_label']) ? $result['object_label'] : '';
-            print l($object_label, $result['object_url'], array(
-              'query' => $result['object_url_params'],
-              'fragment' => isset($result['object_url_fragment']) ? $result['object_url_fragment'] : '',
-            ));
-          ?>
-        </dd>
+        <?php foreach($result['solr_doc'] as $key => $value): ?>
+          <?php if ($key != $value['label']): ?>
+            <dt class="solr-label <?php print $value['class']; ?>">
+              <?php print $value['label']; ?>
+            </dt>
+          <?php endif; ?>
+          <dd class="solr-grid-caption <?php print $value['class']; ?>">
+            <?php print $value['value']; ?>
+          </dd>
+        <?php endforeach; ?>
       </dl>
     <?php endforeach; ?>
     </div>
