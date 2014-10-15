@@ -1,0 +1,121 @@
+<?php
+
+/**
+ * @file
+ * Ingests an object via web frint end form and uses the query processor, and
+ * front end solr search to find the ingested object.
+ */
+
+/**
+ * Test web ingest and solr indexing of object.
+ */
+class IslandoraSolrIngestTestCase extends IslandoraWebTestCase {
+
+  /**
+   * Get test information.
+   *
+   * @see IslandoraWebTestCase::getInfo()
+   */
+  public static function getInfo() {
+    return array(
+      'name' => 'Islandora Web Ingest And Solr Search',
+      'description' => 'Web ingest an object and search for it using solr.',
+      'group' => 'Islandora Solr Search',
+    );
+  }
+
+  /**
+   * Set up the test environment.
+   *
+   * @see IslandoraWebTestCase::setUp()
+   */
+  public function setUp() {
+    $this->label = 'foo to the bar';
+    $this->solr_url = variable_get('islandora_solr_url', 'http://localhost:8080/solr');
+    parent::setUp(array(
+      'islandora_solr',
+      'islandora_solr_ingest_test',
+    ));
+    $this->repository = $this->admin->repository;
+    // Create a new user for each test.
+    $user = $this->drupalCreateUser(array_keys(module_invoke_all('permission')));
+    $this->drupalLogin($user);
+  }
+
+  /**
+   * Test Ingest through the front end and search for the object via solr.
+   */
+  public function testWebIngest() {
+    // Ingest testing object through front end ingest.
+    $this->drupalGet('test/solr/ingest');
+    $edit = array(
+      'label' => $this->label,
+      'model' => 'test:testcmodel',
+    );
+    $this->assertFieldByName('ingest', 'Ingest');
+    $this->drupalPost(NULL, $edit, t('Ingest'));
+
+    $pid = $this->getObjectFromPath($this->getUrl())->id;
+
+    // Test that the object got made correctly.
+    $object = islandora_object_load($pid);
+    $this->assertEqual($object->label, $this->label, t('Ingested object matches submitted web form value for Label.'));
+    $this->assertEqual($object->models, array('test:testcmodel', 'fedora-system:FedoraObject-3.0'), t('Ingested object matches submitted web form value for Model.'));
+
+    // Before we do anything, let's check if we're even connected to Solr.
+    $solr_avail = islandora_solr_ping($this->solr_url);
+    if (!$solr_avail) {
+      $this->fail(t("Unable to connect to Solr server at %solr_url.", array('%solr_url' => $this->solr_url)), 'Islandora');
+      return;
+    }
+    else {
+      $this->pass(t("Connected to Solr at %solr_url successfully.", array(
+        '%solr_url' => $this->solr_url,
+      )), 'Islandora Solr');
+    }
+
+    // Search for the created object in solr.
+    module_load_include('inc', 'islandora_solr', 'query_processor');
+    $query_processor = new IslandoraSolrQueryProcessor();
+    $query_processor->internalSolrParams['type'] = 'dismax';
+    $query_processor->buildQuery("dc.title:{$this->label}");
+
+    $query_processor->executeQuery();
+    if (isset($query_processor->islandoraSolrResult['response']['objects'][0]['solr_doc'])) {
+      $this->pass(t("Solr doc for object %object_label (PID: %object_pid) found in the index.", array(
+        '%object_label' => $this->label,
+        '%object_pid' => 'ingest:solr_testing',
+      )), 'Islandora Solr');
+    }
+    else {
+      $this->fail(t("Solr doc for object %object_label (PID: %object_pid) found in the index.", array(
+        '%object_label' => $this->label,
+        '%object_pid' => 'ingest:solr_testing',
+      )), 'Islandora Solr');
+    }
+
+    // Before we do anything, let's check if we're even connected to Solr.
+    $solr_avail = islandora_solr_ping($this->solr_url);
+    if (!$solr_avail) {
+      $this->fail(t("Unable to connect to Solr server at %solr_url.", array('%solr_url' => $this->solr_url)), 'Islandora');
+      return;
+    }
+    else {
+      $this->pass(t("Connected to Solr at %solr_url successfully.", array(
+        '%solr_url' => $this->solr_url,
+      )), 'Islandora Solr');
+    }
+    // Sleep to wait for solr commit to catch up.
+    sleep(5);
+    // Search for the created object in solr.
+    $query = array('type' => 'dismax');
+    $this->drupalGet("islandora/search/" . $pid, array('query' => $query));
+    $this->plainTextContent = filter_xss($this->drupalGetContent(), array());
+    if (!strpos($this->plainTextContent, "Sorry, but your search returned no results.")) {
+      $this->pass(t("Found object %object_label within returned Islandora search result.", array('%object_label' => $this->label)), 'Islandora Solr');
+    }
+    else {
+      $this->fail(t("Could not find object %object_label within returned Islandora search result.", array('%object_label' => $this->label)), 'Islandora Solr');
+    }
+  }
+}
