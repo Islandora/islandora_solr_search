@@ -73,7 +73,18 @@ class IslandoraSolrIngestTestCase extends IslandoraWebTestCase {
         '%solr_url' => $this->solr_url,
       )), 'Islandora Solr');
     }
-
+    
+    // Before we do anything, let's check if we're even connected to Solr.
+    $solr_avail = islandora_solr_ping($this->solr_url);
+    if (!$solr_avail) {
+      $this->fail(t("Unable to connect to Solr server at %solr_url.", array('%solr_url' => $this->solr_url)), 'Islandora');
+      return;
+    }
+    else {
+      $this->pass(t("Connected to Solr at %solr_url successfully.", array(
+        '%solr_url' => $this->solr_url,
+      )), 'Islandora Solr');
+    }
     // Search for the created object in solr.
     module_load_include('inc', 'islandora_solr', 'query_processor');
     $query_processor = new IslandoraSolrQueryProcessor();
@@ -91,18 +102,6 @@ class IslandoraSolrIngestTestCase extends IslandoraWebTestCase {
       $this->fail(t("Solr doc for object %object_label (PID: %object_pid) found in the index.", array(
         '%object_label' => $this->label,
         '%object_pid' => 'ingest:solr_testing',
-      )), 'Islandora Solr');
-    }
-
-    // Before we do anything, let's check if we're even connected to Solr.
-    $solr_avail = islandora_solr_ping($this->solr_url);
-    if (!$solr_avail) {
-      $this->fail(t("Unable to connect to Solr server at %solr_url.", array('%solr_url' => $this->solr_url)), 'Islandora');
-      return;
-    }
-    else {
-      $this->pass(t("Connected to Solr at %solr_url successfully.", array(
-        '%solr_url' => $this->solr_url,
       )), 'Islandora Solr');
     }
     // Sleep to wait for solr commit to catch up.
