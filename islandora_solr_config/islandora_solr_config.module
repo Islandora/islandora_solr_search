@@ -12,6 +12,7 @@ function islandora_solr_config_islandora_solr_primary_display() {
   return array(
     'grid' => array(
       'name' => t('Grid'),
+      'html' => '<img src="http://content.library.utoronto.ca/common/rwd/images/grid.png" alt="grid view" title="Grid view">',
       'module' => 'islandora_solr_config',
       'file' => 'includes/grid_results.inc',
       'class' => "IslandoraSolrResultsGrid",
@@ -22,7 +23,7 @@ function islandora_solr_config_islandora_solr_primary_display() {
       'name' => t('Table'),
       'module' => 'islandora_solr_config',
       'file' => 'includes/table_results.inc',
-      'class' => "IslandoraSolrResultsTable",
+      'class' => "IslandoraSolrResultsTable grid-item",
       'function' => "displayResults",
       'description' => t("Display search results as tabular output"),
       'configuration' => 'admin/islandora/search/islandora_solr/table_profile',
