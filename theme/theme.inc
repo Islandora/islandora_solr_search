@@ -78,7 +78,6 @@ function islandora_solr_preprocess_islandora_solr(&$variables) {
     if (isset($result['object_url_fragment'])) {
       $options['fragment'] = $result['object_url_fragment'];
     }
-
     // Thumbnail link.
     $variables['results'][$key]['thumbnail'] = l($image, $result['object_url'], $options);
   }
