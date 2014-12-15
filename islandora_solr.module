@@ -150,6 +150,7 @@ function islandora_solr_theme() {
         'results' => NULL,
         'elements' => array(),
         'pids' => array(),
+        'query_processor' => NULL,
       ),
     ),
      // Default facet.

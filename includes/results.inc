@@ -172,7 +172,7 @@ class IslandoraSolrResults {
     $elements['solr_start'] = $solr_results['response']['start'];
 
     // Return themed search results.
-    return theme('islandora_solr', array('results' => $object_results, 'elements' => $elements));
+    return theme('islandora_solr', array('results' => $object_results, 'elements' => $elements, 'query_processor' => $this->islandoraSolrQueryProcessor));
   }
 
 
