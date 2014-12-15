@@ -384,9 +384,6 @@ class IslandoraSolrQueryProcessor {
           else {
             $object_results[$object_index]['thumbnail_url_params'] = array();
           }
-
-
-
         }
 
         // Allow other parts of code to modify the tailored results.
