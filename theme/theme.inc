@@ -72,6 +72,20 @@ function islandora_solr_preprocess_islandora_solr(&$variables) {
     if (isset($result['object_label'])) {
       $options['attributes']['title'] = $result['object_label'];
     }
+
+    if (variable_get('islandora_solr_search_return_url', FALSE) && isset($variables['query_processor'])) {
+      $path = current_path();
+      $params = $variables['query_processor']->internalSolrParams;
+
+      $page_params = drupal_get_query_parameters();
+      if (isset($page_params['page'])) {
+        $params = array_merge($params, array('page' => $page_params['page']));
+      }
+
+      $result['object_url_params']['islandora_solr_search_return_path'] = $path;
+      $result['object_url_params']['islandora_solr_search_return_query'] = $params;
+    }
+    
     if (isset($result['object_url_params'])) {
       $options['query'] = $result['object_url_params'];
     }
