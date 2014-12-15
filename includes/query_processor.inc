@@ -377,7 +377,7 @@ class IslandoraSolrQueryProcessor {
             $url_params = array(
               'islandora_solr_search_return_path' => $path,
               'islandora_solr_search_return_query' => $params,
-              );
+            );
             $object_results[$object_index]['object_url_params'] = $url_params;
             $object_results[$object_index]['thumbnail_url_params'] = $url_params;
           }
