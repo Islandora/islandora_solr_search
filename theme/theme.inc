@@ -120,7 +120,7 @@ function theme_islandora_solr_facet_wrapper($variables) {
  */
 function islandora_solr_preprocess_islandora_solr_search_return_link(&$variables) {
   $params = drupal_get_query_parameters();
-  $path =  (isset($params['islandora_solr_search_return_path']) ? $params['islandora_solr_search_return_path'] : NULL);
+  $path = (isset($params['islandora_solr_search_return_path']) ? $params['islandora_solr_search_return_path'] : NULL);
   $query = (isset($params['islandora_solr_search_return_query']) ? $params['islandora_solr_search_return_query'] : array());
   if ($path) {
     $variables['islandora_solr_search_return_link'] = l(t('Return to search'), url($path, array('query' => $query, 'absolute' => TRUE)));
