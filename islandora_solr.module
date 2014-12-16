@@ -177,6 +177,12 @@ function islandora_solr_theme() {
         'range_to' => NULL,
       ),
     ),
+    'islandora_solr_search_return_link' => array(
+      'path' => $path . '/theme',
+      'file' => $file,
+      'template' => 'islandora-solr-search-return-link',
+      'variables' => array(),
+    ),
   );
 }
 
