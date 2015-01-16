@@ -1,8 +1,0 @@
-name = Islandora Solr Geographical display profile
-description = Display profiles for Islandora Solr (Geographical).
-dependencies[] = islandora_solr
-dependencies[] = islandora_mapping
-files[] = includes/geo_results.inc
-package = Islandora Search
-version = 7.x-dev
-core = 7.x
