@@ -110,15 +110,15 @@
             max: sliderMax,
             step: sliderStep,
             slide: function(event, ui) {
-              sliderUpdate(ui.values[0], ui.values[1]);
+              slider_update(ui.values[0], ui.values[1]);
             },
             slide: function(event, ui) {
-              sliderUpdate(ui.values[0], ui.values[1]);
+              slider_update(ui.values[0], ui.values[1]);
             }
           });
     
           // function to update the slider values and position
-          function sliderUpdate(fromVal, toVal) {
+          function slider_update(fromVal, toVal) {
             // get dates
             var fromDate = sliderData[fromVal].date;
             var toDate = sliderData[toVal].date;
@@ -215,12 +215,12 @@
               // get variable
               var dataIndexValue = item.dataIndex;
               // update the slider and form values
-              sliderUpdate(dataIndexValue, dataIndexValue + 1);
+              slider_update(dataIndexValue, dataIndexValue + 1);
             }
           });
           
           // show tooltip      
-          function showTooltip(x, y, contents) {
+          function show_tooltip(x, y, contents) {
             //  hide or remove all other popups
             $('#range-slider-tooltip').remove();
             $('.slider-popup').hide();
@@ -251,7 +251,7 @@
                 var tooltipContent = sliderData[dataIndexValue].bucket + ' - ' + sliderData[dataIndexValueNext].bucket + ' (<em>' + sliderData[dataIndexValue].count + '</em>)';
                 
                 // call show tooltip function
-                showTooltip(pos.pageX, pos.pageY, tooltipContent);
+                show_tooltip(pos.pageX, pos.pageY, tooltipContent);
             }
             else {
               // fadeout and remove
