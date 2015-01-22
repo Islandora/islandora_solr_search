@@ -1526,6 +1526,8 @@ function _islandora_solr_handle_solr_field_settings($solr_field_settings = NULL,
           'link_rendering' => $solr_field_settings['link_rendering'],
           'snippet' => isset($solr_field_settings['snippet']) ? $solr_field_settings['snippet'] : NULL,
           'date_format' => isset($solr_field_settings['date_format']) ? trim($solr_field_settings['date_format']) : '',
+          'maximum_length' => isset($solr_field_settings['maximum_length']) ? trim($solr_field_settings['maximum_length']) : '',
+          'truncation_suffix' => isset($solr_field_settings['truncation_suffix']) ? rtrim($solr_field_settings['truncation_suffix']) : '',
           'permissions' => empty($solr_field_settings['enable_permissions']) ? FALSE : $solr_field_settings['permissions'],
         );
         break;
@@ -1740,6 +1742,27 @@ function islandora_solr_admin_settings_result_fields($form, &$form_state, $varia
       '#description' => t('The format of the date, as it will be displayed in the search results. Use <a href="!url" target="_blank">PHP date()</a> formatting.', array('!url' => 'http://php.net/manual/function.date.php')),
     );
   }
+
+  $form['options']['max_length_fieldset'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Maximum Length'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+    'maximum_length' => array(
+      '#type' => 'textfield',
+      '#title' => t('Maximum Length'),
+      '#default_value' => isset($values['maximum_length']) ? $values['maximum_length'] : '0',
+      '#element_validate' => array('element_validate_integer'),
+      '#description' => t('Maximum field length to render for display. A setting of 0 (default) renders the entire value.'),
+    ),
+    'truncation_suffix' => array(
+      '#type' => 'textfield',
+      '#title' => t('Truncation Suffix'),
+      '#default_value' => isset($values['truncation_suffix']) ? $values['truncation_suffix'] : '...',
+      '#description' => t('If a value is truncated, this will be added to the end of the string.'),
+    ),
+  );
+
   islandora_solr_append_permissions_and_actions($values, $form);
 
   return $form;

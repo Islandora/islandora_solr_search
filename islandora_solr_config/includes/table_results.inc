@@ -47,10 +47,6 @@ class IslandoraSolrResultsTable extends IslandoraSolrResults {
       foreach ($fields as $field => $field_label) {
         if (isset($doc[$field]['value'])) {
           $value = $doc[$field]['value'];
-          // @todo This should probably a config option to truncate the value.
-          if (strlen($value) > 150) {
-            $value = substr(filter_xss($value, array()), 0, 150) . ' ...';
-          }
           $row[$field] = $value;
           $empty[$field] = FALSE;
         }

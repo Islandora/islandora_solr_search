@@ -167,6 +167,26 @@ function islandora_solr_get_link_to_object_fields() {
 }
 
 /**
+ * Return display fields that have a length limit set.
+ *
+ * Returns an associative array with field names as key and truncation
+ * character to use (if any) as value.
+ */
+function islandora_solr_get_trunctate_length_fields() {
+  $records = islandora_solr_get_fields('result_fields', TRUE, FALSE);
+  $truncate_length_fields = array();
+  foreach ($records as $value) {
+    if (isset($value['solr_field_settings']['maximum_length']) && intval($value['solr_field_settings']['maximum_length']) > 0) {
+      $truncate_length_fields[$value['solr_field']] = array(
+        'maximum_length' => $value['solr_field_settings']['maximum_length'],
+        'truncation_suffix' => isset($value['solr_field_settings']['truncation_suffix']) ? $value['solr_field_settings']['truncation_suffix'] : '',
+      );
+    }
+  }
+  return $truncate_length_fields;
+}
+
+/**
  * Return display fields with 'link to search' enabled.
  */
 function islandora_solr_get_link_to_search_fields() {
