@@ -876,11 +876,13 @@ function islandora_solr_sort() {
 
       $attributes = array(
         'sort' => array(
-          'attr' => array(),
+          'attr' => array(
+            'class' => array(),
+          ),
           'query' => $query,
         ),
       );
-      $attr =& $attributes['sort'];
+      $attr =& $attributes['sort']['attr'];
       if ($term == $current_sort_term) {
         $attr['class'] = array('active');
       }
