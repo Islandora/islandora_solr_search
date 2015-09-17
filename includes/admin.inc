@@ -780,8 +780,7 @@ function islandora_solr_admin_settings_fields(&$form_state, &$terms, $field_type
       // Get field + dialog values and merge.
       $values = $form_state['values']['islandora_solr_' . $field_type]['terms'][$field];
       $solr_field = $form_state['values']['islandora_solr_' . $field_type]['terms'][$field]['solr_field'];
-      $solr_field_settings = (array) drupal_array_get_nested_value($form_state, array(
-        'solr_field_settings',
+      $solr_field_settings = (array) drupal_array_get_nested_value($form_state, array(        'solr_field_settings',
         'islandora_solr_' . $field_type,
         $solr_field,
       ));
@@ -803,6 +802,7 @@ function islandora_solr_admin_settings_fields(&$form_state, &$terms, $field_type
       $solr_field = $form_state['values']['islandora_solr_' . $field_type]['terms'][$field]['solr_field'];
       // Get dialog values from recent dialog submit.
       $dialog_values = $form_state['input']['_dialog_values'] = json_decode($form_state['input']['_dialog_values'], TRUE);
+      dd($dialog_values);
       // Save the dialog values in the form state.
       $form_state['solr_field_settings']['islandora_solr_' . $field_type][$solr_field] = _islandora_solr_handle_solr_field_settings($dialog_values, $field_type);
     }
@@ -1554,7 +1554,6 @@ function _islandora_solr_handle_solr_field_settings($solr_field_settings = NULL,
           'link_rendering' => $solr_field_settings['link_rendering'],
           'snippet' => isset($solr_field_settings['snippet']) ? $solr_field_settings['snippet'] : NULL,
           'date_format' => isset($solr_field_settings['date_format']) ? trim($solr_field_settings['date_format']) : '',
-          'truncation_type' => isset($solr_field_settings['truncation_type']) ? trim($solr_field_settings['truncation_type']) : 'separate_value_option',
           'maximum_length' => isset($solr_field_settings['maximum_length']) ? trim($solr_field_settings['maximum_length']) : '',
           'add_ellipsis' => isset($solr_field_settings['add_ellipsis']) ? $solr_field_settings['add_ellipsis'] : FALSE,
           'wordsafe' => isset($solr_field_settings['wordsafe']) ? $solr_field_settings['wordsafe'] : FALSE,
@@ -1566,7 +1565,7 @@ function _islandora_solr_handle_solr_field_settings($solr_field_settings = NULL,
       case 'sort_fields':
         $to_return = array(
           'label' => trim($solr_field_settings['label']),
-          'permissions' => empty($solr_field_settings['enable_permissions']) ? FALSE : $solr_field_settings['permissions'],
+          'permissions' => empty($solr_field_settings['permissions']) ? FALSE : $solr_field_settings['permissions'],
         );
         break;
 
@@ -1596,7 +1595,7 @@ function _islandora_solr_handle_solr_field_settings($solr_field_settings = NULL,
       case 'search_fields':
         $to_return = array(
           'label' => trim($solr_field_settings['label']),
-          'permissions' => empty($solr_field_settings['enable_permissions']) ? FALSE : $solr_field_settings['permissions'],
+          'permissions' => empty($solr_field_settings['permissions']) ? FALSE : $solr_field_settings['permissions'],
         );
         break;
     }
@@ -1781,18 +1780,12 @@ function islandora_solr_admin_settings_result_fields($form, &$form_state, $varia
     '#description' => t('<strong>Note:</strong> Truncation can lead to unexpected results when used in secondary display profiles such as CSV and RSS.'),
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
-    'truncation_type' => array(
-      '#type' => 'radios',
-      '#title' => t('Truncation Type'),
-      '#options' => array('separate_value_option' => t('Limit length of each separate value'), 'whole_field_option' => t('Limit Length of the whole field')),
-      '#default_value' => isset($values['truncation_type']) ? $values['truncation_type'] : 'separate_value_option',
-    ),
     'maximum_length' => array(
       '#type' => 'textfield',
       '#title' => t('Maximum Length'),
       '#default_value' => isset($values['maximum_length']) ? $values['maximum_length'] : '0',
       '#element_validate' => array('element_validate_integer'),
-      '#description' => t('Maximum field length to render for display. A setting of 0 (default) renders the entire value.<br /> When truncating based on the whole field the max length may be exceeded by the length of ellispse string.'),
+      '#description' => t('Maximum field length to render for display. A setting of 0 (default) renders the entire value.'),
     ),
     'add_ellipsis' => array(
       '#type' => 'checkbox',
@@ -1850,7 +1843,7 @@ function islandora_solr_append_permissions_and_actions($values, &$form, $default
   $permissions_disable = _islandora_solr_permissions_disable();
   $permissions_default = _islandora_solr_permissions_default();
   $form['options']['permissions_fieldset'] = islandora_solr_get_admin_permissions_fieldset($permissions, $permissions_default, $permissions_disable, $default_value);
-
+  dd($permissions);
   $form['actions'] = array(
     '#type' => 'container',
     '#attributes' => array('class' => array('form-buttons')),
