@@ -270,6 +270,7 @@ function islandora_solr($query = NULL, $params = NULL) {
     // Unset invalid parameter.
     unset($params['display']);
   }
+  $params['islandora_solr_search_navigation'] = variable_get('islandora_solr_search_navigation', FALSE);
 
   // !!! Set the global variable. !!!
   $_islandora_solr_queryclass = new IslandoraSolrQueryProcessor();
