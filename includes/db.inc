@@ -167,6 +167,20 @@ function islandora_solr_get_link_to_object_fields() {
 }
 
 /**
+ * Return display fields with 'render object name'
+ */
+function islandora_solr_get_render_object_name_fields() {
+  $records = islandora_solr_get_fields('result_fields', TRUE, FALSE);
+  $render_object_name_fields = array();
+  foreach ($records as $key => $value) {
+    if (isset($value['solr_field_settings']['render_object_name']) && $value['solr_field_settings']['render_object_name'] == 1) {
+      $render_object_name_fields[] = $value['solr_field'];
+    }
+  }
+  return $render_object_name_fields;
+}
+
+/**
  * Return display fields that have a length limit set.
  *
  * Returns an associative array with field names as key and truncation

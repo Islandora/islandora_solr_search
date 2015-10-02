@@ -1536,6 +1536,7 @@ function _islandora_solr_handle_solr_field_settings($solr_field_settings = NULL,
           'label' => trim($solr_field_settings['label']),
           'link_rendering' => $solr_field_settings['link_rendering'],
           'snippet' => isset($solr_field_settings['snippet']) ? $solr_field_settings['snippet'] : NULL,
+          'render_object_name' => isset($solr_field_settings['render_object_name']) ? $solr_field_settings['render_object_name'] : FALSE,
           'date_format' => isset($solr_field_settings['date_format']) ? trim($solr_field_settings['date_format']) : '',
           'maximum_length' => isset($solr_field_settings['maximum_length']) ? trim($solr_field_settings['maximum_length']) : '',
           'add_ellipsis' => isset($solr_field_settings['add_ellipsis']) ? $solr_field_settings['add_ellipsis'] : FALSE,
@@ -1741,6 +1742,13 @@ function islandora_solr_admin_settings_result_fields($form, &$form_state, $varia
     '#default_value' => isset($values['snippet']) ? $values['snippet'] : FALSE,
     '#description' => t('If a match is found on this field, the search term will be highlighted.<br /><strong>Note:</strong> Only text that has been both indexed and stored may be highlighted. While highlighting on non-tokenized fields is possible, the best results are achieved using tokenized fields. This checkbox may be grayed out if the Solr field cannot be highlighted.'),
   );
+  $form['options']['render_object_name'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Object Label'),
+    '#default_value' => isset($values['render_object_name']) ? $values['render_object_name'] : FALSE,
+    '#description' => t('Replace PID with object Label.')
+  );
+
   $highlighting_allowed = islandora_solr_check_highlighting_allowed($solr_field);
   if ($highlighting_allowed == FALSE) {
     $form['options']['snippet']['#default_value'] = 0;

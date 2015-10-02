@@ -46,7 +46,7 @@ function islandora_solr_islandora_solr_query_blocks() {
       'form' => NULL,
     ),
     'display_switch' => array(
-      'name' => t('Islandora displays'),
+      'name' => t(''),
       'module' => 'islandora_solr',
       'file' => 'includes/blocks.inc',
       'class' => NULL,

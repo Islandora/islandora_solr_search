@@ -282,6 +282,7 @@ function islandora_solr_prepare_solr_results($solr_results) {
   $highlighting = isset($solr_results['highlighting']) ? $solr_results['highlighting'] : array();
   $fields_all = islandora_solr_get_fields('result_fields', FALSE);
   $link_to_object = islandora_solr_get_link_to_object_fields();
+  $render_object_name = islandora_solr_get_render_object_name_fields();
   $truncate_length = islandora_solr_get_truncate_length_fields();
   $link_to_search = islandora_solr_get_link_to_search_fields();
   $date_format = islandora_solr_get_date_format_fields();
@@ -346,12 +347,39 @@ function islandora_solr_prepare_solr_results($solr_results) {
         $value = array_map($map_to_link, (array) $original_value, (array) $value);
       }
 
+      //get the object label from PID
+      
+      if (in_array($field, $render_object_name)) {
+        $query_processor = new IslandoraSolrQueryProcessor();
+        foreach ($value as $index=>$item) {
+          $pid = str_replace("info:fedora/","",$item);
+          if (islandora_is_valid_pid($pid)) {
+            $query_processor->buildQuery("PID:\"$pid\"");
+            $query_processor->solrParams['fl'] = 'PID, ' . variable_get('islandora_solr_object_label_field', 'fgs_label_s');
+            $query_processor->executeQuery();
+            if (!empty($query_processor->islandoraSolrResult) && !empty($query_processor->islandoraSolrResult['response']['objects'])) {
+              $label = (!empty($query_processor->islandoraSolrResult['response']['objects'][0]['object_label']) ?
+              $query_processor->islandoraSolrResult['response']['objects'][0]['object_label'] : NULL);
+            }
+            // Fall back to islandora object if PID is not in solr.
+            // eg: content models.
+            else {
+              if ($object = islandora_object_load($pid)) {
+                $label = $object->label;
+              }
+            }
+            $value[$index] = $label;
+          }
+        }
+      }
+
       // Implode.
       $value = is_array($value) ? implode(", ", $value) : $value;
       // Add link to object.
       if (in_array($field, $link_to_object)) {
         $value = l($value, $object_result['object_url'], $options);
       }
+
       $solr_doc[$field] = $value;
     }
     // Replace Solr doc rows.
