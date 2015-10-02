@@ -347,6 +347,8 @@ function islandora_solr_prepare_solr_results($solr_results) {
         $value = array_map($map_to_link, (array) $original_value, (array) $value);
       }
 
+      //get the object label from PID
+      
       if (in_array($field, $render_object_name)) {
         $query_processor = new IslandoraSolrQueryProcessor();
         foreach ($value as $index=>$item) {

@@ -752,7 +752,6 @@ function islandora_solr_display() {
       $list_items = array();
 
       foreach ($weight as $key => $value) {
-	
         if ($enabled[$key] !== 0) {
           if (isset($params['display'])) {
             $current_display = $params['display'];
@@ -762,10 +761,6 @@ function islandora_solr_display() {
           }
 
           $display_name = $profiles[$key]['name'];
-		
-	  if ($display_name != "Grid" && $display_name != "List (default)") {
-	    continue;
-	  }
 
           $display_description = isset($profiles[$key]['description']) ? $profiles[$key]['description'] : NULL;
 
@@ -782,23 +777,7 @@ function islandora_solr_display() {
 
           // XXX: We're not using l() because of
           // @link http://drupal.org/node/41595 active classes. @endlink
-        
-          
-        
-          
-          switch ($display_name) {
-          	case "Grid":
-          		$item = '<a' . drupal_attributes($attr) . '> <img src="http://content.library.utoronto.ca/common/rwd/images/grid.png" alt="List view" title="List view" /></a>';
-          		break;
-          	case "List (default)":
-          		$item = '<a' . drupal_attributes($attr) . '> <img src="http://content.library.utoronto.ca/common/rwd/images/list.png" alt="Grid view" title="Grid view"/></a>';		
-          		break;
-          	default:
-          		continue;
-          
-          	
-          }
-          
+          $item = '<a' . drupal_attributes($attr) . '>' . check_plain($display_name) . '</a>';
 
           // Add link to list.
           $list_items[] = $item;
