@@ -24,11 +24,12 @@ function islandora_solr_ping($solr_url) {
   }
 
   $solr_url_parsed = parse_url($solr_url);
-  // If the port isn't specified, provide the defaults
+  // If the port isn't specified, provide the defaults.
   if ((!isset($solr_url_parsed['port'])) && (isset($solr_url_parsed['scheme']))) {
     if ($solr_url_parsed['scheme'] == 'http') {
       $solr_url_parsed['port'] = 80;
-    } elseif ($solr_url_parsed['scheme'] == 'https') {
+    }
+    elseif ($solr_url_parsed['scheme'] == 'https') {
       $solr_url_parsed['port'] = 443;
     }
   }
