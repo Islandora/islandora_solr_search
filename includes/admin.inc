@@ -704,6 +704,37 @@ function islandora_solr_admin_settings($form, &$form_state) {
 }
 
 /**
+ * Confirmation Form function
+ * WORK IN PROGRESS
+ */
+function islandora_solr_admin_settings_default_confirm_form(array $form, array &$form_state) {
+
+    $form = confirm_form($form, 
+        t('Do you REALLY wanna do this?'),
+        'admin/islandora/search/islandora_solr/settings',
+        t('There is no turning back from this decision...'),
+        t('Lets do this...'),
+        t('I need more time')
+    ); 
+  
+    return $form;
+}
+
+function islandora_solr_admin_settings_default_confirm_form_submit(array $form, array &$form_state) {
+    
+    dpm('You made it here');
+    foreach ($form_state['values'] as $key => $value) {
+        variable_del($key);
+      }
+      variable_del('islandora_solr_primary_display');
+      variable_del('islandora_solr_request_handler');
+
+      db_delete('islandora_solr_fields')->execute();
+
+      drupal_set_message(t('The configuration options have been reset to their default values.'));
+      //$form_state['redirect'] = 'admin/islandora/islandora_solr/settings';
+}
+/**
  * Generates fields for the admin fields table.
  *
  * First collects values to populate the table, then render the fields.
@@ -1273,16 +1304,9 @@ function _islandora_solr_admin_settings_submit($form, &$form_state) {
       break;
 
     case t('Reset to defaults'):
-      foreach ($form_state['values'] as $key => $value) {
-        variable_del($key);
-      }
-      variable_del('islandora_solr_primary_display');
-      variable_del('islandora_solr_request_handler');
 
-      db_delete('islandora_solr_fields')->execute();
-
-      drupal_set_message(t('The configuration options have been reset to their default values.'));
-      break;
+        $form_state['redirect'] = 'admin/islandora/search/islandora_solr/settings/confirmation';
+        break;
   }
 
   // Clear caches.

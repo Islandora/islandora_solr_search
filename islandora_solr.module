@@ -77,6 +77,16 @@ function islandora_solr_menu() {
     'file' => 'includes/admin.inc',
     'type' => MENU_CALLBACK,
   );
+  // ADDED FOR CONFIRMATIOMN FORM - Brandon
+  $items['admin/islandora/islandora_solr/settings/confirmation'] = array(
+      'title' => 'Default settings restore',
+      'description' => 'Confirmation form to confirm defualt settings restore',
+      'page callback' => 'drupal_get_form',
+      'page arguments' => array('islandora_solr_admin_settings_default_confirm_form'),
+      'access arguments' => array('administer islandora solr'),
+      'file' => 'includes/admin.inc',
+      'type' => MENU_CALLBACK,
+  );
   return $items;
 }
 
