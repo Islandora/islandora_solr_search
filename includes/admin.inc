@@ -704,25 +704,33 @@ function islandora_solr_admin_settings($form, &$form_state) {
 }
 
 /**
- * Confirmation Form function
- * WORK IN PROGRESS
+ * @function
+ * 
+ * confirmation form for islandora_solr settings reset.
+ * -Brandon
  */
 function islandora_solr_admin_settings_default_confirm_form(array $form, array &$form_state) {
 
     $form = confirm_form($form, 
-        t('Do you REALLY wanna do this?'),
+        t('Confirm settings reset to default'),
         'admin/islandora/search/islandora_solr/settings',
-        t('There is no turning back from this decision...'),
-        t('Lets do this...'),
-        t('I need more time')
+        t('Confirm reset settings to default, this cannot be undone.'),
+        t('Continue'),
+        t('Cancel')
     ); 
   
     return $form;
 }
 
+/**
+ * @function
+ *
+ * submit function for confirm form, if user chooses to confirm changes
+ * the settings are reset and the user is redirected to the settings form.
+ * -Brandon
+ */
 function islandora_solr_admin_settings_default_confirm_form_submit(array $form, array &$form_state) {
     
-    dpm('You made it here');
     foreach ($form_state['values'] as $key => $value) {
         variable_del($key);
       }
@@ -732,7 +740,7 @@ function islandora_solr_admin_settings_default_confirm_form_submit(array $form, 
       db_delete('islandora_solr_fields')->execute();
 
       drupal_set_message(t('The configuration options have been reset to their default values.'));
-      //$form_state['redirect'] = 'admin/islandora/islandora_solr/settings';
+      $form_state['redirect'] = 'admin/islandora/search/islandora_solr/settings/';
 }
 /**
  * Generates fields for the admin fields table.
