@@ -704,44 +704,61 @@ function islandora_solr_admin_settings($form, &$form_state) {
 }
 
 /**
- * @function
- * 
- * confirmation form for islandora_solr settings reset.
- * -Brandon
+ * Confirmation for reset solr settings.
+ *
+ * @param array $form
+ *   Array containing all form elements.
+ * @param array $form_state
+ *   The form_state array of the form. Includes the values.
+ *
+ * @return array
+ *   Rendered confirmation form.
  */
 function islandora_solr_admin_settings_default_confirm_form(array $form, array &$form_state) {
-
-    $form = confirm_form($form, 
-        t('Confirm settings reset to default'),
+  $form = confirm_form($form,
+    t('Confirm settings reset to default'),
         'admin/islandora/search/islandora_solr/settings',
-        t('Confirm reset settings to default, this cannot be undone.'),
-        t('Continue'),
-        t('Cancel')
-    ); 
-  
-    return $form;
+    t('Confirm reset settings to default, this cannot be undone.'),
+    t('Continue'),
+    t('Cancel')
+  );
+  return $form;
 }
 
 /**
- * @function
+ * If user confirms reset solr settings delete settings.
  *
- * submit function for confirm form, if user chooses to confirm changes
- * the settings are reset and the user is redirected to the settings form.
- * -Brandon
+ * Iterate through an array of Solr settings and remove the present values, redirect to
+ * settings page.
+ *
+ * @param array $form
+ *   Array containing all form elements.
+ * @param array $form_state
+ *   The form_state array of the form. Includes the values.
  */
 function islandora_solr_admin_settings_default_confirm_form_submit(array $form, array &$form_state) {
-    
-    foreach ($form_state['values'] as $key => $value) {
-        variable_del($key);
-      }
-      variable_del('islandora_solr_primary_display');
-      variable_del('islandora_solr_request_handler');
 
-      db_delete('islandora_solr_fields')->execute();
+  // Solr Settings to be reset
+  $values = array('islandora_solr_result_fields', 'islandora_solr_limit_result_fields', 'islandora_solr_num_of_results',
+    'islandora_solr_search_navigation', 'islandora_solr_sort_fields', 'islandora_solr_facet_fields', 'islandora_solr_facet_min_limit',
+    'islandora_solr_facet_soft_limit', 'islandora_solr_facet_max_limit', 'islandora_solr_search_fields', 'islandora_solr_search_boolean',
+    'islandora_solr_allow_preserve_filters', 'islandora_solr_human_friendly_query_block', 'islandora_solr_namespace_restriction',
+    'islandora_solr_base_query', 'islandora_solr_base_advanced', 'islandora_solr_base_sort', 'islandora_solr_base_filter', 
+    'islandora_solr_query_fields', 'islandora_solr_use_ui_qf', 'islandora_solr_content_model_field', 'islandora_solr_datastream_id_field',
+    'islandora_solr_object_label_field', 'islandora_solr_member_of_field', 'islandora_solr_member_of_collection_field', 'islandora_solr_debug_mode', 
+    'islandora_solr_tabs__active_tab', 'islandora_solr_primary_display_table', 'islandora_solr_secondary_display');
+  
+  foreach($values as $value) {
+      variable_del($value);
+  }
 
-      drupal_set_message(t('The configuration options have been reset to their default values.'));
-      $form_state['redirect'] = 'admin/islandora/search/islandora_solr/settings/';
+  variable_del('islandora_solr_primary_display');
+  variable_del('islandora_solr_request_handler');
+  db_delete('islandora_solr_fields')->execute();
+  drupal_set_message(t('The configuration options have been reset to their default values.'));
+  $form_state['redirect'] = 'admin/islandora/search/islandora_solr/settings/';
 }
+
 /**
  * Generates fields for the admin fields table.
  *
@@ -1311,10 +1328,9 @@ function _islandora_solr_admin_settings_submit($form, &$form_state) {
       drupal_set_message(t('The Solr configuration options have been saved.'));
       break;
 
-    case t('Reset to defaults'):
-
-        $form_state['redirect'] = 'admin/islandora/search/islandora_solr/settings/confirmation';
-        break;
+    case t('Reset to defaults'): 
+      $form_state['redirect'] = 'admin/islandora/search/islandora_solr/settings/confirmation';
+      break;
   }
 
   // Clear caches.

@@ -77,7 +77,6 @@ function islandora_solr_menu() {
     'file' => 'includes/admin.inc',
     'type' => MENU_CALLBACK,
   );
-  // ADDED FOR CONFIRMATIOMN FORM - Brandon
   $items['admin/islandora/search/islandora_solr/settings/confirmation'] = array(
       'title' => 'Default settings restore',
       'description' => 'Confirmation form to confirm defualt settings restore',
