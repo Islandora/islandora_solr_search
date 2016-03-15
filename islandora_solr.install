@@ -46,44 +46,15 @@ function islandora_solr_install() {
  * Implements hook_uninstall().
  */
 function islandora_solr_uninstall() {
-
-  // Removing variables.
-  $variables = array(
+  $variables = array_merge(islandora_solr_search_settings_variables(), array(
     'islandora_solr_url',
-    'islandora_solr_request_handler',
     'islandora_solr_dismax_allowed',
-    'islandora_solr_primary_display',
-    'islandora_solr_primary_display_table',
-    'islandora_solr_secondary_display',
-    'islandora_solr_facet_min_limit',
-    'islandora_solr_facet_soft_limit',
-    'islandora_solr_facet_max_limit',
-    'islandora_solr_search_boolean',
-    'islandora_solr_limit_result_fields',
-    'islandora_solr_num_of_results',
-    'islandora_solr_search_navigation',
-    'islandora_solr_namespace_restriction',
-    'islandora_solr_base_query',
-    'islandora_solr_base_advanced',
-    'islandora_solr_base_sort',
     'islandora_solr_collection_sort',
     'islandora_solr_individual_collection_sorting',
-    'islandora_solr_base_filter',
-    'islandora_solr_query_fields',
-    'islandora_solr_debug_mode',
-    'islandora_solr_content_model_field',
-    'islandora_solr_object_label_field',
-    'islandora_solr_datastream_id_field',
-    'islandora_solr_allow_preserve_filters',
     'islandora_solr_force_update_index_after_object_purge',
-    'islandora_solr_use_ui_qf',
-    'islandora_solr_human_friendly_query_block',
-  );
-  foreach ($variables as $variable) {
-    variable_del($variable);
-  }
+  ));
+  array_walk($variables, 'variable_del');
 }
-
 
 /**
  * Implements hook_schema().
@@ -255,4 +226,44 @@ function islandora_solr_update_7000() {
 function islandora_solr_update_7001() {
   $schema = islandora_solr_schema();
   db_create_table('islandora_solr_collection_sort_strings', $schema['islandora_solr_collection_sort_strings']);
+}
+
+/**
+ * List of all variables used for solr settings.
+ */
+function islandora_solr_search_settings_variables() {
+  $variables = array(
+    'islandora_solr_result_fields',
+    'islandora_solr_limit_result_fields',
+    'islandora_solr_num_of_results',
+    'islandora_solr_search_navigation',
+    'islandora_solr_sort_fields',
+    'islandora_solr_facet_fields',
+    'islandora_solr_facet_min_limit',
+    'islandora_solr_facet_soft_limit',
+    'iSlandora_solr_facet_max_limit',
+    'islandora_solr_search_fields',
+    'islandora_solr_search_boolean',
+    'islandora_solr_allow_preserve_filters',
+    'islandora_solr_human_friendly_query_block',
+    'islandora_solr_namespace_restriction',
+    'islandora_solr_base_query',
+    'islandora_solr_base_advanced',
+    'islandora_solr_base_sort',
+    'islandora_solr_base_filter',
+    'islandora_solr_query_fields',
+    'islandora_solr_use_ui_qf',
+    'islandora_solr_content_model_field',
+    'islandora_solr_datastream_id_field',
+    'islandora_solr_object_label_field',
+    'islandora_solr_member_of_field',
+    'islandora_solr_member_of_collection_field',
+    'islandora_solr_debug_mode',
+    'islandora_solr_tabs_active_tab',
+    'islandora_solr_primary_display_table',
+    'islandora_solr_secondary_display',
+    'islandora_solr_primary_display',
+    'islandora_solr_request_handler',
+  );
+  return $variables;
 }
