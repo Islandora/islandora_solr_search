@@ -44,6 +44,9 @@ function islandora_solr_install() {
 
 /**
  * Implements hook_uninstall().
+ *
+ * If making changes to the islandora_solr_admin_settings() form, add
+ * variables to the islandora_solr_search_settings_variables() array.
  */
 function islandora_solr_uninstall() {
   $variables = array_merge(islandora_solr_search_settings_variables(), array(
@@ -230,6 +233,9 @@ function islandora_solr_update_7001() {
 
 /**
  * List of all variables used for solr settings.
+ *
+ * If making additions to the islandora_solr_admin_settings() form, add
+ * variables to this list. Otherwise refer to hook_uninstall().
  */
 function islandora_solr_search_settings_variables() {
   $variables = array(
