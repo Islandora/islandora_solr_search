@@ -704,6 +704,48 @@ function islandora_solr_admin_settings($form, &$form_state) {
 }
 
 /**
+ * Confirmation for reset solr settings.
+ *
+ * @param array $form
+ *   Array containing all form elements.
+ * @param array $form_state
+ *   The form_state array of the form. Includes the values.
+ *
+ * @return array
+ *   Rendered confirmation form.
+ */
+function islandora_solr_admin_settings_default_confirm_form(array $form, array &$form_state) {
+  $form = confirm_form($form,
+    t('Confirm settings reset to default'),
+    'admin/islandora/search/islandora_solr/settings/',
+    t('Confirm reset settings to default, this cannot be undone.'),
+    t('Continue'),
+    t('Cancel')
+  );
+  return $form;
+}
+
+/**
+ * If user confirms reset solr settings delete settings.
+ *
+ * Iterate through an array of Solr settings and remove the present values,
+ * redirect user back to settings page.
+ *
+ * @param array $form
+ *   Array containing all form elements.
+ * @param array $form_state
+ *   The form_state array of the form. Includes the values.
+ */
+function islandora_solr_admin_settings_default_confirm_form_submit(array $form, array &$form_state) {
+  module_load_include('install', 'islandora_solr');
+  $vars = islandora_solr_search_settings_variables();
+  array_walk($vars, 'variable_del');
+  db_delete('islandora_solr_fields')->execute();
+  drupal_set_message(t('The configuration options have been reset to their default values.'));
+  $form_state['redirect'] = 'admin/islandora/search/islandora_solr/settings/';
+}
+
+/**
  * Generates fields for the admin fields table.
  *
  * First collects values to populate the table, then render the fields.
@@ -1273,15 +1315,7 @@ function _islandora_solr_admin_settings_submit($form, &$form_state) {
       break;
 
     case t('Reset to defaults'):
-      foreach ($form_state['values'] as $key => $value) {
-        variable_del($key);
-      }
-      variable_del('islandora_solr_primary_display');
-      variable_del('islandora_solr_request_handler');
-
-      db_delete('islandora_solr_fields')->execute();
-
-      drupal_set_message(t('The configuration options have been reset to their default values.'));
+      $form_state['redirect'] = 'admin/islandora/search/islandora_solr/settings/confirmation';
       break;
   }
 
