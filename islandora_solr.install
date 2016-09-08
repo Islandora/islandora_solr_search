@@ -234,6 +234,54 @@ function islandora_solr_update_7001() {
   db_create_table('islandora_solr_collection_sort_strings', $schema['islandora_solr_collection_sort_strings']);
 }
 
+/**
+ * Fix the table islandora_solr_collection_sort_strings, if possible.
+ */
+function islandora_solr_update_7002() {
+  module_load_include('inc', 'islandora', 'includes/utilities');
+  $schema = islandora_solr_schema();
+  $results = db_select('islandora_solr_collection_sort_strings', 'c')
+    ->fields('c', array('collection_pid', 'sort_string'))
+    ->execute();
+
+  $is_empty = function($o) {
+    return (empty($o) || trim($o) == FALSE);
+  };
+
+  while (FALSE !== ($row = $results->fetchAssoc())) {
+    if (!islandora_is_valid_pid($row['collection_pid']) || $is_empty($row['sort_string'])) {
+      watchdog(
+        'islandora_solr',
+        'There was an empty sort string or invalid pid in the islandora_solr_collection_sort_strings table, you must manually fix this table. See ticket for more information.',
+        array(),
+        WATCHDOG_ERROR,
+        l(t('ISLANDORA-1786'), 'https://jira.duraspace.org/browse/ISLANDORA-1786', array('external' => TRUE))
+      );
+
+      throw new DrupalUpdateException(
+        t(
+          'There was an empty sort string or invalid pid in the islandora_solr_collection_sort_strings table, you must manually fix this table. See !ticket for more information',
+          array('!ticket' => 'https://jira.duraspace.org/browse/ISLANDORA-1786')
+        )
+      );
+    }
+  }
+
+  db_drop_primary_key('islandora_solr_collection_sort_strings');
+  db_change_field(
+    'islandora_solr_collection_sort_strings',
+    'collection_pid',
+    'collection_pid',
+    $schema['islandora_solr_collection_sort_strings']['fields']['collection_pid']
+  );
+  db_change_field(
+    'islandora_solr_collection_sort_strings',
+    'sort_string',
+    'sort_string',
+    $schema['islandora_solr_collection_sort_strings']['fields']['sort_string']
+  );
+  db_add_primary_key('islandora_solr_collection_sort_strings', array('collection_pid'));
+}
 
 /**
  * List of all variables used for solr settings.
