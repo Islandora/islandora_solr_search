@@ -245,7 +245,7 @@ function islandora_solr_update_7002() {
     ->execute();
 
   $is_empty = function($o) {
-    return (empty($o) || trim($o) == FALSE);
+    return (empty($o) || !trim($o));
   };
 
   while (FALSE !== ($row = $results->fetchAssoc())) {
