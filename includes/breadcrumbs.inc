@@ -222,7 +222,6 @@ function islandora_solr_get_breadcrumbs_recursive($pid, array &$context = NULL) 
  *   (RELS-EXT) relationship with.
  */
 function islandora_solr_get_parents_from_rels_ext(AbstractObject $object) {
-  $parentobjects = array();
   try {
     $parentobjects = $object->relationships->get(FEDORA_RELS_EXT_URI, NULL, NULL, RELS_TYPE_URI);
   }
