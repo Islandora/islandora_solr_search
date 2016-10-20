@@ -69,6 +69,7 @@ function islandora_solr_load_crumbs() {
     $solr_build = new IslandoraSolrQueryProcessor();
 
     $content_model = variable_get('islandora_solr_content_model_field', 'RELS_EXT_hasModel_uri_ms');
+    $collection_field = variable_get('islandora_solr_member_of_collection_field', 'RELS_EXT_isMemberOfCollection_uri_ms');
 
     $solr_query = "*:*";
     $solr_params = array(
@@ -79,7 +80,7 @@ function islandora_solr_load_crumbs() {
       "hl" => "false",
       "facet.pivot.mincount" => 1,
       "facet.mincount" => 1,
-      "facet.pivot" => "RELS_EXT_isMemberOfCollection_uri_ms,PID,fgs_label_s",
+      "facet.pivot" => "$collection_field,PID,fgs_label_s",
     );
 
     $solr_build->buildQuery($solr_query, $solr_params);
