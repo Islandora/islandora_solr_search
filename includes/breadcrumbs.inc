@@ -18,12 +18,8 @@ function islandora_solr_islandora_breadcrumbs_backends_callable($object) {
  * Loads a map of collection hierarchy.
  *
  * @return array
- *   array(
- *     this_object_pid => array(
- *       'parent' => parent_pid,
- *       'label' => this_object_label,
- *       ),
- *   );
+ *   The array has current pid as key pointing to an associative array of
+ *   'parent' => pid and 'label' => parent_label.
  */
 function islandora_solr_load_crumbs() {
   if (user_is_anonymous()) {
