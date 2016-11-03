@@ -1030,6 +1030,37 @@ function islandora_solr_admin_settings_fields(&$form_state, &$terms, $field_type
 }
 
 /**
+ * Display admin form for breadcrumb field choice.
+ *
+ * @param array $form
+ *   Array containing all form elements.
+ * @param array $form_state
+ *   The form_state array of the form. Includes the values.
+ *
+ * @return array
+ *   The Drupal form object.
+ */
+function islandora_solr_admin_breadcrumbs_settings(array $form, array &$form_state) {
+  $form = array();
+  $form['islandora_solr_breadcrumbs_admin'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Breadcrumbs'),
+  );
+  $form['islandora_solr_breadcrumbs_admin']['admin'] = array(
+    '#type' => 'markup',
+    '#markup' => l(t('Enable Islandora Solr for Breadcrumbs'), 'admin/islandora/configure'),
+  );
+  $form['islandora_solr_breadcrumbs_admin']['islandora_solr_breadcrumbs_parent_fields'] = array(
+    '#type' => 'textarea',
+    '#title' => t('Solr Parent Fields'),
+    '#description' => t('A list of Solr fields containing the PIDs of parent objects, 
+    one per line. Will search top to bottom and stop on the first hit.'),
+    '#default_value' => variable_get('islandora_solr_breadcrumbs_parent_fields', "RELS_EXT_isMemberOfCollection_uri_ms\r\nRELS_EXT_isMemberOf_uri_ms"),
+  );
+  return system_settings_form($form);
+}
+
+/**
  * Theme function to create an admin table for result fields.
  *
  * @param array $variables
