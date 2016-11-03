@@ -325,7 +325,7 @@ function islandora_solr_search_settings_variables() {
     'islandora_solr_primary_display',
     'islandora_solr_request_handler',
     'islandora_solr_luke_timeout',
-    'islandora_solr_breadcrumbs_parents',
+    'islandora_solr_breadcrumbs_parent_fields',
   );
   return $variables;
 }
