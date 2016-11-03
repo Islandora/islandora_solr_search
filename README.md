@@ -26,6 +26,10 @@ Islandora Solr Search offers many more configuration options in Administration �
 
 Islandora Solr Search also implements the Islandora Basic Collection solution pack's query backend to drive the collection display using Solr instead of SPARQL/Fedora. This functionality can be applied on the collection solution pack's configuration page (admin/islandora/solution_pack_config/basic_collection), and that same page provides settings for sorting the Solr collection view globally and per-collection. The query backend relies on the relationship fields in the "Required Solr Fields" section of the Solr settings; the fields in that section should be confirmed before using Solr to drive the display.
 
+### Breadcrumbs
+To enable breadcrumbs, browse to Administration » Islandora » Configuration and choose **Islandora Solr** under **Breadcrumb generation**.
+![Configuration](https://cloud.githubusercontent.com/assets/2857697/19577960/1c70a1c8-96df-11e6-8a7b-92fa16c30137.jpg)
+
 ## Documentation
 
 Further documentation for this module is available at [our wiki](https://wiki.duraspace.org/display/ISLANDORA/Islandora+Solr+Search).
