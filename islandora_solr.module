@@ -555,6 +555,4 @@ function islandora_solr_form_islandora_basic_collection_admin_alter(&$form, &$fo
     '#default_value' => variable_get('islandora_solr_collection_result_limit_block_override', FALSE),
     '#states' => $states,
   );
-
-
 }
