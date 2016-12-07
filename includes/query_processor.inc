@@ -341,7 +341,7 @@ class IslandoraSolrQueryProcessor {
       $datastream_field = variable_get('islandora_solr_datastream_id_field', 'fedora_datastreams_ms');
       $object_label = variable_get('islandora_solr_object_label_field', 'fgs_label_s');
       if (!empty($object_results)) {
-        if (variable_get('islandora_solr_search_navigation', FALSE)) {
+        if (isset($this->internalSolrParams['islandora_solr_search_navigation']) && $this->internalSolrParams['islandora_solr_search_navigation']) {
           $id = bin2hex(drupal_random_bytes(10));
           $page_params = drupal_get_query_parameters();
           $search_nav_qp = $this;
