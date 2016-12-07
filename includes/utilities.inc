@@ -389,6 +389,16 @@ function islandora_solr_islandora_basic_collection_backend_callable($collection_
     '!pid' => $collection_object->id,
     '!collection_member_field' => variable_get('islandora_solr_member_of_collection_field', 'RELS_EXT_isMemberOfCollection_uri_ms'),
   )), drupal_get_query_parameters());
+
+  if (variable_get('islandora_solr_collection_result_limit_block_override', FALSE)) {
+    if (isset($qp->internalSolrParams['limit'])) {
+      $limit = $qp->internalSolrParams['limit'];
+    }
+    else {
+      $limit = variable_get('islandora_solr_num_of_results', '20');
+    }
+  }
+
   $qp->solrStart = $page * $limit;
   $qp->solrLimit = $limit;
 
