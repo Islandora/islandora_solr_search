@@ -58,6 +58,7 @@ function islandora_solr_uninstall() {
     'islandora_solr_collection_sort_block_override',
     'islandora_solr_individual_collection_sorting',
     'islandora_solr_force_update_index_after_object_purge',
+    'islandora_solr_collection_result_limit_block_override',
   ));
   array_walk($variables, 'variable_del');
 }
