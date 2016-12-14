@@ -854,6 +854,17 @@ class IslandoraSolrFacets {
   }
 
   /**
+   *
+   * @return mixed
+   */
+  public function getSortOrder() {
+    if (isset($this->settings['solr_field_settings']['sort_by'])) {
+      return $this->settings['solr_field_settings']['sort_by'];
+    }
+    return "count";
+  }
+
+  /**
    * Get date format.
    *
    * Finds the date formatting settings from user configuration.
@@ -1021,7 +1032,11 @@ class IslandoraSolrFacets {
       $link['count'] = $count;
       $link['link_plus'] = '<a' . drupal_attributes($attributes['plus']['attr']) . '>+</a>';
       $link['link_minus'] = '<a' . drupal_attributes($attributes['minus']['attr']) . '>-</a>';
-      $buckets[] = $link;
+      $buckets[$bucket] = $link;
+    }
+
+    if (isset($this->settings['solr_field_settings']['sort_by']) && $this->settings['solr_field_settings']['sort_by'] == 'index') {
+      ksort($buckets);
     }
 
     // Show more link.
