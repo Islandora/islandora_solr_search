@@ -854,17 +854,6 @@ class IslandoraSolrFacets {
   }
 
   /**
-   *
-   * @return mixed
-   */
-  public function getSortOrder() {
-    if (isset($this->settings['solr_field_settings']['sort_by'])) {
-      return $this->settings['solr_field_settings']['sort_by'];
-    }
-    return "count";
-  }
-
-  /**
    * Get date format.
    *
    * Finds the date formatting settings from user configuration.
