@@ -447,7 +447,6 @@ function islandora_solr_simple_search_form_submit($form, &$form_state) {
   $search_string = islandora_solr_replace_slashes($form_state['values']['islandora_simple_search_query']);
 
   $query = array('type' => 'dismax');
-
   $form_state['redirect'] = array(
     ISLANDORA_SOLR_SEARCH_PATH . "/$search_string",
     array(
@@ -690,6 +689,7 @@ function islandora_solr_advanced_search_form_submit($form, &$form_state) {
     $field = $term['field'];
     $search = trim($term['search']);
     $search = islandora_solr_replace_slashes($search);
+    $search = islandora_solr_facet_escape($search);
     $boolean = (isset($term['boolean'])) ? $term['boolean'] : variable_get('islandora_solr_search_boolean', 'user');
     $field = islandora_solr_lesser_escape($field);
     // Add query.
