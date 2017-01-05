@@ -515,7 +515,7 @@ function islandora_solr_advanced_search_form($form, &$form_state) {
       if (strpos($value, ':') != FALSE) {
         // Split the filter into field and value.
         $value_split = preg_split(ISLANDORA_SOLR_QUERY_FIELD_VALUE_SPLIT_REGEX, $value, 2);
-        dsm($value_split, "value split");
+
         $values['terms'][$i]['field'] = stripslashes($value_split[0]);
 
         // Second part of the split is the query value (or first part of it).
