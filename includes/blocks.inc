@@ -692,7 +692,7 @@ function islandora_solr_advanced_search_form_submit($form, &$form_state) {
     $field = islandora_solr_lesser_escape($field);
     // Add query.
     if (!empty($search)) {
-      $search_escape = islandora_solr_facet_escape($search);
+      $search_escape = islandora_solr_lesser_escape($search);
       $query_array[] = array(
         'search' => "$field:($search_escape)",
         'boolean' => $boolean,
