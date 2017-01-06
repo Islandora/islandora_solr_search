@@ -447,6 +447,7 @@ function islandora_solr_simple_search_form_submit($form, &$form_state) {
   $search_string = islandora_solr_replace_slashes($form_state['values']['islandora_simple_search_query']);
 
   $query = array('type' => 'dismax');
+
   $form_state['redirect'] = array(
     ISLANDORA_SOLR_SEARCH_PATH . "/$search_string",
     array(
@@ -520,6 +521,7 @@ function islandora_solr_advanced_search_form($form, &$form_state) {
 
         // Second part of the split is the query value (or first part of it).
         $value_split[1] = str_replace(array('(', ')'), '', $value_split[1]);
+
         $values['terms'][$i]['search'] = $value_split[1];
 
       }

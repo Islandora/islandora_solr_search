@@ -198,6 +198,7 @@ function islandora_solr_lesser_escape($value) {
 function islandora_solr_facet_escape($value) {
   $pattern = '/(\"|\/|\+|-|&&|\|\||!|\(|\)|\{|}|\[|]|\^| |~|\?|:|\\\)/';
   $replace = '\\\$1';
+
   return preg_replace($pattern, $replace, $value);
 }
 

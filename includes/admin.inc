@@ -547,13 +547,6 @@ function islandora_solr_admin_settings($form, &$form_state) {
     ),
   );
 
-
-
-
-
-
-
-
   // Query defaults.
   $form['islandora_solr_tabs']['query_defaults'] = array(
     '#type' => 'fieldset',
