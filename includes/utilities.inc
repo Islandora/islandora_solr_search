@@ -118,6 +118,39 @@ function islandora_solr_csv_explode($delim = ',', $str = '', $enclose = '"', $pr
 }
 
 /**
+ * Escape a string for inclusion in a facet query term.
+ *
+ * Copied from Apache_Solr_Service.
+ *
+ * The default charset diverges from Apache_Solr_Service::escape():
+ *
+ * - removed '?':
+ *   - '?' is useful.
+ * - removed '*':
+ *   - Allows wildcard searches.
+ * - removed '\':
+ *   - Being escaped.
+ *
+ * @param string $value
+ *   A string to escape.
+ *
+ * @param array $chars
+ *   An array of characters to escape
+ *
+ * @return string
+ *   The escaped trimmed string.
+ */
+function islandora_solr_facet_query_escape($value, $chars = NULL) {
+  if (!$chars) {
+    $chars = array('+','-','&&','||','!','(',')','{','}','[',']','^','~',':');
+  }
+  foreach ($chars as $char) {
+    $value = str_replace($char, "\\$char", $value);
+  }
+  return trim($value);
+}
+
+/**
  * Escape a string for inclusion in a query field or value.
  *
  * Copied from Apache_Solr_Service.
@@ -165,7 +198,6 @@ function islandora_solr_lesser_escape($value) {
 function islandora_solr_facet_escape($value) {
   $pattern = '/(\"|\/|\+|-|&&|\|\||!|\(|\)|\{|}|\[|]|\^| |~|\?|:|\\\)/';
   $replace = '\\\$1';
-
   return preg_replace($pattern, $replace, $value);
 }
 
