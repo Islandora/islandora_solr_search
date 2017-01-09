@@ -529,13 +529,13 @@ function islandora_solr_admin_settings($form, &$form_state) {
     '#description' => t('Use labels instead of raw field names when displaying an advanced search in the Current Query block.'),
   );
 
-  $form['islandora_solr_tabs']['advanced_search_block']['advanced_search_block_lucene_syntax_escape'] = array(
+  $form['islandora_solr_tabs']['advanced_search_block']['islandora_solr_advanced_search_block_lucene_syntax_escape'] = array(
     '#title' => t('Allow the use of lucene syntax string escaping on search terms'),
     '#type' => 'checkbox',
     '#default_value' => variable_get('advanced_search_block_lucene_syntax_escape', TRUE),
   );
 
-  $form['islandora_solr_tabs']['advanced_search_block']['advanced_search_block_lucene_charset_default'] = array(
+  $form['islandora_solr_tabs']['advanced_search_block']['islandora_solr_advanced_search_block_lucene_charset_default'] = array(
     '#type' => 'textfield',
     '#title' => t('Default characters to escape'),
     '#default_value' => variable_get('advanced_search_block_lucene_charset_default', "+,-,&&,||,!,(,),{,},[,],^,~,:"),
