@@ -53,6 +53,8 @@ function islandora_solr_uninstall() {
   // Removing variables.
   $variables = array_merge(islandora_solr_search_settings_variables(), array(
     'islandora_solr_url',
+    'advanced_search_block_lucene_syntax_escape',
+    'advanced_search_block_lucene_charset_default,'
     'islandora_solr_dismax_allowed',
     'islandora_solr_collection_sort',
     'islandora_solr_collection_sort_block_override',
