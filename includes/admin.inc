@@ -532,13 +532,13 @@ function islandora_solr_admin_settings($form, &$form_state) {
   $form['islandora_solr_tabs']['advanced_search_block']['islandora_solr_advanced_search_block_lucene_syntax_escape'] = array(
     '#title' => t('Allow the use of lucene syntax string escaping on search terms'),
     '#type' => 'checkbox',
-    '#default_value' => variable_get('advanced_search_block_lucene_syntax_escape', TRUE),
+    '#default_value' => variable_get('islandora_solr_advanced_search_block_lucene_syntax_escape', TRUE),
   );
 
   $form['islandora_solr_tabs']['advanced_search_block']['islandora_solr_advanced_search_block_lucene_charset_default'] = array(
     '#type' => 'textfield',
     '#title' => t('Default characters to escape'),
-    '#default_value' => variable_get('advanced_search_block_lucene_charset_default', "+,-,&&,||,!,(,),{,},[,],^,~,:"),
+    '#default_value' => variable_get('islandora_solr_advanced_search_block_lucene_charset_default', "+,-,&&,||,!,(,),{,},[,],^,~,:"),
     '#description' => t("The default character set to escape when found in search terms, comma seperated list of values. Defaults to '+,-,&&,||,!,(,),{,},[,],^,~,:'"),
     '#states' => array(
       'visible' => array(
