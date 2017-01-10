@@ -142,7 +142,22 @@ function islandora_solr_csv_explode($delim = ',', $str = '', $enclose = '"', $pr
  */
 function islandora_solr_facet_query_escape($value, $chars = NULL) {
   if (!$chars) {
-    $chars = array('+','-','&&','||','!','(',')','{','}','[',']','^','~',':');
+    $chars = array(
+      '+',
+      '-',
+      '&&',
+      '||',
+      '!',
+      '(',
+      ')',
+      '{',
+      '}',
+      '[',
+      ']',
+      '^',
+      '~',
+      ':',
+    );
   }
   foreach ($chars as $char) {
     $value = str_replace($char, "\\$char", $value);
