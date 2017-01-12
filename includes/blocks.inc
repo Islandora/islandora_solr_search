@@ -522,6 +522,7 @@ function islandora_solr_advanced_search_form($form, &$form_state) {
         // Second part of the split is the query value (or first part of it).
         $value_split[1] = str_replace(array('(', ')'), '', $value_split[1]);
 
+        $values['terms'][$i]['search'] = $value_split[1];
         if (variable_get('islandora_solr_advanced_search_block_lucene_syntax_escape', TRUE)) {
           $value_split[1] = implode("", explode("\\", $value_split[1]));
 
@@ -699,12 +700,12 @@ function islandora_solr_advanced_search_form_submit($form, &$form_state) {
     // Add query.
     if (!empty($search)) {
       if (variable_get('islandora_solr_advanced_search_block_lucene_syntax_escape', TRUE)) {
-        $search = islandora_solr_lesser_escape($search);
         $escape_charset = variable_get(
-          'islandora_solr_advanced_search_block_lucene_charset_default',
-          '+,-,&&,||,!,(,),{,},[,],^,",~,*,?,:,\"'
+          'islandora_solr_advanced_search_block_lucene_regex_default',
+          '/(\+|-|&&|\|\||!|\(|\)|\{|\}|\[|\]|\^|~|\*|\?|\:|\")/'
         );
         $search = islandora_solr_facet_query_escape($search, explode(',', $escape_charset));
+
       }
       $query_array[] = array(
         'search' => "$field:($search)",
