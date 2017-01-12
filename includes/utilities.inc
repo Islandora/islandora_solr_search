@@ -140,32 +140,13 @@ function islandora_solr_csv_explode($delim = ',', $str = '', $enclose = '"', $pr
  * @return string
  *   The escaped trimmed string.
  */
-function islandora_solr_facet_query_escape($value, $chars = NULL) {
-  if (!$chars) {
-    $chars = array(
-      '+',
-      '-',
-      '&&',
-      '||',
-      '!',
-      '(',
-      ')',
-      '{',
-      '}',
-      '[',
-      ']',
-      '^',
-      '~',
-      '*',
-      '?',
-      ':',
-      '"',
-    );
+function islandora_solr_facet_query_escape($value, $pattern = NULL) {
+  dsm($value, "fqe start");
+  if (!$pattern) {
+    $pattern = '/(\+|\/|-|&&|\|\||!|\(|\)|\{|\}|\[|\]|\^|~|\*|\?|\:|\")/';
   }
-  foreach ($chars as $char) {
-    $value = str_replace($char, "\\$char", $value);
-  }
-  return trim($value);
+  $replace = '\\\$1';
+  return preg_replace($pattern, $replace, $value);
 }
 
 /**
