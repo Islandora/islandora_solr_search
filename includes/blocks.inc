@@ -481,12 +481,6 @@ function islandora_solr_simple_search_form_submit($form, &$form_state) {
 function islandora_solr_advanced_search_form($form, &$form_state) {
   global $_islandora_solr_queryclass;
 
-  // Retrieve preserved search terms, as initial terms if
-  // the form already exixts.
-  if (isset($form_state['preserve_terms'])) {
-    $form_state['values']['terms'] = $form_state['preserve_terms'];
-  }
-
   // 1: Form update using AJAX.
   if (isset($form_state['triggering_element'])) {
 
