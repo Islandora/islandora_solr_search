@@ -156,6 +156,8 @@ function islandora_solr_facet_query_escape($value, $chars = NULL) {
       ']',
       '^',
       '~',
+      '*',
+      '?',
       ':',
     );
   }
