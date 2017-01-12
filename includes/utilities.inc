@@ -124,28 +124,21 @@ function islandora_solr_csv_explode($delim = ',', $str = '', $enclose = '"', $pr
  *
  * The default charset diverges from Apache_Solr_Service::escape():
  *
- * - removed '?':
- *   - '?' is useful.
- * - removed '*':
- *   - Allows wildcard searches.
- * - removed '\':
- *   - Being escaped.
- *
  * @param string $value
  *   A string to escape.
  *
- * @param array $chars
- *   An array of characters to escape
+ * @param array $pattern
+ *   An regular expression pattern
  *
  * @return string
- *   The escaped trimmed string.
+ *   The escaped string.
  */
 function islandora_solr_facet_query_escape($value, $pattern = NULL) {
-  dsm($value, "fqe start");
   if (!$pattern) {
-    $pattern = '/(\+|\/|-|&&|\|\||!|\(|\)|\{|\}|\[|\]|\^|~|\*|\?|\:|\")/';
+    $pattern = '/(\+|-|&&|\|\||!|\(|\)|\{|\}|\[|\]|\^|~|\*|\?|\:|\")/';
   }
   $replace = '\\\$1';
+
   return preg_replace($pattern, $replace, $value);
 }
 
