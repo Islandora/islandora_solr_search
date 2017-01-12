@@ -202,7 +202,7 @@ class IslandoraSolrResults {
     // Get query values.
     if (!in_array($islandora_solr_query->solrQuery, $islandora_solr_query->differentKindsOfNothing)) {
       // Get query value.
-      if (variable_get('islandora_solr_advanced_search_block_lucene_syntax_escape', TRUE)) {
+      if (variable_get('islandora_solr_advanced_search_block_lucene_syntax_escape', FALSE)) {
         $query_value = stripslashes($islandora_solr_query->solrQuery);
       }
       else {
