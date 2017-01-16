@@ -202,12 +202,7 @@ class IslandoraSolrResults {
     // Get query values.
     if (!in_array($islandora_solr_query->solrQuery, $islandora_solr_query->differentKindsOfNothing)) {
       // Get query value.
-      if (variable_get('islandora_solr_advanced_search_block_lucene_syntax_escape', FALSE)) {
-        $query_value = stripslashes($islandora_solr_query->solrQuery);
-      }
-      else {
-        $query_value = $islandora_solr_query->solrQuery;
-      }
+      $query_value = stripslashes($islandora_solr_query->solrQuery);
 
       $query_list = array();
       if (variable_get('islandora_solr_human_friendly_query_block', TRUE)) {
