@@ -138,8 +138,7 @@ function islandora_solr_facet_query_escape($value, $pattern = NULL) {
     $pattern = ISLANDORA_SOLR_QUERY_FACET_LUCENE_ESCAPE_REGEX;
   }
   $replace = '\\\$1';
-  $dt = preg_replace($pattern, $replace, $value);
-  return $dt;
+  return preg_replace($pattern, $replace, $value);
 }
 
 /**

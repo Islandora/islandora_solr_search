@@ -504,17 +504,16 @@ function islandora_solr_advanced_search_form($form, &$form_state) {
     $query = $_islandora_solr_queryclass->solrQuery;
 
     $values['terms'] = array();
+
     $query_explode = preg_split(ISLANDORA_SOLR_QUERY_SPLIT_REGEX, $query);
 
     // Break up the solr query to populate the advanced search form.
     $i = 0;
     foreach ($query_explode as $key => $value) {
-
       $term = array();
 
       // Check for first colon to split the string.
       if (strpos($value, ':') != FALSE) {
-
         // Split the filter into field and value.
         $value_split = preg_split(ISLANDORA_SOLR_QUERY_FIELD_VALUE_SPLIT_REGEX, $value, 2);
 
@@ -536,20 +535,17 @@ function islandora_solr_advanced_search_form($form, &$form_state) {
           $values['terms'][$i]['search'] .= ' ' . $value;
         }
         else {
-
           // Search field is not set, so create new search value.
           $values['terms'][$i]['search'] = $value;
         }
       }
       // If it matches AND/OR/NOT, then we have the boolean operator.
       else {
-
         $values['terms'][$i]['boolean'] = $value;
 
         // XXX: Something about only incrementing here seems... Wrong?
         $i++;
       }
-
     }
   }
   // 3: Anywhere else: empty form.
@@ -734,7 +730,6 @@ function islandora_solr_advanced_search_form_submit($form, &$form_state) {
         'boolean' => $boolean,
       );
     }
-
   }
 
   // Create query.

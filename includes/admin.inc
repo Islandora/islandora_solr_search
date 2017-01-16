@@ -1242,7 +1242,6 @@ function _islandora_solr_admin_settings_submit($form, &$form_state) {
       $form_state['values']['form_build_id'],
       $form_state['values']['refresh_page']);
 
-  dsm($op, "op::");
   // If the operation is 'Reset'.
   switch ($op) {
     // XXX: Using the translated string seems like a Bad Idea™.
