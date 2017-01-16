@@ -521,14 +521,7 @@ function islandora_solr_advanced_search_form($form, &$form_state) {
 
         // Second part of the split is the query value (or first part of it).
         $value_split[1] = str_replace(array('(', ')'), '', $value_split[1]);
-
-        $values['terms'][$i]['search'] = $value_split[1];
-        if (variable_get('islandora_solr_advanced_search_block_lucene_syntax_escape', FALSE)) {
-          $value_split[1] = implode("", explode("\\", $value_split[1]));
-
-          $values['terms'][$i]['search'] = stripslashes($value_split[1]);
-        }
-
+        $values['terms'][$i]['search'] = stripslashes($value_split[1]);
       }
       // If the string does not include a colon or AND/OR/NOT, then it is a
       // part of the query value.
@@ -537,6 +530,7 @@ function islandora_solr_advanced_search_form($form, &$form_state) {
         $value = str_replace(array('(', ')'), '', $value);
 
         if (isset($values['terms'][$i]['search'])) {
+          $values['terms'][$i]['search'] = stripslashes($values['terms'][$i]['search']);
           // Append to search string.
           $values['terms'][$i]['search'] .= ' ' . $value;
         }
@@ -561,6 +555,7 @@ function islandora_solr_advanced_search_form($form, &$form_state) {
       'terms' => array(''),
     );
   }
+
   $terms = array(
     '#type' => 'markup',
     '#prefix' => '<div id="islandora-solr-advanced-terms">',
@@ -568,6 +563,12 @@ function islandora_solr_advanced_search_form($form, &$form_state) {
     '#tree' => TRUE,
   );
   foreach ($values['terms'] as $i => $value) {
+    if (variable_get('islandora_solr_advanced_search_block_lucene_syntax_escape', FALSE)) {
+      if (isset($value['search'])) {
+        $value['search'] = islandora_solr_restore_slashes($value['search']);
+        $value['search'] = stripslashes($value['search']);
+      }
+    }
     $term = array(
       '#tree' => TRUE,
       '#prefix' => '<div>',
@@ -689,23 +690,40 @@ function _islandora_solr_advanced_search_terms($form, &$form_state) {
  */
 function islandora_solr_advanced_search_form_submit($form, &$form_state) {
   module_load_include('inc', 'islandora_solr', 'includes/utilities');
+
   // Collect query values.
   $query_array = array();
+
+  // Get Lucene syntax escaping configuration, prior to the following
+  // foreach loop.
+  $lucene_syntax_escape = variable_get('islandora_solr_advanced_search_block_lucene_syntax_escape', FALSE);
+  $lucene_regex_default = variable_get(
+    'islandora_solr_advanced_search_block_lucene_regex_default',
+    ISLANDORA_SOLR_QUERY_FACET_LUCENE_ESCAPE_REGEX
+  );
   foreach ($form_state['values']['terms'] as $term) {
     $field = $term['field'];
     $search = trim($term['search']);
-    $search = islandora_solr_replace_slashes($search);
+
+    // Only replace slashes here (~slsh~) when automatic Lucene Syntax Escaping
+    // is disabled as the strings they are replace with (~slsh~ and ~plus~)
+    // contain the character '~' that would be escaped when automatic Lucene
+    // Syntax Escaping is enabled.
+    if (!$lucene_syntax_escape) {
+      $search = islandora_solr_replace_slashes($search);
+    }
+
     $boolean = (isset($term['boolean'])) ? $term['boolean'] : variable_get('islandora_solr_search_boolean', 'user');
     $field = islandora_solr_lesser_escape($field);
     // Add query.
     if (!empty($search)) {
-      if (variable_get('islandora_solr_advanced_search_block_lucene_syntax_escape', FALSE)) {
-        $escape_charset = variable_get(
-          'islandora_solr_advanced_search_block_lucene_regex_default',
-          ISLANDORA_SOLR_QUERY_FACET_LUCENE_ESCAPE_REGEX
-        );
-        $search = islandora_solr_facet_query_escape($search, explode(',', $escape_charset));
+      if ($lucene_syntax_escape) {
+        $search = islandora_solr_facet_query_escape($search, $lucene_regex_default);
 
+        // Replace the occurances of '~slsh~' and '~plus~' after
+        // islandora_solr_facet_query_escape(), since they both contain
+        // '~', which would be improperlly escaped prior to query execution.
+        $search = islandora_solr_replace_slashes($search);
       }
       $query_array[] = array(
         'search' => "$field:($search)",
