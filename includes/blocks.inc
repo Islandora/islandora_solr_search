@@ -563,12 +563,6 @@ function islandora_solr_advanced_search_form($form, &$form_state) {
     '#tree' => TRUE,
   );
   foreach ($values['terms'] as $i => $value) {
-    if (variable_get('islandora_solr_advanced_search_block_lucene_syntax_escape', FALSE)) {
-      if (isset($value['search'])) {
-        $value['search'] = islandora_solr_restore_slashes($value['search']);
-        $value['search'] = stripslashes($value['search']);
-      }
-    }
     $term = array(
       '#tree' => TRUE,
       '#prefix' => '<div>',
@@ -584,7 +578,9 @@ function islandora_solr_advanced_search_form($form, &$form_state) {
       '#title' => t('Search terms'),
       '#type' => 'textfield',
       '#size' => 20,
-      '#default_value' => isset($value['search']) ? $value['search'] : '',
+      '#default_value' => (isset($value['search']) ?
+        stripslashes($value['search']) :
+        ''),
     );
     // Used for when the user presses enter on the search field.
     $term['hidden_submit'] = array(
@@ -697,34 +693,22 @@ function islandora_solr_advanced_search_form_submit($form, &$form_state) {
   // Get Lucene syntax escaping configuration, prior to the following
   // foreach loop.
   $lucene_syntax_escape = variable_get('islandora_solr_advanced_search_block_lucene_syntax_escape', FALSE);
-  $lucene_regex_default = variable_get(
-    'islandora_solr_advanced_search_block_lucene_regex_default',
-    ISLANDORA_SOLR_QUERY_FACET_LUCENE_ESCAPE_REGEX
+  $lucene_regex = variable_get(
+    'islandora_solr_advanced_search_block_lucene_regex',
+    ISLANDORA_SOLR_QUERY_FACET_LUCENE_ESCAPE_REGEX_DEFAULT
   );
   foreach ($form_state['values']['terms'] as $term) {
-    $field = $term['field'];
+    $field = islandora_solr_lesser_escape($term['field']);
     $search = trim($term['search']);
 
-    // Only replace slashes here (~slsh~) when automatic Lucene Syntax Escaping
-    // is disabled as the strings they are replace with (~slsh~ and ~plus~)
-    // contain the character '~' that would be escaped when automatic Lucene
-    // Syntax Escaping is enabled.
-    if (!$lucene_syntax_escape) {
-      $search = islandora_solr_replace_slashes($search);
-    }
-
     $boolean = (isset($term['boolean'])) ? $term['boolean'] : variable_get('islandora_solr_search_boolean', 'user');
-    $field = islandora_solr_lesser_escape($field);
+
     // Add query.
     if (!empty($search)) {
-      if ($lucene_syntax_escape) {
-        $search = islandora_solr_facet_query_escape($search, $lucene_regex_default);
+      $search = $lucene_syntax_escape ?
+        islandora_solr_facet_query_escape($search, $lucene_regex) :
+        islandora_solr_lesser_escape($search);
 
-        // Replace the occurances of '~slsh~' and '~plus~' after
-        // islandora_solr_facet_query_escape(), since they both contain
-        // '~', which would be improperlly escaped prior to query execution.
-        $search = islandora_solr_replace_slashes($search);
-      }
       $query_array[] = array(
         'search' => "$field:($search)",
         'boolean' => $boolean,
@@ -752,11 +736,15 @@ function islandora_solr_advanced_search_form_submit($form, &$form_state) {
       $query = '*:*';
     }
   }
+
   // Handle filters.
   $filter = '';
   if (isset($form_state['values']['islandora_solr_allow_preserve_filters']) && $form_state['values']['islandora_solr_allow_preserve_filters']) {
     $filter = isset($_GET['f']) ? $_GET['f'] : '';
   }
+
+  // Use work around for some special URL characters.
+  $query = islandora_solr_replace_slashes($query);
 
   // Navigate to results page.
   $form_state['redirect'] = array(
