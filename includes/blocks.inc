@@ -693,9 +693,9 @@ function islandora_solr_advanced_search_form_submit($form, &$form_state) {
   // Get Lucene syntax escaping configuration, prior to the following
   // foreach loop.
   $lucene_syntax_escape = variable_get('islandora_solr_advanced_search_block_lucene_syntax_escape', FALSE);
-  $lucene_regex_default = variable_get(
-    'islandora_solr_advanced_search_block_lucene_regex_default',
-    ISLANDORA_SOLR_QUERY_FACET_LUCENE_ESCAPE_REGEX
+  $lucene_regex = variable_get(
+    'islandora_solr_advanced_search_block_lucene_regex',
+    ISLANDORA_SOLR_QUERY_FACET_LUCENE_ESCAPE_REGEX_DEFAULT
   );
   foreach ($form_state['values']['terms'] as $term) {
     $field = islandora_solr_lesser_escape($term['field']);
@@ -706,7 +706,7 @@ function islandora_solr_advanced_search_form_submit($form, &$form_state) {
     // Add query.
     if (!empty($search)) {
       $search = $lucene_syntax_escape ?
-        islandora_solr_facet_query_escape($search, $lucene_regex_default) :
+        islandora_solr_facet_query_escape($search, $lucene_regex) :
         islandora_solr_lesser_escape($search);
 
       $query_array[] = array(
