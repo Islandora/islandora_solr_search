@@ -135,7 +135,7 @@ function islandora_solr_csv_explode($delim = ',', $str = '', $enclose = '"', $pr
  */
 function islandora_solr_facet_query_escape($value, $pattern = NULL) {
   if (!$pattern) {
-    $pattern = ISLANDORA_SOLR_QUERY_FACET_LUCENE_ESCAPE_REGEX;
+    $pattern = ISLANDORA_SOLR_QUERY_FACET_LUCENE_ESCAPE_REGEX_DEFAULT;
   }
   $replace = '\\\$1';
   return preg_replace($pattern, $replace, $value);
