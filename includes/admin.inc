@@ -536,6 +536,30 @@ function islandora_solr_admin_settings($form, &$form_state) {
     '#description' => t('Use labels instead of raw field names when displaying an advanced search in the Current Query block.'),
   );
 
+  $form['islandora_solr_tabs']['advanced_search_block']['islandora_solr_advanced_search_block_lucene_syntax_escape'] = array(
+    '#title' => t('Escape Lucene special characters'),
+    '#description' => t('Allow the use of lucene syntax string escaping on search terms'),
+    '#type' => 'checkbox',
+    '#default_value' => variable_get('islandora_solr_advanced_search_block_lucene_syntax_escape', FALSE),
+  );
+
+  $form['islandora_solr_tabs']['advanced_search_block']['islandora_solr_advanced_search_block_lucene_regex_default'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Default regular expression evaluated on search term'),
+    '#default_value' => variable_get('islandora_solr_advanced_search_block_lucene_regex_default', ISLANDORA_SOLR_QUERY_FACET_LUCENE_ESCAPE_REGEX),
+    '#description' => t(
+      "The default regular expression, used to escape characters when found in search terms. Defaults to @regex",
+      array(
+        '@regex' => ISLANDORA_SOLR_QUERY_FACET_LUCENE_ESCAPE_REGEX,
+      )
+    ),
+    '#states' => array(
+      'visible' => array(
+        ':input[name="islandora_solr_advanced_search_block_lucene_syntax_escape"]' => array('checked' => TRUE),
+      ),
+    ),
+  );
+
   // Query defaults.
   $form['islandora_solr_tabs']['query_defaults'] = array(
     '#type' => 'fieldset',
@@ -547,7 +571,7 @@ function islandora_solr_admin_settings($form, &$form_state) {
     '#type' => 'textarea',
     '#title' => t('Limit results to specific namespaces'),
     '#default_value' => variable_get('islandora_solr_namespace_restriction', ''),
-    '#description' => t("Enter a space- or comma-separated list of namespaces (e.g. 'demo, default') to restrict results to PIDs within those namespaces."),
+    '#description' => t("Enter a space- or comma-separated list of namespaces (for example, 'demo, default') to restrict results to PIDs within those namespaces."),
   );
   $form['islandora_solr_tabs']['query_defaults']['islandora_solr_base_query'] = array(
     '#type' => 'textfield',

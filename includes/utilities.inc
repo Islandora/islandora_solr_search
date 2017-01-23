@@ -118,6 +118,30 @@ function islandora_solr_csv_explode($delim = ',', $str = '', $enclose = '"', $pr
 }
 
 /**
+ * Escape a string for inclusion in a facet query term.
+ *
+ * Copied from Apache_Solr_Service.
+ *
+ * The default charset diverges from Apache_Solr_Service::escape():
+ *
+ * @param string $value
+ *   A string to escape.
+ *
+ * @param array $pattern
+ *   An regular expression pattern
+ *
+ * @return string
+ *   The escaped string.
+ */
+function islandora_solr_facet_query_escape($value, $pattern = NULL) {
+  if (!$pattern) {
+    $pattern = ISLANDORA_SOLR_QUERY_FACET_LUCENE_ESCAPE_REGEX;
+  }
+  $replace = '\\\$1';
+  return preg_replace($pattern, $replace, $value);
+}
+
+/**
  * Escape a string for inclusion in a query field or value.
  *
  * Copied from Apache_Solr_Service.
