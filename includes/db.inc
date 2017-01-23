@@ -238,6 +238,20 @@ function islandora_solr_get_range_facets() {
 }
 
 /**
+ * Return non-range facets with date formatting enabled.
+ */
+function islandora_solr_get_date_format_facets() {
+  $records = islandora_solr_get_fields('facet_fields', TRUE, FALSE);
+  $date_format = array();
+  foreach ($records as $values) {
+    if (!isset($values['solr_field_settings']['range_facet_select']) && isset($values['solr_field_settings']['date_facet_format'])) {
+      $date_format[$values['solr_field']] = $values;
+    }
+  }
+  return $date_format;
+}
+
+/**
  * Function used with optional i18n_string integration.
  */
 function islandora_solr_translate_field_labels(array &$records) {

@@ -135,7 +135,7 @@ function islandora_solr_csv_explode($delim = ',', $str = '', $enclose = '"', $pr
  */
 function islandora_solr_facet_query_escape($value, $pattern = NULL) {
   if (!$pattern) {
-    $pattern = ISLANDORA_SOLR_QUERY_FACET_LUCENE_ESCAPE_REGEX;
+    $pattern = ISLANDORA_SOLR_QUERY_FACET_LUCENE_ESCAPE_REGEX_DEFAULT;
   }
   $replace = '\\\$1';
   return preg_replace($pattern, $replace, $value);
@@ -413,6 +413,16 @@ function islandora_solr_islandora_basic_collection_backend_callable($collection_
     '!pid' => $collection_object->id,
     '!collection_member_field' => variable_get('islandora_solr_member_of_collection_field', 'RELS_EXT_isMemberOfCollection_uri_ms'),
   )), drupal_get_query_parameters());
+
+  if (variable_get('islandora_solr_collection_result_limit_block_override', FALSE)) {
+    if (isset($qp->internalSolrParams['limit'])) {
+      $limit = $qp->internalSolrParams['limit'];
+    }
+    else {
+      $limit = variable_get('islandora_solr_num_of_results', '20');
+    }
+  }
+
   $qp->solrStart = $page * $limit;
   $qp->solrLimit = $limit;
 
@@ -557,4 +567,21 @@ function islandora_solr_is_date_field($solr_field) {
     return in_array($class, $date_types);
   }
   return FALSE;
+}
+
+/**
+ * Removes the base filters from the Solr params if they exist.
+ *
+ * @param array $params
+ *   The Solr params array.
+ *
+ * @return array
+ *   The $params array minus any base filters.
+ */
+function islandora_solr_remove_base_filters(array $params) {
+  if (isset($params['fq'])) {
+    $base_filters = preg_split("/\\r\\n|\\n|\\r/", variable_get('islandora_solr_base_filter', ''), -1, PREG_SPLIT_NO_EMPTY);
+    $params['fq'] = array_diff($params['fq'], $base_filters);
+  }
+  return $params;
 }

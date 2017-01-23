@@ -550,4 +550,11 @@ function islandora_solr_form_islandora_basic_collection_admin_alter(&$form, &$fo
     '#default_value' => variable_get('islandora_solr_collection_sort_block_override', FALSE),
     '#states' => $states,
   );
+  $form['display_generation_fieldset']['islandora_collection_display']['islandora_solr_collection_result_limit_block_override'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Allow Solr result limit block to override collection limit'),
+    '#description' => t('Allows Solr result limit block to override the default collection limit.'),
+    '#default_value' => variable_get('islandora_solr_collection_result_limit_block_override', FALSE),
+    '#states' => $states,
+  );
 }

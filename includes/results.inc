@@ -17,6 +17,7 @@ class IslandoraSolrResults {
   public $allSubsArray = array();
   public $islandoraSolrQueryProcessor;
   public $rangeFacets = array();
+  public $dateFormatFacets = array();
 
   /**
    * Constructor.
@@ -24,6 +25,7 @@ class IslandoraSolrResults {
   public function __construct() {
     $this->prepFieldSubstitutions();
     $this->rangeFacets = islandora_solr_get_range_facets();
+    $this->dateFormatFacets = islandora_solr_get_date_format_facets();
   }
 
   /**
@@ -529,6 +531,10 @@ class IslandoraSolrResults {
         $filter_array = explode(' TO ', $filter_str);
         $filter_split[1] = format_date(strtotime(trim($filter_array[0])) + (60 * 60 * 24), 'custom', $format) . ' - ' . format_date(strtotime(trim($filter_array[1])) + (60 * 60 * 24), 'custom', $format);
       }
+      elseif (isset($this->dateFormatFacets[$solr_field])) {
+        $format = $this->dateFormatFacets[$solr_field]['solr_field_settings']['date_facet_format'];
+        $filter_split[1] = format_date(strtotime(stripslashes($filter_split[1])), 'custom', $format);
+      }
       $filter_string = $filter_split[1];
     }
     return stripslashes($filter_string);
@@ -871,12 +877,15 @@ class IslandoraSolrFacets {
     $facet_field = $this->facet_field;
     $facet_results = array();
     module_load_include('inc', 'islandora_solr', 'includes/utilities');
+    // It's possible that there could be a facet that's a date field
+    // that's not a range.
+    $date_format = isset($this->settings['solr_field_settings']['date_facet_format']) ? $this->settings['solr_field_settings']['date_facet_format'] : FALSE;
     foreach ($results as $bucket => $count) {
       $facet_results[] = array(
         'count' => $count,
         'filter' => islandora_solr_lesser_escape($facet_field) . ':"' .
         islandora_solr_facet_escape($bucket) . '"',
-        'bucket' => $bucket,
+        'bucket' => $date_format ? format_date(strtotime($bucket), 'custom', $date_format) : $bucket,
       );
     }
     return $facet_results;

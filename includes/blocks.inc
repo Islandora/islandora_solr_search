@@ -77,6 +77,14 @@ function islandora_solr_islandora_solr_query_blocks() {
       'function' => 'islandora_solr_search_navigation',
       'form' => NULL,
     ),
+    'result_limit' => array(
+      'name' => t('Islandora search result limit'),
+      'module' => 'islandora_solr',
+      'file' => 'includes/blocks.inc',
+      'class' => NULL,
+      'function' => 'islandora_solr_search_results_limit',
+      'form' => NULL,
+    ),
   );
 }
 
@@ -1085,4 +1093,52 @@ function islandora_solr_search_navigation() {
     ));
   }
   return $return;
+}
+
+/**
+ * Search results page size block.
+ *
+ * Use the limit URL param to increase or decrease the result page size.
+ *
+ * @return string
+ *   The rendered html for the block content.
+ */
+function islandora_solr_search_results_limit() {
+  global $_islandora_solr_queryclass;
+  // Check if the page is dealing with search results.
+  if (islandora_solr_results_page($_islandora_solr_queryclass)) {
+    $default_limit = variable_get('islandora_solr_num_of_results', '20');
+    $limits = variable_get('islandora_solr_num_of_results_advanced', array());
+    $params = drupal_get_query_parameters();
+    $path = current_path();
+    if (isset($params['limit']) && is_numeric($params['limit'])) {
+      $default_limit = $params['limit'];
+    }
+    $limit_list = array();
+    foreach ($limits as $limit) {
+      if ($limit == $default_limit) {
+        $limit_list[] = $limit;
+      }
+      else {
+        $attr = array();
+        $attr['rel'] = 'nofollow';
+        $query = $params;
+        $query['limit'] = $limit;
+        unset($query['page']);
+        $attr['href'] = url($path, array('query' => $query));
+        // XXX: We're not using l() because of
+        // @link http://drupal.org/node/41595 active classes. @endlink
+        $limit_list[] = '<a' . drupal_attributes($attr) . '>' . $limit . '</a>';
+      }
+    }
+
+    if (!empty($limit_list)) {
+      return theme('item_list', array(
+        'items' => $limit_list,
+        'title' => NULL,
+        'type' => 'ul',
+        'attributes' => array('id' => 'islandora_solr_results_limit'),
+      ));
+    }
+  }
 }

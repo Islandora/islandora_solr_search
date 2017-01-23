@@ -6,12 +6,17 @@
  */
 
 /**
- * Function to return admin setting form.
+ * Admin settings for the RSS exposed by Solr.
+ *
+ * @param array $form
+ *   An array representing the form within Drupal.
+ * @param array $form_state
+ *   An array containing the Drupal form state.
+ *
  * @return array
- *   returns the form
+ *   The admin form to be rendered.
  */
 function islandora_solr_config_admin_rss_settings($form, &$form_state) {
-
   // Get variables.
   $rss_item = variable_get('islandora_solr_config_rss_item', array(
     'title' => 'fgs_label_s',
@@ -20,7 +25,7 @@ function islandora_solr_config_admin_rss_settings($form, &$form_state) {
     'category' => '',
     'pubDate' => 'fgs_createdDate_s',
     'enclosure_dsid' => 'TN',
-    ));
+  ));
   $rss_channel = variable_get('islandora_solr_config_rss_channel', array(
     'copyright' => '',
     'managingEditor' => '',
@@ -42,6 +47,7 @@ function islandora_solr_config_admin_rss_settings($form, &$form_state) {
     '#type' => 'textfield',
     '#title' => t('Title'),
     '#description' => t('Solr field to populate the item title.'),
+    '#autocomplete_path' => 'islandora_solr/autocomplete_luke',
     '#default_value' => $rss_item['title'],
     '#required' => TRUE,
   );
@@ -49,24 +55,28 @@ function islandora_solr_config_admin_rss_settings($form, &$form_state) {
     '#type' => 'textfield',
     '#title' => t('Description'),
     '#description' => t('Solr field to populate the item synopsis.'),
+    '#autocomplete_path' => 'islandora_solr/autocomplete_luke',
     '#default_value' => $rss_item['description'],
   );
   $form['rss_item']['author'] = array(
     '#type' => 'textfield',
     '#title' => t('Author'),
     '#description' => t('Solr field to populate the item author.'),
+    '#autocomplete_path' => 'islandora_solr/autocomplete_luke',
     '#default_value' => $rss_item['author'],
   );
   $form['rss_item']['category'] = array(
     '#type' => 'textfield',
     '#title' => t('Category'),
     '#description' => t('Solr field to populate the item category.'),
+    '#autocomplete_path' => 'islandora_solr/autocomplete_luke',
     '#default_value' => $rss_item['category'],
   );
   $form['rss_item']['pubDate'] = array(
     '#type' => 'textfield',
     '#title' => t('Publication date'),
     '#description' => t('Solr field to populate the item publication date (pubDate).'),
+    '#autocomplete_path' => 'islandora_solr/autocomplete_luke',
     '#default_value' => $rss_item['pubDate'],
   );
   $form['rss_item']['enclosure_dsid'] = array(
