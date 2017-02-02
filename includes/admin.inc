@@ -1998,14 +1998,14 @@ function islandora_solr_admin_settings_facet_fields($form, &$form_state, $variab
     '#description' => t('A human-readable name.'),
   );
   $form['options']['sort_by'] = array(
-    '#type' => 'select',
+    '#type' => 'radios',
     '#title' => t('Sort by'),
     '#default_value' => isset($values['sort_by']) ? $values['sort_by'] : 'count',
     '#options' => array(
-      'count' => t('Counts'),
-      'index' => t('Labels'),
+      'count' => t('Count of facet (numerically)'),
+      'index' => t('Text labels (alphabetically)'),
     ),
-    '#description' => t('Facets can be sorted by label values or the count.'),
+    '#description' => t('Facets can be sorted by text label or the count of the facet. This does not change how the facet is created, only the order it is displayed in.'),
   );
 
   if (islandora_solr_is_date_field($solr_field)) {
