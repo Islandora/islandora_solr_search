@@ -292,7 +292,7 @@ function islandora_solr_update_7002() {
 function islandora_solr_search_settings_variables() {
   $variables = array(
     'islandora_solr_advanced_search_block_lucene_syntax_escape',
-    'islandora_solr_advanced_search_block_lucene_regex',
+    'islandora_solr_advanced_search_block_lucene_regex_default',
     'islandora_solr_result_fields',
     'islandora_solr_limit_result_fields',
     'islandora_solr_num_of_results',
