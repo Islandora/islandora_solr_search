@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Contains all administration related functionality
+ * Contains all administration related functionality.
  */
 
 /**
@@ -10,7 +10,6 @@
  */
 function islandora_solr_admin_index_settings($form, &$form_state) {
   // Add admin form CSS.
-
   $form['#attached'] = array(
     'css' => array(
       drupal_get_path('module', 'islandora_solr') . '/css/islandora_solr.admin.css',
@@ -38,11 +37,11 @@ function islandora_solr_admin_index_settings($form, &$form_state) {
     $handler = !empty($form_state['values']['islandora_solr_request_handler']) ? $form_state['values']['islandora_solr_request_handler'] : variable_get('islandora_solr_request_handler', FALSE);
 
     if (strpos($solr_url, 'https://') !== FALSE && strpos($solr_url, 'https://') == 0) {
-      $confirmation_message = format_string('<img src="@image_url"/>!message', array(
-        // XXX: Use of url() for static image may result in broken images.
-        '@image_url' => url('misc/watchdog-error.png'),
-        '!message' => t('Islandora does not support SSL connections to Solr.'),
-      ));
+      $confirmation_message = theme('image', array(
+        'path' => 'misc/watchdog-error.png',
+        'alt' => check_plain('Unsupported protocol'),
+            )) .
+        t('Islandora does not support SSL connections to Solr.');
       $solr_avail = FALSE;
     }
     else {
@@ -57,29 +56,29 @@ function islandora_solr_admin_index_settings($form, &$form_state) {
       }
       // Get confirmation message.
       if ($solr_avail) {
-        $confirmation_message = format_string('<img src="@image_url"/>!message', array(
-          // XXX: Use of url() for static image may result in broken images.
-          '@image_url' => url('misc/watchdog-ok.png'),
-          '!message' => t('Successfully connected to Solr server at !link. <sub>(!ms ms)</sub>', array(
-              '!link' => l($solr_url, islandora_solr_check_http($solr_url), array(
-                'attributes' => array(
-                  'target' => '_blank',
-                ),
-              )),
-              '!ms' => number_format($solr_avail, 2),
+        $confirmation_message = theme('image', array(
+          'path' => 'misc/watchdog-ok.png',
+          'alt' => check_plain('Connection successful'),
+        )) .
+        t('Successfully connected to Solr server at !link. <sub>(!ms ms)</sub>', array(
+          '!link' => l($solr_url, islandora_solr_check_http($solr_url), array(
+            'attributes' => array(
+              'target' => '_blank',
+            ),
           )),
+          '!ms' => number_format($solr_avail, 2),
         ));
       }
       else {
-        $confirmation_message = format_string('<img src="@image_url"/>!message', array(
-          // XXX: Use of url() for static image may result in broken images.
-          '@image_url' => url('misc/watchdog-error.png'),
-          '!message' => t('Unable to connect to Solr server at !link.', array(
-              '!link' => l($solr_url, islandora_solr_check_http($solr_url), array(
-                'attributes' => array(
-                  'target' => '_blank',
-                ),
-              )),
+        $confirmation_message = theme('image', array(
+          'path' => 'misc/watchdog-error.png',
+          'alt' => check_plain('Error connecting to Solr'),
+        )) .
+        t('Unable to connect to Solr server at !link.', array(
+          '!link' => l($solr_url, islandora_solr_check_http($solr_url), array(
+            'attributes' => array(
+              'target' => '_blank',
+            ),
           )),
         ));
       }
