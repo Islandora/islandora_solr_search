@@ -702,9 +702,10 @@ function islandora_solr_advanced_search_form_submit($form, &$form_state) {
   // foreach loop.
   $lucene_syntax_escape = variable_get('islandora_solr_advanced_search_block_lucene_syntax_escape', FALSE);
   $lucene_regex = variable_get(
-    'islandora_solr_advanced_search_block_lucene_regex',
+    'islandora_solr_advanced_search_block_lucene_regex_default',
     ISLANDORA_SOLR_QUERY_FACET_LUCENE_ESCAPE_REGEX_DEFAULT
   );
+
   foreach ($form_state['values']['terms'] as $term) {
     $field = islandora_solr_lesser_escape($term['field']);
     $search = trim($term['search']);
