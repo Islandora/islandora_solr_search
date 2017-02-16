@@ -50,8 +50,9 @@ class IslandoraSolrResults {
     $elements = array();
 
     // Set breadcrumbs.
-    $this->setBreadcrumbs($islandora_solr_query);
-
+    if(variable_get('islandora_render_drupal_breadcrumbs', TRUE)){
+      $this->setBreadcrumbs($islandora_solr_query);
+    }
     // Raw solr results.
     $islandora_solr_result = $this->islandoraSolrQueryProcessor->islandoraSolrResult;
 
