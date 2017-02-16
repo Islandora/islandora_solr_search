@@ -846,7 +846,7 @@ class IslandoraSolrFacets {
    * Not in place yet.
    */
   public function processFacetRanges() {
-    
+
   }
 
   /**
