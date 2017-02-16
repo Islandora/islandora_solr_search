@@ -50,7 +50,7 @@ class IslandoraSolrResults {
     $elements = array();
 
     // Set breadcrumbs.
-    if(variable_get('islandora_render_drupal_breadcrumbs', TRUE)){
+    if (variable_get('islandora_render_drupal_breadcrumbs', TRUE)) {
       $this->setBreadcrumbs($islandora_solr_query);
     }
     // Raw solr results.
@@ -177,7 +177,6 @@ class IslandoraSolrResults {
     return theme('islandora_solr', array('results' => $object_results, 'elements' => $elements));
   }
 
-
   /**
    * Displays elements of the current solr query.
    *
@@ -228,7 +227,7 @@ class IslandoraSolrResults {
           'query' => $query_minus,
         ),
       );
-      $attr_minus =& $attributes['minus']['attr'];
+      $attr_minus = & $attributes['minus']['attr'];
       $attr_minus['title'] = t('Remove') . ' ' . $query_value;
       $attr_minus['class'] = array('remove-query');
       $attr_minus['rel'] = 'nofollow';
@@ -251,7 +250,6 @@ class IslandoraSolrResults {
         'attributes' => array('class' => 'islandora-solr-query-list query-list'),
       ));
       $output .= '</div>';
-
     }
 
     // Get filter values.
@@ -289,7 +287,7 @@ class IslandoraSolrResults {
             'query' => $query_minus,
           ),
         );
-        $attr_minus =& $attributes['minus']['attr'];
+        $attr_minus = & $attributes['minus']['attr'];
         $attr_minus['title'] = t('Remove') . ' ' . $filter;
         $attr_minus['class'] = array('remove-filter');
         $attr_minus['rel'] = 'nofollow';
@@ -302,7 +300,6 @@ class IslandoraSolrResults {
         // @see http://drupal.org/node/41595
         // Create link.
         $filter_list[] = '<a' . drupal_attributes($attributes['minus']['attr']) . '>(-)</a> ' . $symbol . ' ' . check_plain($filter_string);
-
       }
 
       // Return filter list.
@@ -402,8 +399,7 @@ class IslandoraSolrResults {
         // @see http://drupal.org/node/41595
         // Create link.
         $breadcrumb[] = '<a' . drupal_attributes($attr) . '>' . check_plain($filter_string) . '</a>'
-              . '<span class="islandora-solr-breadcrumb-super"> <a' . drupal_attributes($attr_x) . '>(' . t('x') . ')</a></span>';
-
+            . '<span class="islandora-solr-breadcrumb-super"> <a' . drupal_attributes($attr_x) . '>(' . t('x') . ')</a></span>';
       }
       // At this point reverse the breadcrumbs array (only contains filters).
       $breadcrumb = array_reverse($breadcrumb);
@@ -466,7 +462,7 @@ class IslandoraSolrResults {
       // @see http://drupal.org/node/41595
       // Create link.
       $breadcrumb[] = '<a' . drupal_attributes($attr) . '>' . stripslashes(check_plain($query_value)) . '</a>'
-            . '<span class="islandora-solr-breadcrumb-super"> <a' . drupal_attributes($attr_x) . '>(' . t('x') . ')</a></span>';
+          . '<span class="islandora-solr-breadcrumb-super"> <a' . drupal_attributes($attr_x) . '>(' . t('x') . ')</a></span>';
     }
 
     $breadcrumb[] = l(t('Home'), '<front>', array('attributes' => array('title' => t('Home'))));
@@ -619,14 +615,15 @@ class IslandoraSolrResults {
 
     $this->allSubsArray = array_merge($this->facetFieldArray, $this->searchFieldArray, $this->resultFieldArray);
   }
+
 }
 
 /**
  * Islandora Solr Facets
  */
 class IslandoraSolrFacets {
-  public static $islandoraSolrQuery;
 
+  public static $islandoraSolrQuery;
   // XXX: Need to fix the property/member variable names...  Could have an
   // effect on other code, though, due to public visibility.
   // @codingStandardsIgnoreStart
@@ -636,7 +633,6 @@ class IslandoraSolrFacets {
   public static $facet_dates;
   // Date or integer range facet results (Solr 3.1).
   public static $facet_ranges;
-
   public static $facet_fields_settings;
   public static $facet_fields_settings_simple;
   // Rename?
@@ -647,14 +643,12 @@ class IslandoraSolrFacets {
   public static $needed_solr_call;
   public static $range_slider_key = 0;
   public static $date_filter_key = 0;
-
   public $facet_field;
   public $settings;
   public $facet_type;
   public $results;
   public $title = NULL;
   public $content = NULL;
-
 
   // @codingStandardsIgnoreEnd
 
@@ -687,8 +681,8 @@ class IslandoraSolrFacets {
     // Not in place yet.
     // XXX: isset() checking, as older Solrs (before 3.1) won't return a value.
     self::$facet_ranges = isset($islandora_solr_query->islandoraSolrResult['facet_counts']['facet_ranges']) ?
-      $islandora_solr_query->islandoraSolrResult['facet_counts']['facet_ranges'] :
-      array();
+        $islandora_solr_query->islandoraSolrResult['facet_counts']['facet_ranges'] :
+        array();
 
     // Filtered, not simplified and fields as keys.
     self::$facet_fields_settings = islandora_solr_get_fields('facet_fields', TRUE, FALSE, TRUE);
@@ -852,7 +846,7 @@ class IslandoraSolrFacets {
    * Not in place yet.
    */
   public function processFacetRanges() {
-
+    
   }
 
   /**
@@ -956,7 +950,7 @@ class IslandoraSolrFacets {
           $query_processor->executeQuery();
           if (!empty($query_processor->islandoraSolrResult) && !empty($query_processor->islandoraSolrResult['response']['objects'])) {
             $label = (!empty($query_processor->islandoraSolrResult['response']['objects'][0]['object_label']) ?
-            $query_processor->islandoraSolrResult['response']['objects'][0]['object_label'] : NULL);
+                    $query_processor->islandoraSolrResult['response']['objects'][0]['object_label'] : NULL);
           }
           // Fall back to islandora object if PID is not in solr.
           // eg: content models.
@@ -1238,12 +1232,12 @@ class IslandoraSolrFacets {
     // XXX: We do not want this to possibly grab from the cache when AJAXing,
     // since $elements changes... Makes a mess of rebuilding.
     $old_build_id = (
-      // ... our form...
-      isset($_POST['form_id']) && strpos($_POST['form_id'], 'islandora_solr_range_slider_form_') === 0 &&
-      // ... AJAXing...
-      isset($_POST['ajax_page_state']) &&
-      // ... with the build ID.
-      isset($_POST['form_build_id'])) ? $_POST['form_build_id'] : NULL;
+        // ... our form...
+        isset($_POST['form_id']) && strpos($_POST['form_id'], 'islandora_solr_range_slider_form_') === 0 &&
+        // ... AJAXing...
+        isset($_POST['ajax_page_state']) &&
+        // ... with the build ID.
+        isset($_POST['form_build_id'])) ? $_POST['form_build_id'] : NULL;
     if (isset($old_build_id)) {
       $_POST['form_build_id'] = NULL;
     }
@@ -1505,4 +1499,5 @@ class IslandoraSolrFacets {
     $results = $min_max_query->islandoraSolrResult;
     return $results['response']['objects'][0]['solr_doc'][$field];
   }
+
 }
