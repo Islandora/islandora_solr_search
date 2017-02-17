@@ -59,7 +59,7 @@ A: In 7.x the colon in a PID must be escaped (i.e., islandora:34 becomes islando
 
 Current maintainers:
 
-* [Jordan Dukart](https://github.com/jordandukart)
+* [Nelson Hart](https://github.com/nhart)
 
 ## Development
 
