@@ -9,7 +9,7 @@ define('ISLANDORA_SOLR_SEARCH_PATH', 'islandora/search');
 define('ISLANDORA_SOLR_QUERY_SPLIT_REGEX', '/(?<!\\\\) /');
 define('ISLANDORA_SOLR_QUERY_FIELD_VALUE_SPLIT_REGEX', '/(?<!\\\\):/');
 
-const ISLANDORA_SOLR_QUERY_FACET_LUCENE_ESCAPE_REGEX_DEFAULT = '/(\+|-|&&|\|\||!|\(|\)|\{|\}|\[|\]|\^|~|\*|\?|\:|\"|\\)/';
+const ISLANDORA_SOLR_QUERY_FACET_LUCENE_ESCAPE_REGEX_DEFAULT = '/(\+|-|&&|\|\||!|\(|\)|\{|\}|\[|\]|\^|~|\*|\?|\:|\"|\\\\)/';
 
 const ISLANDORA_SOLR_FACET_BUCKET_CLASSES_HOOK_BASE = 'islandora_solr_facet_bucket_classes';
 
