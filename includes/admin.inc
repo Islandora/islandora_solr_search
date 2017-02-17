@@ -1088,7 +1088,7 @@ function islandora_solr_admin_breadcrumbs_settings(array $form, array &$form_sta
   $form['islandora_solr_breadcrumbs_admin']['islandora_solr_breadcrumbs_parent_fields'] = array(
     '#type' => 'textarea',
     '#title' => t('Solr Parent Fields'),
-    '#description' => t('A list of Solr fields containing the PIDs of parent objects, 
+    '#description' => t('A list of Solr fields containing the PIDs of parent objects,
     one per line. Will search top to bottom and stop on the first hit.'),
     '#default_value' => variable_get('islandora_solr_breadcrumbs_parent_fields', "RELS_EXT_isMemberOfCollection_uri_ms\r\nRELS_EXT_isMemberOf_uri_ms"),
   );
