@@ -1021,11 +1021,7 @@ class IslandoraSolrFacets {
       $link['count'] = $count;
       $link['link_plus'] = '<a' . drupal_attributes($attributes['plus']['attr']) . '>+</a>';
       $link['link_minus'] = '<a' . drupal_attributes($attributes['minus']['attr']) . '>-</a>';
-      $buckets[$bucket] = $link;
-    }
-
-    if (isset($this->settings['solr_field_settings']['sort_by']) && $this->settings['solr_field_settings']['sort_by'] == 'index') {
-      ksort($buckets);
+      $buckets[] = $link;
     }
 
     // Show more link.
