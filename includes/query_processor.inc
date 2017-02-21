@@ -237,7 +237,6 @@ class IslandoraSolrQueryProcessor {
     }
 
     // Determine the default facet sort order.
-    // https://cwiki.apache.org/confluence/display/solr/Faceting#Faceting-Thefacet.sortParameter
     $default_sort = (variable_get('islandora_solr_facet_max_limit', '20') <= 0 ? 'index' : 'count');
 
     $facet_sort_array = array();
