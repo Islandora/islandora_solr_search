@@ -2005,7 +2005,7 @@ function islandora_solr_admin_settings_facet_fields($form, &$form_state, $variab
       'count' => t('Count of facet (numerically)'),
       'index' => t('Text labels (alphabetically)'),
     ),
-    '#description' => t('Facets can be sorted by text label or the count of the facet. This does not change how the facet is created, only the order it is displayed in.'),
+    '#description' => t('Facets can be sorted by text label or the count of the facet. If you sort by text labels AND replace PID with object label your sort order is not guaranteed.'),
   );
 
   if (islandora_solr_is_date_field($solr_field)) {
