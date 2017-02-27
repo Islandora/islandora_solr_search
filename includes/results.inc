@@ -209,7 +209,7 @@ class IslandoraSolrResults {
       $query_list = array();
       if (variable_get('islandora_solr_human_friendly_query_block', TRUE)) {
         foreach ($this->searchFieldArray as $search_field => $search_field_label) {
-          $query_value = str_replace($search_field . ':(', $search_field_label . ':(', $query_value);
+          $query_value = str_replace($search_field . ':(', $search_field_label . ':(', stripslashes($query_value));
         }
       }
 
@@ -228,7 +228,7 @@ class IslandoraSolrResults {
         ),
       );
       $attr_minus =& $attributes['minus']['attr'];
-      $attr_minus['title'] = t('Remove') . ' ' . $query_value;
+      $attr_minus['title'] = t('Remove') . ' ' . $islandora_solr_query->solrQuery;
       $attr_minus['class'] = array('remove-query');
       $attr_minus['rel'] = 'nofollow';
       $attr_minus['href'] = url($path_minus, array('query' => $query_minus));
@@ -239,7 +239,7 @@ class IslandoraSolrResults {
       // XXX: We are not using l() because of active classes:
       // @see http://drupal.org/node/41595
       // Create link.
-      $query_list[] = '<a' . drupal_attributes($attributes['minus']['attr']) . '>(-)</a> ' . check_plain($query_value);
+      $query_list[] = '<a' . drupal_attributes($attributes['minus']['attr']) . '>(-)</a> ' . check_plain($islandora_solr_query->solrQuery);
 
       // Add wrap and list.
       $output .= '<div class="islandora-solr-query-wrap">';
@@ -348,7 +348,6 @@ class IslandoraSolrResults {
     if (empty($params['f'])) {
       $params['f'] = array();
     }
-
     // Loop to create filter breadcrumbs if available.
     if (!empty($fq)) {
       $f['f'] = array();
@@ -460,11 +459,10 @@ class IslandoraSolrResults {
         $query_implode[] = $value;
       }
       $query_value = implode(" ", $query_implode);
-
       // XXX: We are not using l() because of active classes:
       // @see http://drupal.org/node/41595
       // Create link.
-      $breadcrumb[] = '<a' . drupal_attributes($attr) . '>' . stripslashes(check_plain($query_value)) . '</a>'
+      $breadcrumb[] = '<a' . drupal_attributes($attr) . '>' . check_plain($query_value) . '</a>'
             . '<span class="islandora-solr-breadcrumb-super"> <a' . drupal_attributes($attr_x) . '>(' . t('x') . ')</a></span>';
     }
 

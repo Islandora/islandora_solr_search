@@ -529,7 +529,7 @@ function islandora_solr_advanced_search_form($form, &$form_state) {
 
         // Second part of the split is the query value (or first part of it).
         $value_split[1] = str_replace(array('(', ')'), '', $value_split[1]);
-        $values['terms'][$i]['search'] = stripslashes($value_split[1]);
+        $values['terms'][$i]['search'] = $value_split[1];
       }
       // If the string does not include a colon or AND/OR/NOT, then it is a
       // part of the query value.
