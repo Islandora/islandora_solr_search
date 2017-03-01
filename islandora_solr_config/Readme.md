@@ -2,7 +2,7 @@
 
 ## Introduction
 
-Islandora Solr display profiles provides result disSolrplay profiles for the Islandora Solr Search Module
+Islandora Solr display profiles provides Solr search results alternative display profiles and functionality for the Islandora Solr Search Module.
 
 ## Requirements
 
@@ -19,7 +19,7 @@ This module requires the following modules/libraries:
  
 ## Configuration
  
-Select and configure your prefered display handlers in Administration » Islandora » Solr Index (admin/islandora/search/islandora_solr/settings).
+Select and configure your prefered display handlers in Administration » Islandora » Solr Index » Solr Settings (admin/islandora/search/islandora_solr/settings).
 
 ## Documentation
 
