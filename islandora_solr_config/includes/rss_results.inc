@@ -123,7 +123,7 @@ class IslandoraSolrResultsRSS extends IslandoraSolrResults {
     $is_datastream = in_array($dsid, $doc['datastreams']);
 
     if ($is_datastream) {
-      $enclosure_url = $object_url . '/datastream/' . $dsid;
+      $enclosure_url = $base_url . '/islandora/object/' . $doc['PID'] . '/Datastream/' . $dsid;
     }
 
     $rss_source = variable_get('site_name', "Default site name");
