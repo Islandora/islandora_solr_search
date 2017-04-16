@@ -1,0 +1,8 @@
+name = Islandora and Islandora Solr Testing
+description = Required for testing islandora web-test case combined with solr testing.
+core = 7.x
+package = Testing
+hidden = TRUE
+dependencies[] = islandora
+dependencies[] = islandora_solr
+files[] = islandora_solr_ingest_test.module

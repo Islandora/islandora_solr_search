@@ -10,4 +10,5 @@ files[] = includes/query_processor.inc
 files[] = includes/results.inc
 files[] = tests/islandora_solr_query_processor.test
 files[] = tests/islandora_solr_simple_search.test
+files[] = tests/islandora_solr_ingest.test
 stylesheets[all][] = css/islandora_solr.base.css
