@@ -939,6 +939,32 @@ class IslandoraSolrFacets {
     $soft_limit = self::$soft_limit;
     $buckets = array();
     $replace_bucket = (isset($this->settings['solr_field_settings']['pid_object_label']) && $this->settings['solr_field_settings']['pid_object_label'] ? TRUE : FALSE);
+    $pid_mapper = function ($result) {
+      $pid = str_replace('info:fedora/', '', $result['bucket']);
+      return $pid;
+    };
+    if ($replace_bucket) {
+      $valid_pids = array_filter(array_map($pid_mapper, $results), 'islandora_is_valid_pid');
+      $mapping = array();
+      foreach ($valid_pids as $valid_pid) {
+        $mapping[$valid_pid] = "\"{$valid_pid}\"";
+      }
+      $qp = new IslandoraSolrQueryProcessor();
+      $qp->buildQuery(format_string('PID:(!pids)', array(
+        '!pids' => implode(' OR ', $mapping),
+      )));
+      $label_field = variable_get('islandora_solr_object_label_field', 'fgs_label_s');
+      $qp->solrParams['facet'] = 'false';
+      $qp->solrParams['fl'] = "PID, $label_field";
+      $qp->solrLimit = count($mapping);
+      $qp->executeQuery(FALSE, TRUE);
+      $labels = array();
+      if ($qp->islandoraSolrResult['response']['numFound'] > 0) {
+        foreach ($qp->islandoraSolrResult['response']['objects'] as $doc) {
+          $labels[$doc['PID']] = $doc['object_label'];
+        }
+      }
+    }
     foreach ($results as $key => $values) {
       $bucket = $values['bucket'];
       $filter = $values['filter'];
@@ -946,23 +972,16 @@ class IslandoraSolrFacets {
 
       // Replace link bucket with object label based on facet field settings.
       if ($replace_bucket) {
-        $query_processor = new IslandoraSolrQueryProcessor();
         $label = NULL;
-        $pid = str_replace('info:fedora/', '', $bucket);
-        if (islandora_is_valid_pid($pid)) {
-          $query_processor->buildQuery("PID:\"$pid\"");
-          $query_processor->solrParams['fl'] = 'PID, ' . variable_get('islandora_solr_object_label_field', 'fgs_label_s');
-          $query_processor->executeQuery();
-          if (!empty($query_processor->islandoraSolrResult) && !empty($query_processor->islandoraSolrResult['response']['objects'])) {
-            $label = (!empty($query_processor->islandoraSolrResult['response']['objects'][0]['object_label']) ?
-            $query_processor->islandoraSolrResult['response']['objects'][0]['object_label'] : NULL);
-          }
-          // Fall back to islandora object if PID is not in solr.
-          // eg: content models.
-          else {
-            if ($object = islandora_object_load($pid)) {
-              $label = $object->label;
-            }
+        $pid = $pid_mapper($values);
+        if (isset($labels[$pid])) {
+          $label = $labels[$pid];
+        }
+        // Fall back to islandora object if PID is not in solr.
+        // eg: content models.
+        else {
+          if ($object = islandora_object_load($pid)) {
+            $label = $object->label;
           }
         }
         $bucket = ($label ? $label : $bucket);
