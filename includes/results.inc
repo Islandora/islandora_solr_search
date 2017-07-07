@@ -943,25 +943,28 @@ class IslandoraSolrFacets {
       $pid = str_replace('info:fedora/', '', $result['bucket']);
       return $pid;
     };
+    $labels = array();
     if ($replace_bucket) {
       $valid_pids = array_filter(array_map($pid_mapper, $results), 'islandora_is_valid_pid');
       $mapping = array();
       foreach ($valid_pids as $valid_pid) {
         $mapping[$valid_pid] = "\"{$valid_pid}\"";
       }
-      $qp = new IslandoraSolrQueryProcessor();
-      $qp->buildQuery(format_string('PID:(!pids)', array(
-        '!pids' => implode(' OR ', $mapping),
-      )));
-      $label_field = variable_get('islandora_solr_object_label_field', 'fgs_label_s');
-      $qp->solrParams['facet'] = 'false';
-      $qp->solrParams['fl'] = "PID, $label_field";
-      $qp->solrLimit = count($mapping);
-      $qp->executeQuery(FALSE, TRUE);
-      $labels = array();
-      if ($qp->islandoraSolrResult['response']['numFound'] > 0) {
-        foreach ($qp->islandoraSolrResult['response']['objects'] as $doc) {
-          $labels[$doc['PID']] = $doc['object_label'];
+      if (!empty($mapping)) {
+        $qp = new IslandoraSolrQueryProcessor();
+        $qp->buildQuery(format_string('PID:(!pids)', array(
+          '!pids' => implode(' OR ', $mapping),
+        )));
+        $label_field = variable_get('islandora_solr_object_label_field', 'fgs_label_s');
+        $qp->solrParams['facet'] = 'false';
+        $qp->solrParams['fl'] = "PID, $label_field";
+        $qp->solrLimit = count($mapping);
+        $qp->executeQuery(FALSE, TRUE);
+        $labels = array();
+        if ($qp->islandoraSolrResult['response']['numFound'] > 0) {
+          foreach ($qp->islandoraSolrResult['response']['objects'] as $doc) {
+            $labels[$doc['PID']] = $doc['object_label'];
+          }
         }
       }
     }
