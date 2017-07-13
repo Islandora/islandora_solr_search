@@ -515,7 +515,7 @@ function islandora_solr_truncate_field_display($display_values, $max_length, $ad
       }
     }
 
-    // Ensure any markup that may exist in this field value is properly closed.
+    // Ensure any markup that may exist in this fields value is properly closed.
     $original_value = _filter_htmlcorrector(implode($separator, $updated_display_values));
     $truncated_value = _filter_htmlcorrector(implode($separator, $truncated_list));
 
