@@ -529,7 +529,6 @@ function islandora_solr_truncate_field_display($display_values, $max_length, $ad
           '!field' => $link_options['field'],
           '!value' => islandora_solr_lesser_escape($original_value),
           ));
-
         $original_value = l(
           $original_value,
           "islandora/search/$solr_query",
@@ -537,7 +536,6 @@ function islandora_solr_truncate_field_display($display_values, $max_length, $ad
             'html' => TRUE,
           )
         );
-
         $truncated_value = l(
           $truncated_value,
           "islandora/search/$solr_query",
@@ -562,10 +560,6 @@ function islandora_solr_truncate_field_display($display_values, $max_length, $ad
     $updated_display_values .= '</span>';
 
   }
-  else {
-    $updated_display_values = '';
-  }
-
   return $updated_display_values;
 };
 
