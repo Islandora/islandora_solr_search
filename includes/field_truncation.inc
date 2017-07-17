@@ -15,7 +15,7 @@ class IslandoraSolrFieldTruncation {
   protected $addEllipsis;
   protected $wordsafeLength;
 
-  protected $generalDom = <<<EOXML
+  const GENERAL_DOM = <<<EOXML
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -74,7 +74,7 @@ EOXML;
    */
   protected function document($text) {
     $dom = new DOMDocument();
-    $dom_data = str_replace("@replace@", $text, $this->generalDom);
+    $dom_data = str_replace("@replace@", $text, static::GENERAL_DOM);
     @$dom->loadXML($dom_data);
     return $dom;
   }
