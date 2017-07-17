@@ -181,7 +181,7 @@ class IslandoraSolrQueryProcessor {
     $this->solrStart = max(0, $start_page) * $this->solrLimit;
 
     // Set facet parameters.
-    $facet_array = islandora_solr_get_fields('facet_fields');
+    $facet_array = islandora_solr_get_fields('facet_fields', TRUE, FALSE, TRUE);
     $facet_fields = implode(",", array_keys($facet_array));
 
     // Set params.
@@ -235,6 +235,18 @@ class IslandoraSolrQueryProcessor {
 
       $params_array = array_merge($params_array, $params_date_facets);
     }
+
+    // Determine the default facet sort order.
+    $default_sort = (variable_get('islandora_solr_facet_max_limit', '20') <= 0 ? 'index' : 'count');
+
+    $facet_sort_array = array();
+    foreach (array_merge($facet_array, $facet_dates) as $key => $value) {
+      if (isset($value['solr_field_settings']['sort_by']) && $value['solr_field_settings']['sort_by'] != $default_sort) {
+        // If the sort doesn't match default then specify it in the parameters.
+        $facet_sort_array["f.{$key}.facet.sort"] = check_plain($value['solr_field_settings']['sort_by']);
+      }
+    }
+    $params_array = array_merge($params_array, $facet_sort_array);
 
     // Highlighting.
     $highlighting_array = islandora_solr_get_snippet_fields();

@@ -1718,6 +1718,7 @@ function _islandora_solr_handle_solr_field_settings($solr_field_settings = NULL,
           'date_filter_datepicker_enabled',
           'date_filter_datepicker_range',
           'pid_object_label',
+          'sort_by',
         ));
         $relevant_values = array_intersect_key($solr_field_settings, $fields);
         $relevant_values['label'] = isset($relevant_values['label']) ?
@@ -2057,6 +2058,16 @@ function islandora_solr_admin_settings_facet_fields($form, &$form_state, $variab
     '#title' => t('Label'),
     '#default_value' => isset($values['label']) ? $values['label'] : '',
     '#description' => t('A human-readable name.'),
+  );
+  $form['options']['sort_by'] = array(
+    '#type' => 'radios',
+    '#title' => t('Sort by'),
+    '#default_value' => isset($values['sort_by']) ? $values['sort_by'] : 'count',
+    '#options' => array(
+      'count' => t('Count of facet (numerically)'),
+      'index' => t('Text labels (alphabetically)'),
+    ),
+    '#description' => t('Facets can be sorted by text label or the count of the facet. If you sort by text labels AND replace PID with object label your sort order is not guaranteed.'),
   );
 
   if (islandora_solr_is_date_field($solr_field)) {
