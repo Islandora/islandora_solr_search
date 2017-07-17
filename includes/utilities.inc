@@ -302,6 +302,8 @@ function islandora_solr_prepare_solr_doc($object_results) {
  *   Returns the same array but with prepared Solr field values.
  */
 function islandora_solr_prepare_solr_results($solr_results) {
+  module_load_include('inc', 'islandora_solr', 'includes/field_truncation');
+
   $object_results = $solr_results['response']['objects'];
   $highlighting = isset($solr_results['highlighting']) ? $solr_results['highlighting'] : array();
   $fields_all = islandora_solr_get_fields('result_fields', FALSE);
@@ -364,11 +366,20 @@ function islandora_solr_prepare_solr_results($solr_results) {
           $tf =& $truncate_length[$field];
           $wordsafe = FALSE;
           $min_wordsafe_length = 1;
+
           if (isset($tf['wordsafe'])) {
             $wordsafe = $tf['wordsafe'];
             $min_wordsafe_length = $tf['wordsafe_length'];
           }
-          $val_val = truncate_utf8($val_val, $tf['maximum_length'], $wordsafe, $tf['add_ellipsis'], $min_wordsafe_length);
+
+          $val_val = new IslandoraSolrFieldTruncation(
+            $val_val,
+            $tf['maximum_length'],
+            $wordsafe,
+            $tf['add_ellipsis'],
+            $min_wordsafe_length
+          );
+
         };
         array_walk($value, $truncate_func);
       }
@@ -486,6 +497,8 @@ function islandora_solr_islandora_basic_collection_backend_callable($collection_
  *   The updated display values.
  */
 function islandora_solr_truncate_field_display($display_values, $max_length, $add_ellipsis, $word_safe, $wordsafe_length, $separator, $link_options = NULL) {
+  module_load_include('inc', 'islandora_solr', 'includes/field_truncation');
+
   $updated_display_values = $display_values;
   $separator = filter_xss($separator, islandora_solr_get_filter_tags());
 
@@ -509,15 +522,22 @@ function islandora_solr_truncate_field_display($display_values, $max_length, $ad
         if ($add_ellipsis) {
           $truncation_length = max($truncation_length, drupal_strlen(t('...')));
         }
-        $current_value = truncate_utf8($current_value, $truncation_length, $word_safe, $add_ellipsis, $wordsafe_length);
-        $truncated_list[] = $current_value;
+
+        $truncated_list[] = new IslandoraSolrFieldTruncation(
+          $current_value,
+          $truncation_length,
+          $word_safe,
+          $add_ellipsis,
+          $wordsafe_length
+        );
+
         break;
       }
     }
 
     // Ensure any markup that may exist in this fields value is properly closed.
-    $original_value = _filter_htmlcorrector(implode($separator, $updated_display_values));
-    $truncated_value = _filter_htmlcorrector(implode($separator, $truncated_list));
+    $original_value = implode($separator, $updated_display_values);
+    $truncated_value = implode($separator, $truncated_list);
 
     if ($link_options !== NULL) {
       if (isset($link_options['link_to_object']) && $link_options['link_to_object'] == TRUE) {
