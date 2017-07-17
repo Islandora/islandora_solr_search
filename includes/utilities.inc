@@ -535,10 +535,8 @@ function islandora_solr_truncate_field_display($display_values, $max_length, $ad
       }
     }
 
-    // Ensure any markup that may exist in this fields value is properly closed.
     $original_value = implode($separator, $updated_display_values);
     $truncated_value = implode($separator, $truncated_list);
-
     if ($link_options !== NULL) {
       if (isset($link_options['link_to_object']) && $link_options['link_to_object'] == TRUE) {
         $original_value = l($original_value, $link_options['url'], $link_options['options']);
