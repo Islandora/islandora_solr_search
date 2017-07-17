@@ -11,7 +11,6 @@
 class IslandoraSolrFieldTruncation {
   protected $writer;
   protected $output = '';
-  protected $truncationLength;
   protected $wordSafe;
   protected $addEllipsis;
   protected $wordsafeLength;
@@ -44,20 +43,19 @@ EOXML;
    *   No effect if $word_safe is false.
    */
   public function __construct($text, $desired_length, $word_safe = TRUE, $add_ellipsis = TRUE, $wordsafe_length = 1) {
-    $this->truncationLength = $desired_length;
     $this->wordSafe = $word_safe;
     $this->addEllipsis = $add_ellipsis;
     $this->wordsafeLength = $wordsafe_length;
 
     if (strpos($text, '<') === FALSE && strpos($text, '>') === FALSE) {
       // No apparent markup... No need for more processing.
-      $this->output = $this->truncateText($text);
+      $this->output = $this->truncateText($text, $desired_length);
       return;
     }
 
     $this->writer = new XMLWriter();
     $this->writer->openMemory();
-    $this->process($this->document($text)->getElementsByTagName('body')->item(0), $this->truncationLength);
+    $this->process($this->document($text)->getElementsByTagName('body')->item(0), $desired_length);
     $this->output = $this->writer->outputMemory();
   }
 
@@ -86,11 +84,13 @@ EOXML;
    *
    * @param string $text
    *   The string to truncate.
+   * @param string $remaining
+   *   The remaining truncation length.
    */
-  protected function truncateText($text) {
+  protected function truncateText($text, $remaining) {
     return truncate_utf8(
       $text,
-      $this->truncationLength,
+      $remaining,
       $this->wordSafe,
       $this->addEllipsis,
       $this->wordsafeLength
