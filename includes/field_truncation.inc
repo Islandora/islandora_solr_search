@@ -84,11 +84,13 @@ EOXML;
    *
    * @param string $text
    *   The string to truncate.
+   * @param string $remaining
+   *   The remaining truncation length.
    */
   protected function truncateText($text, $remaining) {
     return truncate_utf8(
       $text,
-      $desired_length,
+      $remaining,
       $this->wordSafe,
       $this->addEllipsis,
       $this->wordsafeLength
