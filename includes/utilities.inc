@@ -372,7 +372,7 @@ function islandora_solr_prepare_solr_results($solr_results) {
             $min_wordsafe_length = $tf['wordsafe_length'];
           }
 
-          $val_val = new IslandoraSolrFieldTruncation(
+          $val_val = (string) new IslandoraSolrFieldTruncation(
             $val_val,
             $tf['maximum_length'],
             $wordsafe,
@@ -523,7 +523,7 @@ function islandora_solr_truncate_field_display($display_values, $max_length, $ad
           $truncation_length = max($truncation_length, drupal_strlen(t('...')));
         }
 
-        $truncated_list[] = new IslandoraSolrFieldTruncation(
+        $truncated_list[] = (string) new IslandoraSolrFieldTruncation(
           $current_value,
           $truncation_length,
           $word_safe,
