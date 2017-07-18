@@ -32,11 +32,11 @@ EOXML;
    *
    * @param string $text
    *   The text to truncate.
-   * @param string $desired_length
+   * @param int $desired_length
    *   The desired length to truncate to.
    * @param bool $word_safe
    *   Attempt to truncate on a word boundary.
-   * @param string $add_ellipsis
+   * @param bool $add_ellipsis
    *   Add '...' to the end of the truncated string.
    * @param int $wordsafe_length
    *   If $word_safe is true, the minimum acceptable length for truncation.
@@ -84,7 +84,7 @@ EOXML;
    *
    * @param string $text
    *   The string to truncate.
-   * @param string $remaining
+   * @param int $remaining
    *   The remaining truncation length.
    */
   protected function truncateText($text, $remaining) {
@@ -102,7 +102,7 @@ EOXML;
    *
    * @param DOMElement $el
    *   The DOMElement to process.
-   * @param string $remaining
+   * @param int $remaining
    *   The max truncation length.
    *
    * @throws Exception
