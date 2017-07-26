@@ -75,7 +75,13 @@ EOXML;
   protected function document($text) {
     $dom = new DOMDocument();
     $dom_data = str_replace("@replace@", $text, static::GENERAL_DOM);
-    @$dom->loadXML($dom_data);
+
+    // The dom can Fail to load on elements that are self
+    // closing (such as <br/>) or special chars like ><. This is why we choose
+    // to load the data as HTML instead.
+    if (!@$dom->loadXML($dom_data)) {
+      @$dom->loadHTML($dom_data);
+    }
     return $dom;
   }
 
