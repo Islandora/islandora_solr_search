@@ -104,8 +104,10 @@ function islandora_solr_get_breadcrumbs_recursive($pid, array &$context = NULL) 
 function islandora_solr_get_breadcrumb_parent($pid) {
   module_load_include('inc', 'islandora_solr', 'includes/query_processor');
   $solr_build = new IslandoraSolrQueryProcessor();
-  $solr_query = "PID:(" . islandora_solr_lesser_escape($pid) . " OR " .
-    islandora_solr_lesser_escape("info:fedora/" . $pid) . ")";
+  $solr_query = format_string('PID:("!pid" OR "!uri")', array(
+    '!pid' => islandora_solr_lesser_escape($pid),
+    '!uri' => islandora_solr_lesser_escape("info:fedora/{$pid}"),
+  ));
   $parent_fields = preg_split("/\\r\\n|\\n|\\r/", variable_get('islandora_solr_breadcrumbs_parents', "RELS_EXT_isMemberOfCollection_uri_ms\r\nRELS_EXT_isMemberOf_uri_ms"), -1, PREG_SPLIT_NO_EMPTY);
   $solr_params = array(
     'fl' => implode(",", $parent_fields) . ',fgs_label_s,PID',
