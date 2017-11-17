@@ -399,10 +399,19 @@ function islandora_solr_prepare_solr_results($solr_results) {
         // Add link to search.
         if (in_array($field, $link_to_search)) {
           $map_to_link = function ($original_value, $formatted_value) use ($field) {
+            if (variable_get('islandora_solr_advanced_search_block_lucene_syntax_escape', FALSE)) {
+              $lucene_regex = variable_get('islandora_solr_advanced_search_block_lucene_regex_default', ISLANDORA_SOLR_QUERY_FACET_LUCENE_ESCAPE_REGEX_DEFAULT);
+              $linked_value = islandora_solr_facet_query_escape(stripcslashes($original_value), $lucene_regex);
+            }
+            else {
+              $linked_value = islandora_solr_lesser_escape($original_value);
+            }
+            $linked_value = islandora_solr_replace_slashes($linked_value);
+
             $solr_query = format_string('!field:"!value"', array(
-              '!field' => $field,
-              '!value' => islandora_solr_lesser_escape($original_value),
-            ));
+                '!field' => $field,
+                '!value' => $linked_value,
+              ));
             return l($formatted_value, "islandora/search/$solr_query", array(
               'html' => TRUE,
             ));
