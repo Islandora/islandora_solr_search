@@ -602,7 +602,7 @@ function islandora_solr_admin_settings($form, &$form_state) {
   );
   $form['islandora_solr_tabs']['query_defaults']['islandora_solr_base_sort'] = array(
     '#type' => 'textfield',
-    '#title' => t('Sort field for search results'),
+    '#title' => t('Sort field(s) for search results'),
     '#size' => 30,
     '#description' => t('Indicates which field(s) should define the sort order for the search results.<br />
     For example: <strong>score desc, fgs_createdDate_dt desc</strong> will sort first by score, then by ingest date.<br />
