@@ -20,7 +20,7 @@ This module requires the following modules/libraries:
  
 Set the 'Solr URL' and select a 'Request handler' in Administration » Islandora » Solr Index (admin/islandora/search/islandora_solr).
 
-![Configuration](https://wiki.duraspace.org/download/attachments/69833534/solr-basic-settings.png?version=1&modificationDate=1526909744720&api=v2)
+![Configuration](docs/solr-basic-settings.png)
 
 Islandora Solr Search offers many more configuration options in Administration » Islandora » Solr Index » Solr settings (admin/islandora/search/islandora_solr/settings).
 
@@ -30,7 +30,7 @@ Islandora Solr Search also implements the Islandora Basic Collection solution pa
 
 ### Breadcrumbs
 To enable breadcrumbs, browse to Administration » Islandora » Configuration and choose **Islandora Solr** under **Breadcrumb generation**.
-![Configuration](https://cloud.githubusercontent.com/assets/2857697/19577960/1c70a1c8-96df-11e6-8a7b-92fa16c30137.jpg)
+![Configuration](docs/solr-breadcrumbs.jpg)
 
 ## Documentation
 
