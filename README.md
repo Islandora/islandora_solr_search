@@ -2,7 +2,7 @@
 
 ## Introduction
 
-Islandora Solr provides a highly configurable interface to perform Solr queries and display Solr data in different ways.
+Islandora Solr Search provides a highly configurable interface to perform Solr queries and display Solr data in different ways.
 
 ## Requirements
 
@@ -20,7 +20,7 @@ This module requires the following modules/libraries:
  
 Set the 'Solr URL' and select a 'Request handler' in Administration » Islandora » Solr Index (admin/islandora/search/islandora_solr).
 
-![Configuration](http://i.imgur.com/qhELL78.png)
+![Configuration](https://wiki.duraspace.org/download/attachments/69833534/solr-basic-settings.png?version=1&modificationDate=1526909744720&api=v2)
 
 Islandora Solr Search offers many more configuration options in Administration » Islandora » Solr Index » Solr settings (admin/islandora/search/islandora_solr/settings).
 
@@ -47,7 +47,7 @@ Further documentation for this module is available at [our wiki](https://wiki.du
 
 Q. Why are some dates not rendered correctly?
  
-A. On 32 bit systems, the PHP function `strtotime()` has a limited range. Typically from Fri, 13 Dec 1901 20:45:54 UTC to Tue, 19 Jan 2038 03:14:07 UTC. For more info see [this](http://php.net/manual/en/function.strtotime.php#refsect1-function.strtotime-notes).
+A. On 32 bit systems, the PHP function `strtotime()` has a limited range. Typically from Fri, 13 Dec 1901 20:45:54 UTC to Tue, 19 Jan 2038 03:14:07 UTC. For more info see [the notes for `strtotime()`](https://secure.php.net/manual/en/function.strtotime.php#refsect1-function.strtotime-notes).
 
 Q: Why can't I connect to Solr via https?
 
@@ -55,7 +55,7 @@ A: The Apache Solr PHP Client that we use does not support https connections to 
 
 Q: Advanced search on PID worked in 6.x. Why do I get no results for the same search in 7.x?
 
-A: In 7.x the colon in a PID must be escaped (i.e., islandora:34 becomes islandora\:34) or the entire query must be wrapped in quotation marks  (i,e., "islandora:34").
+A: In 7.x the colon in a PID must be escaped with a backslash (i.e., islandora:34 becomes islandora\:34) or the entire query must be wrapped in quotation marks  (i,e., "islandora:34").
 
 ## Maintainers/Sponsors
 
