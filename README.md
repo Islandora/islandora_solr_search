@@ -51,11 +51,17 @@ A. On 32 bit systems, the PHP function `strtotime()` has a limited range. Typica
 
 Q: Why can't I connect to Solr via https?
 
-A: The Apache Solr PHP Client that we use does not support https connections to Solr. [ISLANDORA-646](https://jira.duraspace.org/browse/ISLANDORA-646) seeks to remedy this.
+A: The Apache Solr PHP Client that we use does not support https connections to Solr. [ISLANDORA-646](https://jira.duraspace.org/browse/ISLANDORA-646) documents this issue, but it will not be fixed.
 
 Q: Advanced search on PID worked in 6.x. Why do I get no results for the same search in 7.x?
 
 A: In 7.x the colon in a PID must be escaped with a backslash (i.e., islandora:34 becomes islandora\:34) or the entire query must be wrapped in quotation marks  (i,e., "islandora:34").
+
+Q. Can I use Solr search results when setting up 'Page specific visibility settings' for blocks?
+
+A. Due to URL escape characters in Solr searches, Drupal does not respect 'Page specific visibility settings' for blocks. You will have to manually un-escape the URL when configuring where your blocks are placed. [This example](https://jira.duraspace.org/secure/attachment/19044/19044_drupal_encode_path.patch) (which involves patching Drupal core) may help.
+
+
 
 ## Maintainers/Sponsors
 
