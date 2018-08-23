@@ -61,8 +61,6 @@ Q. Can I use Solr search results when setting up 'Page specific visibility setti
 
 A. Due to URL escape characters in Solr searches, Drupal does not respect 'Page specific visibility settings' for blocks. You will have to manually un-escape the URL when configuring where your blocks are placed. [This example](https://jira.duraspace.org/secure/attachment/19044/19044_drupal_encode_path.patch) (which involves patching Drupal core) may help.
 
-
-
 ## Maintainers/Sponsors
 
 Current maintainers:
