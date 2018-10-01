@@ -20,36 +20,70 @@ function islandora_solr_admin_index_settings($form, &$form_state) {
     $form_state['values']['islandora_solr_url'] :
     variable_get('islandora_solr_url', 'localhost:8080/solr');
 
+  if ((isset($form_state['triggering_element']) &&
+  $form_state['triggering_element']['#name'] == 'islandora_solr_query_backends')
+  || !isset($form_state['triggering_element'])) {
+
+    $query_backend = !empty($form_state['values']['islandora_solr_query_backend']) ?
+      $form_state['values']['islandora_solr_query_backend'] :
+      variable_get('islandora_solr_query_backend', ISLANDORA_SOLR_LEGACY_QUERY_BACKEND);
+
+    $backends = module_invoke_all(ISLANDORA_SOLR_QUERY_BACKEND_HOOK);
+    if (!isset($backends[$query_backend])) {
+      // If the hook no longer exists, switch to the legacy backend.
+      $query_backend = ISLANDORA_SOLR_LEGACY_QUERY_BACKEND;
+    }
+
+    $backend_options = array();
+    foreach ($backends as $key => $backend) {
+      $backend_options[$key] = $backend['title'];
+    }
+
+    if (!class_exists(islandora_solr_get_namespaced_class($backends, 'queryClass'))) {
+      $confirmation_message = format_string('<img src="@image_url"/>!message', array(
+        '@image_url' => file_create_url('misc/watchdog-error.png'),
+        '!message' => t('Query class @class could not be loaded.',
+          array('@class' => ($backends[$query_backend]['queryClass']))
+        ),
+      ));
+      $solr_avail = FALSE;
+    }
+
+     $form['islandora_solr_query_backends'] = array(
+      '#type' => 'select',
+      '#theme_wrappers' => array('container'),
+      '#attributes' => array(
+        'id' => 'solr_backend_wrapper',
+      ),
+      '#title' => t('Solr backend implementations'),
+      '#description' => t('Selected implementation for querying Solr.'),
+      '#options' => $backend_options,
+      '#default_value' => $query_backend,
+    );
+  }
+
   // Solr connect triggering handler is dismax or not set on page load.
   if ((isset($form_state['triggering_element']) &&
       (($form_state['triggering_element']['#name'] == 'islandora_solr_url') ||
       ($form_state['triggering_element']['#name'] == 'islandora_solr_request_handler'))) ||
       !isset($form_state['triggering_element'])) {
 
-    // Check for the PHP Solr lib class.
-    if (!class_exists('Apache_Solr_Service')) {
-      $message = t('This module requires the <a href="!url">Apache Solr PHP Client</a>. Please install the client in the root directory of this module before continuing.', array('!url' => 'http://code.google.com/p/solr-php-client'));
-      drupal_set_message(check_plain($message));
-      return;
-    }
-
     // Get request handler.
     $handler = !empty($form_state['values']['islandora_solr_request_handler']) ? $form_state['values']['islandora_solr_request_handler'] : variable_get('islandora_solr_request_handler', FALSE);
 
-    if (strpos($solr_url, 'https://') !== FALSE && strpos($solr_url, 'https://') == 0) {
-      $confirmation_message = format_string('<img src="@image_url"/>!message', array(
-        '@image_url' => file_create_url('misc/watchdog-error.png'),
-        '!message' => t('Islandora does not support SSL connections to Solr.'),
-      ));
-      $solr_avail = FALSE;
-    }
-    elseif (preg_match('/^([^\/]+):/', $solr_url) === 0) {
+    if (preg_match('/^([^\/]+):/', $solr_url) === 0) {
       form_set_error('islandora_solr_url', t('Port number required in Solr URL.'));
       $solr_avail = FALSE;
     }
     else {
-      // Check if Solr is available.
-      $solr_avail = islandora_solr_ping($solr_url);
+      try {
+        // Check if Solr is available.
+        $solr_avail = islandora_solr_ping($solr_url);
+      }
+      catch (Exception $e) {
+        $confirmation_message = $e->getMessage();
+        $solr_avail = FALSE;
+      }
 
       $dismax_allowed = FALSE;
       // If solr is available, get the request handlers.
@@ -71,7 +105,7 @@ function islandora_solr_admin_index_settings($form, &$form_state) {
           )),
         ));
       }
-      else {
+      elseif (!isset($confirmation_message)) {
         $confirmation_message = format_string('<img src="@image_url"/>!message', array(
           '@image_url' => file_create_url('misc/watchdog-error.png'),
           '!message' => t('Unable to connect to Solr server at !link.', array(

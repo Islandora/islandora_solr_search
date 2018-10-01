@@ -226,3 +226,36 @@ function hook_islandora_solr_facet_bucket_classes_alter(&$buckets, &$query_proce
   }
   unset($value);
 }
+
+/**
+ * Allow providing alternate implementations of a Solr querying backend.
+ *
+ * These are classes that implement the provided interfaces in
+ * $module_path/src/SolrBackend
+ *
+ * Class filenames _MUST_ share the class name such that
+ * {classDir}/{queryClass}.php is the location to the query class file.
+ *
+ * @return array
+ *   As associative array with the required keys
+ *   - title : Displayable title.
+ *   - namespace : Namespace your implementations are in.
+ *   - queryClass : Your IslandoraSolrQueryInterface implementation.
+ *   - resultsClass : Your IslandoraSolrResultsInterface implementation.
+ *   - facetClass : Your IslandoraSolrFacetInterface implementation.
+ *   - minVersion : Minimum Solr version this supports.
+ *   - maxVersion : Maximum Solr version this supports.
+ */
+function hook_islandora_solr_query_backends() {
+  return array(
+    "My_module_identifier" => array(
+      'title' => t('Islandora Solr'),
+      'namespace' => '\Drupal\myModule\mySolrBackends',
+      'queryClass' => 'MySolrQueryClass',
+      'resultsClass' => 'MySolrResultsClass',
+      'facetClass' => 'MySolrFacetClass',
+      'minVersion' => 3,
+      'maxVersion' => 4.10,
+    ),
+  );
+}

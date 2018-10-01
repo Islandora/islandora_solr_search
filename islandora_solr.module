@@ -15,6 +15,10 @@ const ISLANDORA_SOLR_FACET_BUCKET_CLASSES_HOOK_BASE = 'islandora_solr_facet_buck
 
 const ISLANDORA_SOLR_BREADCRUMB_BACKEND = 'islandora_solr_breadcrumb_backend';
 
+const ISLANDORA_SOLR_LEGACY_QUERY_BACKEND = 'islandora_solr_legacy_query_backend';
+
+const ISLANDORA_SOLR_QUERY_BACKEND_HOOK = 'islandora_solr_query_backends';
+
 // Includes functions for common db queries.
 require_once dirname(__FILE__) . '/includes/db.inc';
 // Includes functions for common tasks.
@@ -588,4 +592,53 @@ function islandora_solr_islandora_breadcrumbs_backends() {
       'file' => "$module_path/includes/breadcrumbs.inc",
     ),
   );
+}
+
+/**
+ * Implements hook_islandora_solr_query_backends().
+ */
+function islandora_solr_islandora_solr_query_backends() {
+  return array(
+    ISLANDORA_SOLR_LEGACY_QUERY_BACKEND => array(
+      'title' => t('Islandora Solr Legacy'),
+      'namespace' => "Drupal\\islandora_solr\\SolrBackend\\legacy",
+      'queryClass' => 'IslandoraSolrLegacyQueryProcessor',
+      'resultsClass' => 'IslandoraSolrLegacyResults',
+      'facetClass' => 'IslandoraSolrLegacyFacets',
+      'minVersion' => 3,
+      'maxVersion' => 4.10,
+    ),
+  );
+}
+
+/**
+ * Return the array describing the currently selected Solr backend.
+ *
+ * @return array
+ *   As described in hook_islandora_solr_query_backends().
+ */
+function islandora_solr_get_current_backend() {
+  $query_backend = variable_get('islandora_solr_query_backend', ISLANDORA_SOLR_LEGACY_QUERY_BACKEND);
+  $backends = module_invoke_all(ISLANDORA_SOLR_QUERY_BACKEND_HOOK);
+
+  if (!isset($backends[$query_backend])) {
+    // If the hook no longer exists, switch to the legacy backend.
+    $query_backend = ISLANDORA_SOLR_LEGACY_QUERY_BACKEND;
+  }
+  return $backends[$query_backend];
+}
+
+/**
+ * Simple concat function to get a namespaced class name.
+ *
+ * @param $backend
+ *   The backend array defined in islandora_solr_query_backends.
+ * @param $class
+ *   The class prefix from islandora_solr_query_backends.
+ *
+ * @return string
+ *   The class name with the namespace prepended.
+ */
+function islandora_solr_get_namespaced_class($backend, $class) {
+  return $backend['namespace'] . '\\' . $backend[$class];
 }
