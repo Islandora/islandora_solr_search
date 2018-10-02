@@ -3,6 +3,7 @@
  * @file
  * Legacy Facet class.
  */
+
 namespace Drupal\islandora_solr\SolrBackend\legacy;
 
 use Drupal\islandora_solr\SolrBackend\IslandoraSolrFacetInterface;

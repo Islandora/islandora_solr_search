@@ -40,7 +40,8 @@ class IslandoraSolrQueryProcessor implements IslandoraSolrQueryInterface {
     'solrDefType',
     // All other Solr parameters.
     'solrParams',
-    // The current display (for modules wanting to alter the query of a display).
+    // The current display.
+    // (for modules wanting to alter the query of a display).
     'display',
     // Parameters from URL.
     'internalSolrParams',
@@ -82,7 +83,7 @@ class IslandoraSolrQueryProcessor implements IslandoraSolrQueryInterface {
   /**
    * Proxying access to member results.
    *
-   * @param $name
+   * @param string $name
    *   The name of the variable to check.
    *
    * @return bool
@@ -97,9 +98,9 @@ class IslandoraSolrQueryProcessor implements IslandoraSolrQueryInterface {
   /**
    * Magic setter.
    *
-   * @param $name
+   * @param string $name
    *   The member variable.
-   * @param $value
+   * @param mixed $value
    *   The new value.
    */
   public function __set($name, $value) {
@@ -125,42 +126,42 @@ class IslandoraSolrQueryProcessor implements IslandoraSolrQueryInterface {
   }
 
   /**
-   * @see \Drupal\islandora_solr\SolrBackend\IslandoraSolrQueryInterface::buildAndExecuteQuery()
+   * {@inheritdoc}
    */
   public function buildAndExecuteQuery($query, $params = NULL, $alter_results = TRUE) {
     $this->backendProcessor->buildAndExecuteQuery($query, $params, $alter_results);
   }
 
   /**
-   * @see \Drupal\islandora_solr\SolrBackend\IslandoraSolrQueryInterface::buildQuery()
+   * {@inheritdoc}
    */
   public function buildQuery($query, $params = array()) {
     $this->backendProcessor->buildQuery($query, $params);
   }
 
   /**
-   * @see \Drupal\islandora_solr\SolrBackend\IslandoraSolrQueryInterface::resetResults()
+   * {@inheritdoc}
    */
   public function resetResults() {
     $this->backendProcessor->resetResults();
   }
 
   /**
-   * @see \Drupal\islandora_solr\SolrBackend\IslandoraSolrQueryInterface::executeQuery()
+   * {@inheritdoc}
    */
   public function executeQuery($alter_results = TRUE, $use_post = FALSE) {
     $this->backendProcessor->executeQuery($alter_results, $use_post);
   }
 
   /**
-   * @see \Drupal\islandora_solr\SolrBackend\IslandoraSolrQueryInterface::prepareSolrDoc()
+   * {@inheritdoc}
    */
   public function prepareSolrDoc($object_results) {
     return $this->backendProcessor->prepareSolrDoc($object_results);
   }
 
   /**
-   * @see \Drupal\islandora_solr\SolrBackend\IslandoraSolrQueryInterface::ping()
+   * {@inheritdoc}
    */
   public function ping($solr_url) {
     return $this->backendProcessor->ping($solr_url);

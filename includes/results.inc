@@ -33,10 +33,11 @@ class IslandoraSolrResults {
   }
 
   /**
-   * Magic getter
+   * Magic getter.
    *
-   * @param $name
+   * @param string $name
    *   Member variable name.
+   *
    * @return mixed
    *   Return proxied variable or fail.
    */
@@ -49,8 +50,9 @@ class IslandoraSolrResults {
   /**
    * Magic method for member variables.
    *
-   * @param $name
+   * @param string $name
    *   Variable name.
+   *
    * @return bool
    *   Whether its set.
    */
@@ -266,8 +268,9 @@ class IslandoraSolrFacets {
   /**
    * Magic getter.
    *
-   * @param $name
+   * @param string $name
    *   Variable to get.
+   *
    * @return mixed
    *   Value or fail.
    */
@@ -280,8 +283,9 @@ class IslandoraSolrFacets {
   /**
    * Magic isset method.
    *
-   * @param $name
+   * @param string $name
    *   Variable to check.
+   *
    * @return bool
    *   Whether it is set.
    */
@@ -292,6 +296,8 @@ class IslandoraSolrFacets {
   }
 
   /**
+   * Proxies the getFacet functionality.
+   *
    * @see \Drupal\islandora_solr\SolrBackend\IslandoraSolrFacetInterface::getFacet()
    */
   public function getFacet() {

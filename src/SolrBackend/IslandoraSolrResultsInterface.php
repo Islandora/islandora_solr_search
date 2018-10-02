@@ -17,7 +17,8 @@ interface IslandoraSolrResultsInterface {
    *
    * @see islandora_solr()
    *
-   * @param \Drupal\islandora_solr\SolrBackend\IslandoraSolrQueryInterface $islandora_solr_query
+   * @param \Drupal\islandora_solr\SolrBackend\IslandoraSolrQueryInterface
+   *   $islandora_solr_query
    *   The IslandoraSolrQueryInterface object which includes the current query
    *   settings and the raw Solr results.
    *
@@ -30,7 +31,8 @@ interface IslandoraSolrResultsInterface {
   /**
    * Renders the secondary display profile list.
    *
-   * @param \Drupal\islandora_solr\SolrBackend\IslandoraSolrQueryInterface $islandora_solr_query
+   * @param \Drupal\islandora_solr\SolrBackend\IslandoraSolrQueryInterface
+   *   $islandora_solr_query
    *   The IslandoraSolrQueryInterface object which includes the current query
    *   settings and the raw Solr results.
    *
@@ -65,7 +67,8 @@ interface IslandoraSolrResultsInterface {
    * Displays current query and current filters. Includes a link to exclude the
    * query/filter.
    *
-   * @param \Drupal\islandora_solr\SolrBackend\IslandoraSolrQueryInterface $islandora_solr_query
+   * @param \Drupal\islandora_solr\SolrBackend\IslandoraSolrQueryInterface
+   *   $islandora_solr_query
    *   The IslandoraSolrQueryInterface object which includes the current query
    *   settings and the raw Solr results.
    *
@@ -77,7 +80,8 @@ interface IslandoraSolrResultsInterface {
   /**
    * Sets the Drupal breadcrumbs.
    *
-   * @param \Drupal\islandora_solr\SolrBackend\IslandoraSolrQueryInterface $islandora_solr_query
+   * @param \Drupal\islandora_solr\SolrBackend\IslandoraSolrQueryInterface
+   *   $islandora_solr_query
    *   The IslandoraSolrQueryInterface object, which includes the current query
    *   settings and the raw Solr results.
    */
@@ -89,7 +93,8 @@ interface IslandoraSolrResultsInterface {
    * Gets the Drupal breadcrumbs based on the current query and filters.
    * Provides links to exclude the query or filters.
    *
-   * @param \Drupal\islandora_solr\SolrBackend\IslandoraSolrQueryInterface $islandora_solr_query
+   * @param \Drupal\islandora_solr\SolrBackend\IslandoraSolrQueryInterface
+   *   $islandora_solr_query
    *   The IslandoraSolrQueryInterface object which includes the current query
    *   settings and the raw Solr results.
    *
@@ -103,7 +108,8 @@ interface IslandoraSolrResultsInterface {
    *
    * @param string $filter
    *   The passed in filter.
-   * @param \Drupal\islandora_solr\SolrBackend\IslandoraSolrQueryInterface $islandora_solr_query
+   * @param \Drupal\islandora_solr\SolrBackend\IslandoraSolrQueryInterface
+   *   $islandora_solr_query
    *   The current Solr Query
    *
    * @return string
@@ -116,7 +122,8 @@ interface IslandoraSolrResultsInterface {
    *
    * Includes links to include or exclude a facet field in a search.
    *
-   * @param \Drupal\islandora_solr\SolrBackend\IslandoraSolrQueryInterface $islandora_solr_query
+   * @param \Drupal\islandora_solr\SolrBackend\IslandoraSolrQueryInterface
+   *   $islandora_solr_query
    *   The IslandoraSolrQueryInterface object which includes the current query
    *   settings and the raw Solr results.
    *

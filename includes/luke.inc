@@ -30,12 +30,12 @@ function islandora_solr_ping($solr_url) {
   }
 
   $backend = islandora_solr_get_current_backend();
-  $queryClass = islandora_solr_get_namespaced_class($backend, 'queryClass');
-  if (!class_exists($queryClass)) {
+  $query_class = islandora_solr_get_namespaced_class($backend, 'queryClass');
+  if (!class_exists($query_class)) {
     return FALSE;
   }
-  $solr_service = NULL;
-  eval("\$solr_service = new {$queryClass};");
+
+  $solr_service = new $query_class();
   // Ping Solr.
   return $solr_service->ping($solr_url);
 }

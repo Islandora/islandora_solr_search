@@ -49,7 +49,7 @@ function islandora_solr_admin_index_settings($form, &$form_state) {
       $solr_avail = FALSE;
     }
 
-     $form['islandora_solr_query_backends'] = array(
+    $form['islandora_solr_query_backends'] = array(
       '#type' => 'select',
       '#theme_wrappers' => array('container'),
       '#attributes' => array(

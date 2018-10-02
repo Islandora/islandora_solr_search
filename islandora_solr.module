@@ -631,14 +631,14 @@ function islandora_solr_get_current_backend() {
 /**
  * Simple concat function to get a namespaced class name.
  *
- * @param $backend
+ * @param array $backend
  *   The backend array defined in islandora_solr_query_backends.
- * @param $class
+ * @param string $class
  *   The class prefix from islandora_solr_query_backends.
  *
  * @return string
  *   The class name with the namespace prepended.
  */
-function islandora_solr_get_namespaced_class($backend, $class) {
+function islandora_solr_get_namespaced_class(array $backend, $class) {
   return $backend['namespace'] . '\\' . $backend[$class];
 }

@@ -150,7 +150,6 @@ class IslandoraSolrLegacyResults implements IslandoraSolrResultsInterface {
    *   If theme() is called before all modules are loaded, we do not necessarily
    *   have a full theme registry to work with, and therefore cannot process
    *   the theme request properly. See also _theme_load_registry().
-   *
    */
   public function printResults($solr_results) {
     $solr_results = islandora_solr_prepare_solr_results($solr_results);
@@ -551,8 +550,8 @@ class IslandoraSolrLegacyResults implements IslandoraSolrResultsInterface {
    * @return string
    *   Rendered fieldset containing raw Solr results data.
    * @throws \Exception
-   *   If called before all modules are loaded, we do not necessarily have a full
-   *   theme registry to work with, and therefore cannot process the theme
+   *   If called before all modules are loaded, we do not necessarily have a
+   *   full theme registry to work with, and therefore cannot process the theme
    *   request properly. See also _theme_load_registry().
    */
   public function printDebugOutput($islandora_solr_results) {
