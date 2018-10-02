@@ -11,22 +11,53 @@
  */
 class IslandoraSolrResults {
 
-  public $facetFieldArray = array();
-  public $searchFieldArray = array();
-  public $resultFieldArray = array();
-  public $allSubsArray = array();
-  public $islandoraSolrQueryProcessor;
-  public $rangeFacets = array();
-  public $dateFormatFacets = array();
-
   private $backendProcessor;
+
+  private $proxied = array(
+    'facetFieldArray',
+    'searchFieldArray',
+    'resultFieldArray',
+    'allSubsArray',
+    'islandoraSolrQueryProcessor',
+    'rangeFacets',
+    'dateFormatFacets',
+  );
+
   /**
    * Constructor.
    */
   public function __construct() {
     $backend_processor = islandora_solr_get_current_backend();
     $class = islandora_solr_get_namespaced_class($backend_processor, 'resultsClass');
-    eval("\$this->backendProcessor = new {$class}();");
+    $this->backendProcessor = new $class();
+  }
+
+  /**
+   * Magic getter
+   *
+   * @param $name
+   *   Member variable name.
+   * @return mixed
+   *   Return proxied variable or fail.
+   */
+  public function __get($name) {
+    if (in_array($name, $this->proxied)) {
+      return $this->backendProcessor->$name;
+    }
+  }
+
+  /**
+   * Magic method for member variables.
+   *
+   * @param $name
+   *   Variable name.
+   * @return bool
+   *   Whether its set.
+   */
+  public function __isset($name) {
+    if (in_array($name, $this->proxied)) {
+      return isset($this->backendProcessor->$name);
+    }
   }
 
   /**
@@ -194,40 +225,29 @@ class IslandoraSolrResults {
  * Islandora Solr Facets
  */
 class IslandoraSolrFacets {
-  public static $islandoraSolrQuery;
-
-  // XXX: Need to fix the property/member variable names...  Could have an
-  // effect on other code, though, due to public visibility.
-  // @codingStandardsIgnoreStart
-  // Normal facet results.
-  public static $facet_fields;
-  // Date range facet results (Solr 1.4).
-  public static $facet_dates;
-  // Date or integer range facet results (Solr 3.1).
-  public static $facet_ranges;
-
-  public static $facet_fields_settings;
-  public static $facet_fields_settings_simple;
-  // Rename?
-  public static $range_facets;
-  public static $minimum_count = 1;
-  public static $soft_limit;
-  public static $exclude_range_values;
-  public static $needed_solr_call;
-  public static $range_slider_key = 0;
-  public static $date_filter_key = 0;
-
-  public $facet_field;
-  public $settings;
-  public $facet_type;
-  public $results;
-  public $title = NULL;
-  public $content = NULL;
 
   private $backendProcessor;
-  private $backendClass;
-
-  // @codingStandardsIgnoreEnd
+  private $proxied = array(
+    'islandoraSolrQuery',
+    'facet_fields',
+    'facet_dates',
+    'facet_ranges',
+    'facet_fields_settings',
+    'facet_fields_settings_simple',
+    'range_facets',
+    'minimum_count',
+    'soft_limit',
+    'exclude_range_values',
+    'needed_solr_call',
+    'range_slider_key',
+    'date_filter_key',
+    'facet_field',
+    'settings',
+    'facet_type',
+    'results',
+    'title',
+    'content',
+  );
 
   /**
    * Constructor method.
@@ -240,11 +260,35 @@ class IslandoraSolrFacets {
   public function __construct($facet_field) {
     $backend_processor = islandora_solr_get_current_backend();
     $class = islandora_solr_get_namespaced_class($backend_processor, 'facetClass');
-    $this->backendClass = $class;
-    eval("\$this->backendProcessor = new {$class}();");
-    $this->facet_field = $facet_field;
-    $this->settings = self::$facet_fields_settings[$facet_field];
-    $this->title = self::$facet_fields_settings_simple[$facet_field];
+    $this->backendProcessor = new $class($facet_field);
+  }
+
+  /**
+   * Magic getter.
+   *
+   * @param $name
+   *   Variable to get.
+   * @return mixed
+   *   Value or fail.
+   */
+  public function __get($name) {
+    if (in_array($name, $this->proxied)) {
+      return $this->backendProcessor->$name;
+    }
+  }
+
+  /**
+   * Magic isset method.
+   *
+   * @param $name
+   *   Variable to check.
+   * @return bool
+   *   Whether it is set.
+   */
+  public function __isset($name) {
+    if (in_array($name, $this->proxied)) {
+      return isset($this->backendProcessor->$name);
+    }
   }
 
   /**

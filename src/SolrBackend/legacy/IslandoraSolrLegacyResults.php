@@ -8,6 +8,7 @@
 
 namespace Drupal\islandora_solr\SolrBackend\legacy;
 
+use Drupal\islandora_solr\SolrBackend\IslandoraSolrQueryInterface;
 use Drupal\islandora_solr\SolrBackend\IslandoraSolrResultsInterface;
 
 /**
@@ -524,7 +525,7 @@ class IslandoraSolrLegacyResults implements IslandoraSolrResultsInterface {
     $output = '';
     $facet_order = $this->facetFieldArray;
     foreach ($facet_order as $facet_key => $facet_label) {
-      $facet_obj = new IslandoraSolrFacets($facet_key);
+      $facet_obj = new IslandoraSolrLegacyFacets($facet_key);
       $output .= $facet_obj->getFacet();
     }
 

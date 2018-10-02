@@ -6,6 +6,8 @@
  * Apache_Solr_Php client.
  */
 
+use Drupal\islandora_solr\SolrBackend\IslandoraSolrQueryInterface;
+
 /**
  * Islandora Solr Query Processor.
  *
@@ -13,22 +15,8 @@
  * query. Populates the islandoraSolrResult property with the processed Solr
  * query results.
  */
-class IslandoraSolrQueryProcessor {
+class IslandoraSolrQueryProcessor implements IslandoraSolrQueryInterface {
 
-  public $solrQuery;
-  // Query alternative set if solrQuery is empty.
-  public $internalSolrQuery;
-  public $solrStart;
-  public $solrLimit;
-  public $solrDefType;
-  // All other Solr parameters.
-  public $solrParams = array();
-  // Solr results tailored for Islandora's use.
-  public $islandoraSolrResult;
-  // The current display (for modules wanting to alter the query of a display).
-  public $display;
-  // Parameters from URL.
-  public $internalSolrParams;
   public $differentKindsOfNothing = array(
     ' ',
     '%20',
@@ -40,10 +28,30 @@ class IslandoraSolrQueryProcessor {
 
   private $backendProcessor;
 
+  // Member variables now expected from the lower implementation.
+  private $proxied = array(
+    // Solr results tailored for Islandora's use.
+    'islandoraSolrResult',
+    'solrQuery',
+    // Query alternative set if solrQuery is empty.
+    'internalSolrQuery',
+    'solrStart',
+    'solrLimit',
+    'solrDefType',
+    // All other Solr parameters.
+    'solrParams',
+    // The current display (for modules wanting to alter the query of a display).
+    'display',
+    // Parameters from URL.
+    'internalSolrParams',
+  );
+
   /**
    * Handle deprectation of old class member gracefully.
+   *
+   * Also handle proxied gets. Ampersand is needed for direct array referencing.
    */
-  public function __get($name) {
+  public function &__get($name) {
     $map = array(
       'different_kinds_of_nothing' => 'differentKindsOfNothing',
     );
@@ -66,9 +74,37 @@ class IslandoraSolrQueryProcessor {
       return $this->$new_name;
     }
 
-    if ($name == 'islandoraSolrResult') {
-      // Pass the result from the proxied query processor for backwards compatibility.
-      return $this->backendProcessor->islandoraSolrResult;
+    if (in_array($name, $this->proxied)) {
+      return $this->backendProcessor->$name;
+    }
+  }
+
+  /**
+   * Proxying access to member results.
+   *
+   * @param $name
+   *   The name of the variable to check.
+   *
+   * @return bool
+   *   True if set.
+   */
+  public function __isset($name) {
+    if (in_array($name, $this->proxied)) {
+      return isset($this->backendProcessor->$name);
+    }
+  }
+
+  /**
+   * Magic setter.
+   *
+   * @param $name
+   *   The member variable.
+   * @param $value
+   *   The new value.
+   */
+  public function __set($name, $value) {
+    if (in_array($name, $this->proxied)) {
+      $this->backendProcessor->$name = $value;
     }
   }
 
@@ -85,7 +121,7 @@ class IslandoraSolrQueryProcessor {
   public function __construct() {
     $backend_processor = islandora_solr_get_current_backend();
     $class = islandora_solr_get_namespaced_class($backend_processor, 'queryClass');
-    eval("\$this->backendProcessor = new {$class}();");
+    $this->backendProcessor = new $class();
   }
 
   /**
@@ -116,4 +152,17 @@ class IslandoraSolrQueryProcessor {
     $this->backendProcessor->executeQuery($alter_results, $use_post);
   }
 
+  /**
+   * @see \Drupal\islandora_solr\SolrBackend\IslandoraSolrQueryInterface::prepareSolrDoc()
+   */
+  public function prepareSolrDoc($object_results) {
+    return $this->backendProcessor->prepareSolrDoc($object_results);
+  }
+
+  /**
+   * @see \Drupal\islandora_solr\SolrBackend\IslandoraSolrQueryInterface::ping()
+   */
+  public function ping($solr_url) {
+    return $this->backendProcessor->ping($solr_url);
+  }
 }
