@@ -8,7 +8,7 @@
 
 namespace Drupal\islandora_solr\SolrBackend\legacy;
 
-use Drupal\islandora_solr\SolrBackend\IslandoraSolrQueryInterface;
+use Drupal\islandora_solr\SolrBackend\IslandoraSolrQuery;
 
 /**
  * Islandora Solr Query Processor.
@@ -17,7 +17,7 @@ use Drupal\islandora_solr\SolrBackend\IslandoraSolrQueryInterface;
  * query. Populates the islandoraSolrResult property with the processed Solr
  * query results.
  */
-class IslandoraSolrLegacyQueryProcessor implements IslandoraSolrQueryInterface {
+class IslandoraSolrLegacyQueryProcessor extends IslandoraSolrQuery {
 
   public $solrQuery;
   // Query alternative set if solrQuery is empty.
@@ -33,14 +33,7 @@ class IslandoraSolrLegacyQueryProcessor implements IslandoraSolrQueryInterface {
   public $display;
   // Parameters from URL.
   public $internalSolrParams;
-  public $differentKindsOfNothing = array(
-    ' ',
-    '%20',
-    '%252F',
-    '%2F',
-    '%252F-',
-    '',
-  );
+
 
   protected $solrVersion;
 
@@ -57,34 +50,6 @@ class IslandoraSolrLegacyQueryProcessor implements IslandoraSolrQueryInterface {
     }
     $this->solrVersion = islandora_solr_get_solr_version();
   }
-
-  /**
-   * Handle deprectation of old class member gracefully.
-   */
-  public function __get($name) {
-    $map = array(
-      'different_kinds_of_nothing' => 'differentKindsOfNothing',
-    );
-
-    if (isset($map[$name])) {
-      $new_name = $map[$name];
-      $trace = debug_backtrace();
-
-      $message = t('Use of variable name "@class->@old_name" on line @line of @file deprecated as of version @version. Refactor to use "@class->@name" before the next release.', array(
-        '@old_name' => $name,
-        '@name' => $new_name,
-        '@class' => __CLASS__,
-        '@version' => '7.x-1.2',
-        '@line' => $trace[0]['line'],
-        '@file' => $trace[0]['file'],
-      ));
-
-      trigger_error($message, E_USER_DEPRECATED);
-
-      return $this->$new_name;
-    }
-  }
-
 
   /**
    * Solr removed Date faceting version 6.

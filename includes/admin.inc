@@ -29,6 +29,8 @@ function islandora_solr_admin_index_settings($form, &$form_state) {
       variable_get('islandora_solr_query_backend', ISLANDORA_SOLR_LEGACY_QUERY_BACKEND);
 
     $backends = module_invoke_all(ISLANDORA_SOLR_QUERY_BACKEND_HOOK);
+    // Remove em
+    $backends = array_filter($backends, 'islandora_solr_filter_query_backends');
     if (!isset($backends[$query_backend])) {
       // If the hook no longer exists, switch to the legacy backend.
       $query_backend = ISLANDORA_SOLR_LEGACY_QUERY_BACKEND;
@@ -39,11 +41,13 @@ function islandora_solr_admin_index_settings($form, &$form_state) {
       $backend_options[$key] = $backend['title'];
     }
 
-    if (!class_exists(islandora_solr_get_namespaced_class($backends, 'queryClass'))) {
+    $current_backend = $backends[$query_backend];
+
+    if (!class_exists(islandora_solr_get_namespaced_class($current_backend, 'queryClass'))) {
       $confirmation_message = format_string('<img src="@image_url"/>!message', array(
         '@image_url' => file_create_url('misc/watchdog-error.png'),
         '!message' => t('Query class @class could not be loaded.',
-          array('@class' => ($backends[$query_backend]['queryClass']))
+          array('@class' => ($current_backend['queryClass']))
         ),
       ));
       $solr_avail = FALSE;
