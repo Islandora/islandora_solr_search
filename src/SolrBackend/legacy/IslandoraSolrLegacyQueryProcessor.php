@@ -270,7 +270,7 @@ class IslandoraSolrLegacyQueryProcessor extends IslandoraSolrQuery {
     $default_sort = (variable_get('islandora_solr_facet_max_limit', '20') <= 0 ? 'index' : 'count');
 
     $facet_sort_array = array();
-    foreach (array_merge($facet_array, $facet_dates) as $key => $value) {
+    foreach (array_merge($facet_array, $facet_dates_ranges) as $key => $value) {
       if (isset($value['solr_field_settings']['sort_by']) && $value['solr_field_settings']['sort_by'] != $default_sort) {
         // If the sort doesn't match default then specify it in the parameters.
         $facet_sort_array["f.{$key}.facet.sort"] = check_plain($value['solr_field_settings']['sort_by']);
