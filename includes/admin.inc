@@ -29,7 +29,7 @@ function islandora_solr_admin_index_settings($form, &$form_state) {
       variable_get('islandora_solr_query_backend', ISLANDORA_SOLR_LEGACY_QUERY_BACKEND);
 
     $backends = module_invoke_all(ISLANDORA_SOLR_QUERY_BACKEND_HOOK);
-    // Remove em
+    // Remove empty backends.
     $backends = array_filter($backends, 'islandora_solr_filter_query_backends');
     if (!isset($backends[$query_backend])) {
       // If the hook no longer exists, switch to the legacy backend.

@@ -648,6 +648,7 @@ function islandora_solr_get_namespaced_class(array $backend, $class) {
  *
  * @param $backend
  *   The query backend array.
+ *
  * @return bool
  *   Whether the backend definition is complete.
  */
@@ -659,7 +660,7 @@ function islandora_solr_filter_query_backends($backend) {
     'resultsClass' => 1,
     'facetClass' => 1,
     'minVersion' => 1,
-    'maxVersion' => 1
+    'maxVersion' => 1,
   );
   if (is_array($backend)) {
     $diff = array_diff_key($expected_tags, $backend);

@@ -110,14 +110,7 @@ class IslandoraSolrQueryProcessor implements IslandoraSolrQueryInterface {
   }
 
   /**
-   * Build and execute a query.
-   *
-   * @param string $query
-   *   The query string provided in the url.
-   * @param array $params
-   *   All URL parameters from the solr results page.
-   * @param bool $alter_results
-   *   Whether or not to send out hooks to alter the islandora_solr_results.
+   * IslandoraSolrQueryProcessor constructor.
    */
   public function __construct() {
     $backend_processor = islandora_solr_get_current_backend();
