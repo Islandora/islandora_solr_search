@@ -302,6 +302,10 @@ class IslandoraSolrLegacyFacets implements IslandoraSolrFacetInterface {
     $results = $this->results;
     $format = $this->getDateFormat();
     $date_results = array();
+    if ($this->facet_type == 'facet_ranges') {
+      $results = array_merge($results, $results['counts']);
+      unset($results['counts']);
+    }
     // Render date facet fields.
     foreach ($results as $bucket => $count) {
       // Don't include gap, end, etc that comes with range results.
@@ -315,13 +319,14 @@ class IslandoraSolrLegacyFacets implements IslandoraSolrFacetInterface {
       $field_keys = array_keys($results);
       $field_key = array_search($bucket, $field_keys);
       $field_key++;
-      $bucket_next = (!in_array($field_keys[$field_key], self::$exclude_range_values)) ? $field_keys[$field_key] : $results['end'];
+      $bucket_next = (isset($field_keys[$field_key]) && !in_array($field_keys[$field_key], self::$exclude_range_values)) ? $field_keys[$field_key] : $results['end'];
       // Set date range filter for facet URL.
       $item['filter'] = $facet_field . ':[' . $bucket . ' TO ' . $bucket_next . ']';
       // Set formatted value for facet link.
       $item['bucket'] = format_date(strtotime($bucket) + (60 * 60 * 24), 'custom', $format) . ' - ' . format_date(strtotime($bucket_next) + (60 * 60 * 24), 'custom', $format);
       $date_results[] = $item;
     }
+
     return $date_results;
   }
 
@@ -526,6 +531,10 @@ class IslandoraSolrLegacyFacets implements IslandoraSolrFacetInterface {
     $results_end = $results['end'];
     foreach (self::$exclude_range_values as $exclude) {
       unset($results[$exclude]);
+    }
+
+    if ($this->facet_type == 'facet_ranges' && isset($results['counts'])) {
+      $results = $results['counts'];
     }
 
     // Strip empty buckets top and bottom when no date range filters are set.
