@@ -28,16 +28,16 @@ function islandora_solr_ping($solr_url) {
   if (!isset($solr_url_parsed['host']) || !isset($solr_url_parsed['port'])) {
     return FALSE;
   }
-  // Call Solr.
-  $solr_service = new Apache_Solr_Service($solr_url_parsed['host'], $solr_url_parsed['port'], $solr_url_parsed['path'] . '/');
-  // Ping Solr.
-  $ping = $solr_service->ping();
-  // If a ping time is returned.
-  if ($ping) {
-    // Add 0.1 ms to the ping time so we never return 0.0.
-    return $ping + 0.01;
+
+  $backend = islandora_solr_get_current_backend();
+  $query_class = islandora_solr_get_namespaced_class($backend, 'queryClass');
+  if (!class_exists($query_class)) {
+    return FALSE;
   }
-  return FALSE;
+
+  $solr_service = new $query_class();
+  // Ping Solr.
+  return $solr_service->ping($solr_url);
 }
 
 /**
