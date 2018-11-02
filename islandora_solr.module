@@ -628,4 +628,3 @@ function islandora_solr_preprocess_islandora_objects_subset(&$variables) {
     $variables['limit'] = $_islandora_solr_queryclass->solrLimit;
   }
 }
-
