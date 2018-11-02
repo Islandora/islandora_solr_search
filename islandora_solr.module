@@ -616,3 +616,16 @@ function islandora_solr_islandora_breadcrumbs_backends() {
     ),
   );
 }
+
+/**
+ * Implements hook_preprocess().
+ */
+function islandora_solr_preprocess_islandora_objects_subset(&$variables) {
+  $backend = variable_get('islandora_basic_collection_display_backend', ISLANDORA_BASIC_COLLECTION_LEGACY_BACKEND);
+  if ($backend == 'islandora_solr_query_backend') {
+    // Set the collection pager limit based on correct page size.
+    global $_islandora_solr_queryclass;
+    $variables['limit'] = $_islandora_solr_queryclass->solrLimit;
+  }
+}
+
