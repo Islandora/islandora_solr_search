@@ -81,7 +81,9 @@ class IslandoraSolrResults {
     // Debug (will be removed).
     $elements['solr_debug'] = '';
     if (variable_get('islandora_solr_debug_mode', 0)) {
-      $elements['solr_debug'] = $this->printDebugOutput($islandora_solr_result);
+      if (user_access('view solr debug')) {
+        $elements['solr_debug'] = $this->printDebugOutput($islandora_solr_result);
+      }
     }
 
     // Rendered secondary display profiles.
