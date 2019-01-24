@@ -136,7 +136,7 @@ function islandora_solr_permission() {
       'title' => t('Administer Solr'),
       'description' => t('Administer settings for the Solr client.'),
     ),
-    'view solr debug' => array(
+    'view islandora solr debug' => array(
       'title' => t('View Solr debug messages'),
       'description' => t('See printed Solr queries when debug mode is turned on.'),
     ),
@@ -366,11 +366,9 @@ function islandora_solr($query = NULL, $params = NULL) {
   }
 
   // Debug dump.
-  if (variable_get('islandora_solr_debug_mode', 0)) {
-    if (user_access('view solr debug')) {
-      $message = t('Parameters: <br /><pre>!debug</pre>', array('!debug' => print_r($_islandora_solr_queryclass->solrParams, TRUE)));
-      drupal_set_message(filter_xss($message, array('pre', 'br')), 'status');
-    }
+  if (variable_get('islandora_solr_debug_mode', 0) && user_access('view islandora solr debug')) {
+    $message = t('Parameters: <br /><pre>!debug</pre>', array('!debug' => print_r($_islandora_solr_queryclass->solrParams, TRUE)));
+    drupal_set_message(filter_xss($message, array('pre', 'br')), 'status');
   }
   return $output;
 }
