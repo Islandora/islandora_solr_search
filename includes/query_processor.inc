@@ -206,12 +206,17 @@ class IslandoraSolrQueryProcessor {
     $facet_fields = implode(",", array_keys($facet_array));
 
     // Set params.
-    $params_array = array(
-      'facet' => 'true',
-      'facet.mincount' => variable_get('islandora_solr_facet_min_limit', '2'),
-      'facet.limit' => variable_get('islandora_solr_facet_max_limit', '20'),
-      'facet.field' => explode(',', $facet_fields),
-    );
+    if (count($facet_array) > 0) {
+      $params_array = array(
+        'facet' => 'true',
+        'facet.mincount' => variable_get('islandora_solr_facet_min_limit', '2'),
+        'facet.limit' => variable_get('islandora_solr_facet_max_limit', '20'),
+        'facet.field' => explode(',', $facet_fields),
+      );
+    }
+    else {
+      $params_array = array();
+    }
 
     $request_handler = variable_get('islandora_solr_request_handler', FALSE);
     if ($request_handler) {
