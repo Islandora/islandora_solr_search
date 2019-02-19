@@ -29,15 +29,17 @@ function islandora_solr_explore_generate_links() {
     }
     $qp->executeQuery(FALSE);
     foreach ($expore_config as $index => $option) {
-      $links[] = l(
-        htmlentities($option['label']),
-        'islandora/search',
-         array(
-           'query' => array(
-             'f' => array($option['filter']),
-           ),
-         )
-      ) . '&nbsp;<span>(' . htmlentities($qp->islandoraSolrResult['facet_counts']['facet_queries'][$option['filter']]) . ')</span>';
+      if (isset($qp->islandoraSolrResult['facet_counts']['facet_queries'])) {
+        $links[] = l(
+            htmlentities($option['label']),
+            'islandora/search',
+            array(
+              'query' => array(
+                'f' => array($option['filter']),
+              ),
+            )
+          ) . '&nbsp;<span>(' . htmlentities($qp->islandoraSolrResult['facet_counts']['facet_queries'][$option['filter']]) . ')</span>';
+      }
     }
   }
 
