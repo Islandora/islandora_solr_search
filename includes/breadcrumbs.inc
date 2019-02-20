@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @file
  * Breadcrumb functions.
@@ -121,7 +122,7 @@ function islandora_solr_get_breadcrumb_parent($pid) {
   $solr_build->executeQuery(FALSE);
   $results = (array) $solr_build->islandoraSolrResult['response']['objects'];
 
-  $find_solr_value = function($o, $field) {
+  $find_solr_value = function ($o, $field) {
     if (isset($o[$field])) {
       return $o[$field];
     }

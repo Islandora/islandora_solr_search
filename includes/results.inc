@@ -33,8 +33,6 @@ class IslandoraSolrResults {
   /**
    * Output the main body of the search results.
    *
-   * @see islandora_solr()
-   *
    * @param IslandoraSolrQueryProcessor $islandora_solr_query
    *   The IslandoraSolrQueryProcessor object which includes the current query
    *   settings and the raw Solr results.
@@ -42,8 +40,10 @@ class IslandoraSolrResults {
    * @return string
    *   Returns themed Solr results page, including wrapper and rendered search
    *   results.
+   *
+   * @see islandora_solr()
    */
-  public function displayResults($islandora_solr_query) {
+  public function displayResults(IslandoraSolrQueryProcessor $islandora_solr_query) {
     $this->islandoraSolrQueryProcessor = $islandora_solr_query;
 
     // Set variables to collect returned data.
@@ -109,7 +109,7 @@ class IslandoraSolrResults {
    *
    * @see IslandoraSolrResults::displayResults()
    */
-  public function addSecondaries($islandora_solr_query) {
+  public function addSecondaries(IslandoraSolrQueryProcessor $islandora_solr_query) {
     $query_list = array();
     // Get secondary display profiles.
     $secondary_display_profiles = module_invoke_all('islandora_solr_secondary_display');
@@ -165,7 +165,7 @@ class IslandoraSolrResults {
    *
    * @see IslandoraSolrResults::displayResults()
    */
-  public function printResults($solr_results) {
+  public function printResults(array $solr_results) {
     $solr_results = islandora_solr_prepare_solr_results($solr_results);
     $object_results = $solr_results['response']['objects'];
     $object_results = islandora_solr_prepare_solr_doc($object_results);
@@ -191,7 +191,7 @@ class IslandoraSolrResults {
    * @return string
    *   Rendered lists of the currently active query and/or filters.
    */
-  public function currentQuery($islandora_solr_query) {
+  public function currentQuery(IslandoraSolrQueryProcessor $islandora_solr_query) {
     module_load_include('inc', 'islandora', 'includes/utilities');
 
     $output = '';
@@ -325,7 +325,7 @@ class IslandoraSolrResults {
    *   The IslandoraSolrQueryProcessor object, which includes the current query
    *   settings and the raw Solr results.
    */
-  public function setBreadcrumbs($islandora_solr_query) {
+  public function setBreadcrumbs(IslandoraSolrQueryProcessor $islandora_solr_query) {
     $breadcrumb = $this->getBreadcrumbs($islandora_solr_query);
     drupal_set_breadcrumb($breadcrumb);
   }
@@ -343,7 +343,7 @@ class IslandoraSolrResults {
    * @return array
    *   An array of breadcrumbs.
    */
-  public function getBreadcrumbs($islandora_solr_query) {
+  public function getBreadcrumbs(IslandoraSolrQueryProcessor $islandora_solr_query) {
     // $_GET['q'] didn't seem to work here.
     $path = current_path();
     // Get date format.
@@ -581,7 +581,7 @@ class IslandoraSolrResults {
    * @see islandora_solr_islandora_solr_query_blocks()
    * @see islandora_solr_block_view()
    */
-  public function displayFacets($islandora_solr_query) {
+  public function displayFacets(IslandoraSolrQueryProcessor $islandora_solr_query) {
     IslandoraSolrFacets::init($islandora_solr_query);
     $output = '';
     $facet_order = $this->facetFieldArray;
@@ -603,16 +603,16 @@ class IslandoraSolrResults {
    * Creates a fieldset containing raw Solr results of the current page for
    * debugging purposes.
    *
-   * @see IslandoraSolrResults::displayResults()
-   *
    * @param array $islandora_solr_results
    *   The processed Solr results from
-   *   IslandoraSolrQueryProcessor::islandoraSolrResult
+   *   IslandoraSolrQueryProcessor::islandoraSolrResult.
    *
    * @return string
    *   Rendered fieldset containing raw Solr results data.
+   *
+   * @see IslandoraSolrResults::displayResults()
    */
-  public function printDebugOutput($islandora_solr_results) {
+  public function printDebugOutput(array $islandora_solr_results) {
     // Debug dump.
     $results = "<pre>Results: " . print_r($islandora_solr_results, TRUE) . "</pre>";
     $fieldset = array(
@@ -649,7 +649,7 @@ class IslandoraSolrResults {
 }
 
 /**
- * Islandora Solr Facets
+ * Islandora Solr Facets.
  */
 class IslandoraSolrFacets {
   public static $islandoraSolrQuery;
@@ -750,7 +750,7 @@ class IslandoraSolrFacets {
    * Method called after a facet object is created. This will prepare the
    * results based on the type and user settings for this facet. It also does a
    * call to render the prepared data. This method also returns the rendered
-   * endresult.
+   * end result.
    *
    * @return string
    *   Returns the title and rendered facet.
@@ -759,11 +759,11 @@ class IslandoraSolrFacets {
     $this->findFacetType();
     $this->getFacetResults();
     if (empty($this->results)) {
-      return;
+      return "";
     }
     $this->processFacets();
     if (empty($this->content)) {
-      return;
+      return "";
     }
     $elements = array(
       'title' => $this->title,
@@ -975,7 +975,7 @@ class IslandoraSolrFacets {
    * @param array $results
    *   An array with the prepared facet results.
    */
-  public function renderText($results) {
+  public function renderText(array $results) {
     $facet_field = $this->facet_field;
     $islandora_solr_query = self::$islandoraSolrQuery;
     $soft_limit = self::$soft_limit;
@@ -1195,7 +1195,7 @@ class IslandoraSolrFacets {
       $results = array_reverse($results);
 
       // Add end date.
-      if (isset($new_end['count']) AND $new_end['count'] == 0) {
+      if (isset($new_end['count']) and $new_end['count'] == 0) {
         $end_bucket = $new_end['bucket'];
         $results[$end_bucket] = NULL;
       }
@@ -1579,4 +1579,5 @@ class IslandoraSolrFacets {
     $results = $min_max_query->islandoraSolrResult;
     return $results['response']['objects'][0]['solr_doc'][$field];
   }
+
 }

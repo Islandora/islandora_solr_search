@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Template file for default facets
+ * Template file for default facets.
  *
  * @TODO document available variables
  */

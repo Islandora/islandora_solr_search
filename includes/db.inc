@@ -2,7 +2,7 @@
 
 /**
  * @file
- * This file contains DB query functions
+ * This file contains DB query functions.
  */
 
 /**
@@ -84,7 +84,7 @@ function islandora_solr_get_fields($field_type = NULL, $filter = TRUE, $simplifi
  *
  * @see islandora_solr_get_fields()
  */
-function _islandora_solr_filter_fields($records = array()) {
+function _islandora_solr_filter_fields(array $records = array()) {
   global $user;
 
   // No checks for user 1.
@@ -122,7 +122,7 @@ function _islandora_solr_filter_fields($records = array()) {
  *
  * @see islandora_solr_get_fields()
  */
-function _islandora_solr_simplify_fields($fields = array()) {
+function _islandora_solr_simplify_fields(array $fields = array()) {
   // Render as term => label.
   $records = array();
   foreach ($fields as $key => $value) {

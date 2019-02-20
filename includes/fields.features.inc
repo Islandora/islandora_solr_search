@@ -58,7 +58,7 @@ function islandora_solr_fields_features_revert($module_name) {
  * @return array
  *   The input with "solr_field_settings" serialize with serialize().
  */
-function islandora_solr_serialize_solr_field_settings($field) {
+function islandora_solr_serialize_solr_field_settings(array $field) {
   if (!is_string($field['solr_field_settings'])) {
     $field['solr_field_settings'] = serialize($field['solr_field_settings']);
   }
@@ -86,7 +86,7 @@ function islandora_solr_fields_features_rebuild($module_name) {
         'field_type',
         'weight',
         'solr_field_settings',
-    ));
+      ));
 
     // Write to our database table.
     foreach ($values as $field) {

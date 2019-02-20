@@ -91,8 +91,8 @@ function hook_islandora_solr_secondary_display() {
  *
  * @see IslandoraSolrQueryProcessor::buildQuery()
  */
-function hook_islandora_solr_query($islandora_solr_query) {
-  // example: on example_display, always sort descending on fgs.createdDate
+function hook_islandora_solr_query(IslandoraSolrQueryProcessor $islandora_solr_query) {
+  // example: on example_display, always sort descending on fgs.createdDate.
   if ($islandora_solr_query->display == 'example_display') {
     $islandora_solr_query->solrParams['sort'] = 'fgs.createdDate desc';
   }
@@ -108,7 +108,7 @@ function hook_islandora_solr_query($islandora_solr_query) {
  * @see hook_islandora_solr_query()
  * @see IslandoraSolrQueryProcessor::buildQuery()
  */
-function hook_islandora_solr_query_alter($islandora_solr_query) {
+function hook_islandora_solr_query_alter(IslandoraSolrQueryProcessor $islandora_solr_query) {
 
 }
 
@@ -148,15 +148,14 @@ function hook_islandora_solr_query_result(array $result) {
   }
 }
 
-/**
+/*
  * @} End of "addtogroup hooks".
  */
-
 
 /**
  * Implements hook_CMODEL_PID_islandora_solr_object_result_alter().
  */
-function hook_islandora_pageCModel_islandora_solr_object_result_alter(&$search_result, $query_processor) {
+function hook_islandora_pagecmodel_islandora_solr_object_result_alter(&$search_result, $query_processor) {
   $search_result['object_url_params']['terms'] = $query_processor->solrQuery;
 }
 
@@ -179,12 +178,12 @@ function hook_islandora_solr_object_result_alter(&$search_result, $query_process
  *
  * Somtimes you might want to alter how an rss item is displayed.
  *
- * @param rssItem $item
- *   The rssItem object
+ * @param array $item
+ *   The rssItem object.
  * @param array $doc
- *   The solr results document
+ *   The solr results document.
  */
-function hook_islandora_solr_search_rss_item_alter($item, $doc) {
+function hook_islandora_solr_search_rss_item_alter(array $item, array $doc) {
 
   $item['title'] = $doc['PID'];
   $item['description'] = 'this is the new rss item description';
@@ -210,7 +209,7 @@ function hook_islandora_solr_search_rss_item_alter($item, $doc) {
  * @param IslandoraSolrQueryProcessor $query_processor
  *   The query processor for the current query (with results attached).
  */
-function hook_islandora_solr_facet_bucket_classes_alter(&$buckets, &$query_processor) {
+function hook_islandora_solr_facet_bucket_classes_alter(array &$buckets, IslandoraSolrQueryProcessor &$query_processor) {
   foreach ($buckets as $bucket => &$value) {
 
     // Add the 'use-ajax' bit so Drupal will use AJAX.
