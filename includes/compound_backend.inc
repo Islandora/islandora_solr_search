@@ -90,15 +90,10 @@ function islandora_solr_compound_object_query($pid) {
     $start += 1;
     $solr_build->solrStart = $start * $rows;
     $solr_build->solrLimit = $rows;
-    try {
-      $solr_build->executeQuery(FALSE);
-      $results = (array) $solr_build->islandoraSolrResult['response']['objects'];
-      $constituents = array_merge($constituents, $results);
-    }
-    catch (Exception $e) {
-      drupal_set_message(check_plain(t('Error searching Solr index')) . ' ' . $e->getMessage(), 'error', FALSE);
-      break;
-    }
+    $solr_build->executeQuery(FALSE);
+    $results = (array) $solr_build->islandoraSolrResult['response']['objects'];
+    $constituents = array_merge($constituents, $results);
+
     if (is_null($total) && isset($solr_build->islandoraSolrResult['response']['numFound'])) {
       $total = $solr_build->islandoraSolrResult['response']['numFound'];
     }

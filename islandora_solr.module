@@ -632,3 +632,26 @@ function islandora_solr_preprocess_islandora_objects_subset(&$variables) {
     $variables['limit'] = $_islandora_solr_queryclass->solrLimit;
   }
 }
+
+/**
+ * Make nice text for screen and log the exception to watchdog.
+ *
+ * @param \Exception $e
+ *   The exception.
+ */
+function islandora_solr_technical_difficulties(Exception $e) {
+  // Only report the error once per screen.
+  $islandora_solr_error_reported = &drupal_static(__FUNCTION__, false);
+
+  if ($islandora_solr_error_reported !== true) {
+    $message = "We are experiencing technical difficulties at this time and are working to fix the problem. Please try back later.";
+    drupal_set_message(t($message), 'warning');
+    watchdog("manidora", "Received exception @code: @message\nLine: @line in file: @file", array(
+      '@code' => $e->getCode(),
+      '@message' => $e->getMessage(),
+      '@file' => $e->getFile(),
+      '@line' => $e->getLine(),
+    ), WATCHDOG_ERROR);
+    $islandora_solr_error_reported = TRUE;
+  }
+}
