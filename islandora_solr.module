@@ -641,12 +641,12 @@ function islandora_solr_preprocess_islandora_objects_subset(&$variables) {
  */
 function islandora_solr_technical_difficulties(Exception $e) {
   // Only report the error once per screen.
-  $islandora_solr_error_reported = &drupal_static(__FUNCTION__, false);
+  $islandora_solr_error_reported = &drupal_static(__FUNCTION__, FALSE);
 
-  if ($islandora_solr_error_reported !== true) {
+  if ($islandora_solr_error_reported !== TRUE) {
     $message = "We are experiencing technical difficulties at this time and are working to fix the problem. Please try back later.";
-    drupal_set_message(t($message), 'warning');
-    watchdog("manidora", "Received exception @code: @message\nLine: @line in file: @file", array(
+    drupal_set_message(t("@message", array('@message' => $message)), 'warning');
+    watchdog("islandora_solr", "Received exception @code: @message\nLine: @line in file: @file", array(
       '@code' => $e->getCode(),
       '@message' => $e->getMessage(),
       '@file' => $e->getFile(),
