@@ -153,6 +153,15 @@ function islandora_solr_admin_index_settings($form, &$form_state) {
     '#default_value' => variable_get('islandora_solr_force_update_index_after_object_purge', 0),
   );
 
+  $form['solr_ajax_wrapper']['islandora_solr_technical_difficulties_message'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Solr unavailable message.'),
+    '#description' => t('When Solr throws an Exception this message is displayed to the users.'),
+    '#size' => 150,
+    '#weight' => 10,
+    '#default_value' => variable_get('islandora_solr_technical_difficulties_message', ISLANDORA_SOLR_DIFFICULTIES_MESSAGE),
+  );
+
   // Actions.
   $form['actions'] = array(
     '#type' => 'actions',
@@ -200,6 +209,7 @@ function _islandora_solr_admin_index_settings_submit($form, &$form_state) {
       variable_set('islandora_solr_url', $form_state['values']['islandora_solr_url']);
       variable_set('islandora_solr_request_handler', $form_state['values']['islandora_solr_request_handler']);
       variable_set('islandora_solr_force_update_index_after_object_purge', $form_state['values']['islandora_solr_force_update_index_after_object_purge']);
+      variable_set('islandora_solr_technical_difficulties_message', $form_state['values']['islandora_solr_technical_difficulties_message']);
       drupal_set_message(t('The Solr configuration options have been saved.'));
       break;
 
@@ -207,6 +217,7 @@ function _islandora_solr_admin_index_settings_submit($form, &$form_state) {
       variable_del('islandora_solr_url');
       variable_del('islandora_solr_request_handler');
       variable_del('islandora_solr_force_update_index_after_object_purge');
+      variable_del('islandora_solr_technical_difficulties_message');
       drupal_set_message(t('The configuration options have been reset to their default values.'));
       break;
   }

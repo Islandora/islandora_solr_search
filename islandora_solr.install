@@ -66,6 +66,7 @@ function islandora_solr_uninstall() {
     'islandora_solr_simple_search_label_title',
     'islandora_solr_compound_relationship_field',
     'islandora_solr_compound_sequence_pattern',
+    'islandora_solr_technical_difficulties_message',
   ));
   array_walk($variables, 'variable_del');
 }
