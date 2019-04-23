@@ -17,6 +17,20 @@ matrix:
     - php: 5.3.3
       dist: precise
       env: FEDORA_VERSION="3.8.1"
+  allow_failures:
+  # 5.3.3 can fail now.
+    - php: 5.3.3
+      dist: precise
+      env: FEDORA_VERSION="3.5"
+    - php: 5.3.3
+      dist: precise
+      env: FEDORA_VERSION="3.6.2"
+    - php: 5.3.3
+      dist: precise
+      env: FEDORA_VERSION="3.7.0"
+    - php: 5.3.3
+      dist: precise
+      env: FEDORA_VERSION="3.8.1"
 php:
   - 5.4
   - 5.5
