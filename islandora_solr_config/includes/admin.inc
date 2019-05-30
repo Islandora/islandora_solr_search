@@ -31,6 +31,7 @@ function islandora_solr_config_admin_rss_settings($form, &$form_state) {
     'managingEditor' => '',
     'webMaster' => '',
   ));
+  $rss_limit = variable_get('islandora_solr_config_rss_limit', 50);
 
   $form = array(
     '#tree' => TRUE,
@@ -110,6 +111,12 @@ function islandora_solr_config_admin_rss_settings($form, &$form_state) {
     '#description' => t('Email address for person responsible for technical issues relating to channel.'),
     '#default_value' => $rss_channel['webMaster'] ? $rss_channel['webMaster'] : '',
   );
+  $form['rss_limit'] = array(
+    '#type' => 'textfield',
+    '#title' => 'RSS results limit',
+    '#description' => 'Maximum number of results via RSS.',
+    '#default_value' => $rss_limit,
+  );
   $form['buttons']['submit'] = array(
     '#type' => 'submit',
     '#value' => t('Save'),
@@ -120,7 +127,6 @@ function islandora_solr_config_admin_rss_settings($form, &$form_state) {
     '#value' => t('Reset to defaults'),
     '#weight' => 51,
   );
-
   return $form;
 }
 
@@ -135,10 +141,11 @@ function islandora_solr_config_admin_rss_settings_submit($form, &$form_state) {
     // Get values.
     $rss_item = $form_state['values']['rss_item'];
     $rss_channel = $form_state['values']['rss_channel'];
-
+    $rss_limit = $form_state['values']['rss_limit'];
     // Set variable.
     variable_set('islandora_solr_config_rss_item', $rss_item);
     variable_set('islandora_solr_config_rss_channel', $rss_channel);
+    variable_set('islandora_solr_config_rss_limit', $rss_limit);
   }
 
   // On reset.

@@ -31,6 +31,8 @@ class IslandoraSolrResultsRSS extends IslandoraSolrResults {
     global $base_url;
 
     drupal_add_http_header('Content-Type', 'application/rss+xml; charset=utf-8');
+    $islandora_solr_query->solrLimit = variable_get('islandora_solr_config_rss_limit', 50);
+    $islandora_solr_query->executeQuery();
 
     // Get raw results.
     $solr_result = $islandora_solr_query->islandoraSolrResult;
