@@ -1,7 +1,10 @@
 <?php
-// @codingStandardsIgnoreStart
+
+// @codingStandardsIgnoreFile
 // XXX: This is an included library... Should have minimal changes from
 // upstream.
+// phpcs:ignoreFile
+// XXX: @codingStandards will be removed in PHP_CodeSniffer version 4.0
 /**
  * Copyright (c) 2007-2009, Conduit Internet Technologies, Inc.
  * All rights reserved.
@@ -980,4 +983,3 @@ class Apache_Solr_Service
 		}
 	}
 }
-// @codingStandardsIgnoreEnd
