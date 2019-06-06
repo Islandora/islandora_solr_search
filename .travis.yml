@@ -21,16 +21,16 @@ matrix:
   # 5.3.3 can fail now.
     - php: 5.3.3
       dist: precise
-      env: FEDORA_VERSION="3.5"
+      env: FEDORA_VERSION="3.5" CODESNIFFER_IGNORE="vendor,*.info,*.txt,*.md,SolrPhpClient"
     - php: 5.3.3
       dist: precise
-      env: FEDORA_VERSION="3.6.2"
+      env: FEDORA_VERSION="3.6.2" CODESNIFFER_IGNORE="vendor,*.info,*.txt,*.md,SolrPhpClient"
     - php: 5.3.3
       dist: precise
-      env: FEDORA_VERSION="3.7.0"
+      env: FEDORA_VERSION="3.7.0" CODESNIFFER_IGNORE="vendor,*.info,*.txt,*.md,SolrPhpClient"
     - php: 5.3.3
       dist: precise
-      env: FEDORA_VERSION="3.8.1"
+      env: FEDORA_VERSION="3.8.1" CODESNIFFER_IGNORE="vendor,*.info,*.txt,*.md,SolrPhpClient"
 php:
   - 5.4
   - 5.5
