@@ -62,6 +62,10 @@ class IslandoraSolrResultsAtom extends IslandoraSolrResults {
 
       // Render rss item.
       $rendered_item = format_rss_item($item['title'], $item['link'], $item['description'], $item['items']);
+      $open_tag = "<item>";
+      $close_tag = "</item>";
+      $rendered_item = str_replace($open_tag, "<entry>", $rendered_item);
+      $rendered_item = str_replace($close_tag, "</entry>", $rendered_item);
 
       // ... allow it to be altered...
       drupal_alter('islandora_solr_config_rss_item_post_render', $rendered_item, $doc);
@@ -110,13 +114,18 @@ class IslandoraSolrResultsAtom extends IslandoraSolrResults {
 
     $output = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n";
     $output .= '<feed xmlns="http://www.w3.org/2005/Atom">' . "\n";
-    $output .= '<link rel="self" href="' . $link_self . '"/>' . "\n";
-    $output .= '<link rel="first" href="' . $link_first . '"/>' . "\n";
-    $output .= '<link rel="next" href="' . $link_next . '"/>' . "\n";
+    $output .= ' <link rel="self" href="' . $link_self . '"/>' . "\n";
+    $output .= ' <link rel="first" href="' . $link_first . '"/>' . "\n";
     if (isset($link_prev)) {
-      $output .= '<link rel="previous" href="' . $link_prev . '"/>' . "\n";
+      $output .= ' <link rel="previous" href="' . $link_prev . '"/>' . "\n";
     }
-    $output .= format_rss_channel($title, $url, $description, $items, $langcode, $args);
+    $output .= ' <link rel="next" href="' . $link_next . '"/>';
+    $strip_channel = format_rss_channel($title, $url, $description, $items, $langcode, $args);
+    $tags = array(
+      "<channel>",
+      "</channel>",
+    );
+    $output .= str_replace($tags, "", $strip_channel);
     $output .= "</feed>\n";
 
     print $output;
@@ -173,6 +182,9 @@ class IslandoraSolrResultsAtom extends IslandoraSolrResults {
         'value' => $doc['PID'],
         'attributes' => array('isPermaLink' => 'false')),
       array(
+        'key' => 'id',
+        'value' => $doc['PID']),
+      array(
         'key' => 'pubDate',
         'value' => ($rss_item['pubDate'] && isset($doc[$rss_item['pubDate']])) ? $doc[$rss_item['pubDate']] : ''),
       array(
@@ -184,6 +196,9 @@ class IslandoraSolrResultsAtom extends IslandoraSolrResults {
       array(
         'key' => 'source',
         'value' => $rss_source, 'attributes' => array('url' => $base_url)),
+      array(
+        'key' => 'updated',
+        'value' => $doc['fgs_lastModifiedDate_dt']),
     );
 
     if ($is_datastream) {
