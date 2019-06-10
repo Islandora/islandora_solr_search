@@ -196,9 +196,6 @@ class IslandoraSolrResultsAtom extends IslandoraSolrResults {
       array(
         'key' => 'source',
         'value' => $rss_source, 'attributes' => array('url' => $base_url)),
-      array(
-        'key' => 'updated',
-        'value' => $doc['fgs_lastModifiedDate_dt']),
     );
 
     if ($is_datastream) {
