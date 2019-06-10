@@ -193,7 +193,7 @@ class IslandoraSolrResultsRSS extends IslandoraSolrResults {
     $result['langcode'] = NULL;
 
     $feed_url = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
-    if (strpos($feed_url, '&page') == false) {
+    if (strpos($feed_url, '&page') == FALSE) {
       $page_number = '1';
     }
     else {
@@ -216,29 +216,28 @@ class IslandoraSolrResultsRSS extends IslandoraSolrResults {
       $link_prev = $link_first . '&page=' . $page_prev;
     }
 
-
     $result['args'] = array(
       array(
         'key' => 'link',
         'attributes' => array(
           'rel' => 'next',
-          'href' => $link_next
+          'href' => $link_next,
         ),
       ),
       array(
         'key' => 'link',
         'attributes' => array(
           'rel' => 'previous',
-          'href' => $link_prev
+          'href' => $link_prev,
         ),
       ),
       array(
         'key' => 'link',
         'attributes' => array(
           'rel' => 'first',
-          'href' => $link_first
+          'href' => $link_first,
         ),
-      ),        
+      ),
       array(
         'key' => 'copyright',
         'value' => $rss_channel['copyright']),
