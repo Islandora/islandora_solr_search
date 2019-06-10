@@ -191,7 +191,54 @@ class IslandoraSolrResultsRSS extends IslandoraSolrResults {
     $result['url'] = $base_url;
     $result['description'] = t('Aggregated search results of: @query', array('@query' => $query));
     $result['langcode'] = NULL;
+
+    $feed_url = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
+    if (strpos($feed_url, '&page') == false) {
+      $page_number = '1';
+    }
+    else {
+      $arr = explode('&page=', $feed_url);
+      $page_number = $arr[1];
+    }
+    $link_self = $feed_url;
+    if (isset($arr)) {
+      $link_first = $arr[0];
+    }
+    else {
+      $link_first = $feed_url;
+    }
+    $page_next = $page_number + 1;
+    if ($page_number > 1) {
+      $page_prev = $page_number - 1;
+    }
+    $link_next = $link_first . '&page=' . $page_next;
+    if (isset($page_prev)) {
+      $link_prev = $link_first . '&page=' . $page_prev;
+    }
+
+
     $result['args'] = array(
+      array(
+        'key' => 'link',
+        'attributes' => array(
+          'rel' => 'next',
+          'href' => $link_next
+        ),
+      ),
+      array(
+        'key' => 'link',
+        'attributes' => array(
+          'rel' => 'previous',
+          'href' => $link_prev
+        ),
+      ),
+      array(
+        'key' => 'link',
+        'attributes' => array(
+          'rel' => 'first',
+          'href' => $link_first
+        ),
+      ),        
       array(
         'key' => 'copyright',
         'value' => $rss_channel['copyright']),
