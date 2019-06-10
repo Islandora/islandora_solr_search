@@ -85,7 +85,7 @@ class IslandoraSolrResultsAtom extends IslandoraSolrResults {
     $title = $channel['title'];
     $url = $channel['url'];
     $feed_url = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
-    if (strpos($feed_url, '&page') == false) {
+    if (strpos($feed_url, '&page') == FALSE) {
       $page_number = '1';
     }
     else {
