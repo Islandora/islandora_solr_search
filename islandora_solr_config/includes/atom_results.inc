@@ -111,6 +111,14 @@ class IslandoraSolrResultsAtom extends IslandoraSolrResults {
     $description = $channel['description'];
     $langcode = $channel['langcode'];
     $args = $channel['args'];
+    $args[] = array(
+      'key' => 'link',
+      'attributes' => array(
+        'rel' => 'next',
+        'href' => $link_next,
+      ),
+    );    
+dd($args);
 
     $output = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n";
     $output .= '<feed xmlns="http://www.w3.org/2005/Atom">' . "\n";
@@ -131,7 +139,6 @@ class IslandoraSolrResultsAtom extends IslandoraSolrResults {
     print $output;
     exit;
   }
-
 
   /**
    * Function for setting the values of the <item> elements for the RSS display.
