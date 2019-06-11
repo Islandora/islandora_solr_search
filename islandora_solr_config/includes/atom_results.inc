@@ -23,7 +23,7 @@ class IslandoraSolrResultsAtom extends IslandoraSolrResults {
    *   A solr query object.
    *
    * @return string
-   *   html output for the resultset. Note: we currently create this
+   *   XML output for the resultset. Note: we currently create this
    *   output manually, should refactor to use drupal forms api.
    */
   public function printAtom($islandora_solr_query, $title = "Search Results") {
