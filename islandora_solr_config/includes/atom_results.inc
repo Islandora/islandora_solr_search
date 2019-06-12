@@ -55,13 +55,14 @@ class IslandoraSolrResultsAtom extends IslandoraSolrResults {
         }
       }
       // Get the variables for the <item> element.
-      $item = $this->rssItem($doc);
+      $item = $this->atomItem($doc);
 
-      // Hook alter to change the rssItem before formatting.
-      drupal_alter('islandora_solr_search_rss_item', $item, $doc);
+      // Hook alter to change the atomItem before formatting.
+      drupal_alter('islandora_solr_search_atom_item', $item, $doc);
 
       // Render rss item.
       $rendered_item = format_rss_item($item['title'], $item['link'], $item['description'], $item['items']);
+ $test = islandora_solr_config_format_atom_item($item['title'], $item['link'], $item['description'], $item['items']);
       $open_tag = "<item>";
       $close_tag = "</item>";
       $rendered_item = str_replace($open_tag, "<entry>", $rendered_item);
@@ -118,7 +119,6 @@ class IslandoraSolrResultsAtom extends IslandoraSolrResults {
         'href' => $link_next,
       ),
     );    
-dd($args);
 
     $output = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n";
     $output .= '<feed xmlns="http://www.w3.org/2005/Atom">' . "\n";
@@ -140,6 +140,22 @@ dd($args);
     exit;
   }
 
+/**
+ * Formats a single atom item.
+ *
+ * Arbitrary elements may be added using the $args associative array.
+ */
+function islandora_solr_config_format_atom_item($title, $link, $description, $args = array()) {
+  $output = "<item>\n";
+  $output .= ' <title>' . check_plain($title) . "</title>\n";
+  $output .= ' <link>' . check_url($link) . "</link>\n";
+  $output .= ' <description>' . check_plain($description) . "</description>\n";
+  $output .= format_xml_elements($args);
+  $output .= "</item>\n";
+
+  return $output;
+}
+
   /**
    * Function for setting the values of the <item> elements for the RSS display.
    *
@@ -148,7 +164,7 @@ dd($args);
    * @return array
    *   variable that holds all values to be rendered into <item> elements
    */
-  public function rssItem($doc) {
+  public function atomItem($doc) {
     // Set variables.
     global $base_url;
 
