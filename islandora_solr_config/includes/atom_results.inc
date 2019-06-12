@@ -7,6 +7,42 @@
  */
 
 /**
+ * Formats a single atom item.
+ *
+ * Arbitrary elements may be added using the $args associative array.
+ */
+function format_atom_item($title, $link, $description, $args = array()) {
+  $output = "<entry>\n";
+  $output .= ' <title>' . check_plain($title) . "</title>\n";
+  $output .= ' <link>' . check_url($link) . "</link>\n";
+  $output .= ' <description>' . check_plain($description) . "</description>\n";
+  $output .= format_xml_elements($args);
+  $output .= "</entry>\n";
+
+  return $output;
+}
+
+/**
+ * Formats the feed header.
+ */
+function format_atom_channel($title, $link, $description, $items, $langcode = NULL, $args = array()) {
+  global $language_content;
+  $langcode = $langcode ? $langcode : $language_content->language;
+  $output = ' <title>' . check_plain($title) . "</title>\n";
+  $output .= ' <link>' . check_url($link) . "</link>\n";
+
+  // The RSS 2.0 "spec" doesn't indicate HTML can be used in the description.
+  // We strip all HTML tags, but need to prevent double encoding from properly
+  // escaped source data (such as &amp becoming &amp;amp;).
+  $output .= ' <description>' . check_plain(decode_entities(strip_tags($description))) . "</description>\n";
+  $output .= ' <language>' . check_plain($langcode) . "</language>\n";
+  $output .= format_xml_elements($args);
+  $output .= $items;
+  $output .= "\n";
+  return $output;
+}
+
+/**
  * Extention of IslandoraSolrResults for templating purposes.
  * This overrides the displayResults function to provide an alternate display
  * type.
@@ -61,12 +97,7 @@ class IslandoraSolrResultsAtom extends IslandoraSolrResults {
       drupal_alter('islandora_solr_search_atom_item', $item, $doc);
 
       // Render rss item.
-      $rendered_item = format_rss_item($item['title'], $item['link'], $item['description'], $item['items']);
- $test = islandora_solr_config_format_atom_item($item['title'], $item['link'], $item['description'], $item['items']);
-      $open_tag = "<item>";
-      $close_tag = "</item>";
-      $rendered_item = str_replace($open_tag, "<entry>", $rendered_item);
-      $rendered_item = str_replace($close_tag, "</entry>", $rendered_item);
+      $rendered_item = format_atom_item($item['title'], $item['link'], $item['description'], $item['items']);
 
       // ... allow it to be altered...
       drupal_alter('islandora_solr_config_rss_item_post_render', $rendered_item, $doc);
@@ -112,13 +143,6 @@ class IslandoraSolrResultsAtom extends IslandoraSolrResults {
     $description = $channel['description'];
     $langcode = $channel['langcode'];
     $args = $channel['args'];
-    $args[] = array(
-      'key' => 'link',
-      'attributes' => array(
-        'rel' => 'next',
-        'href' => $link_next,
-      ),
-    );    
 
     $output = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n";
     $output .= '<feed xmlns="http://www.w3.org/2005/Atom">' . "\n";
@@ -127,34 +151,14 @@ class IslandoraSolrResultsAtom extends IslandoraSolrResults {
     if (isset($link_prev)) {
       $output .= ' <link rel="previous" href="' . $link_prev . '"/>' . "\n";
     }
-    $output .= ' <link rel="next" href="' . $link_next . '"/>';
-    $strip_channel = format_rss_channel($title, $url, $description, $items, $langcode, $args);
-    $tags = array(
-      "<channel>",
-      "</channel>",
-    );
-    $output .= str_replace($tags, "", $strip_channel);
+    $output .= ' <link rel="next" href="' . $link_next . '"/>' . "\n";
+    $output .= format_atom_channel($title, $url, $description, $items, $langcode, $args);
     $output .= "</feed>\n";
 
     print $output;
     exit;
   }
 
-/**
- * Formats a single atom item.
- *
- * Arbitrary elements may be added using the $args associative array.
- */
-function islandora_solr_config_format_atom_item($title, $link, $description, $args = array()) {
-  $output = "<item>\n";
-  $output .= ' <title>' . check_plain($title) . "</title>\n";
-  $output .= ' <link>' . check_url($link) . "</link>\n";
-  $output .= ' <description>' . check_plain($description) . "</description>\n";
-  $output .= format_xml_elements($args);
-  $output .= "</item>\n";
-
-  return $output;
-}
 
   /**
    * Function for setting the values of the <item> elements for the RSS display.
