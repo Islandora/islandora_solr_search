@@ -211,7 +211,7 @@ class IslandoraSolrResultsRSS extends IslandoraSolrResults {
     if ($page_number > 1) {
       $page_prev = $page_number - 1;
     }
-    $link_next = $link_first . '&page=' . $page_next;
+    $link_next = url($link_first . '&page=' . $page_next);
     if (isset($page_prev)) {
       $link_prev = $link_first . '&page=' . $page_prev;
     }
@@ -220,23 +220,20 @@ class IslandoraSolrResultsRSS extends IslandoraSolrResults {
       array(
         'key' => 'link',
         'attributes' => array(
-          'rel' => 'next',
-          'href' => $link_next,
-        ),
+          'rel' => 'next'),
+        'value' => $link_next,
       ),
       array(
         'key' => 'link',
         'attributes' => array(
-          'rel' => 'previous',
-          'href' => $link_prev,
-        ),
+          'rel' => 'previous'),
+        'value' => $link_prev,
       ),
       array(
         'key' => 'link',
         'attributes' => array(
-          'rel' => 'first',
-          'href' => $link_first,
-        ),
+          'rel' => 'first'),
+        'value' => $link_first,
       ),
       array(
         'key' => 'copyright',
