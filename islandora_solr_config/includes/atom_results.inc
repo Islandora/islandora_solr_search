@@ -100,7 +100,7 @@ class IslandoraSolrResultsAtom extends IslandoraSolrResults {
       $rendered_item = format_atom_item($item['title'], $item['link'], $item['description'], $item['items']);
 
       // ... allow it to be altered...
-      drupal_alter('islandora_solr_config_rss_item_post_render', $rendered_item, $doc);
+      drupal_alter('islandora_solr_config_atom_item_post_render', $rendered_item, $doc);
 
       // ... and add to items string.
       $items .= "$rendered_item\n";
@@ -110,8 +110,8 @@ class IslandoraSolrResultsAtom extends IslandoraSolrResults {
     $query = $islandora_solr_query->solrQuery;
 
     // Get the variables for the <channel> element.
-    $channel = $this->rssChannel($query);
-    drupal_alter('islandora_solr_config_rss_root_element_attributes', $channel, $items);
+    $channel = $this->atomChannel($query);
+    drupal_alter('islandora_solr_config_atom_root_element_attributes', $channel, $items);
 
     // Give the results clean variable names.
     $title = $channel['title'];
@@ -244,7 +244,7 @@ class IslandoraSolrResultsAtom extends IslandoraSolrResults {
    * @return array
    *   variable that holds all values to be rendered into <channel> elements
    */
-  public function rssChannel($query) {
+  public function atomChannel($query) {
     // Set variables.
     global $base_url;
     $rss_channel = variable_get('islandora_solr_config_rss_channel', array(
