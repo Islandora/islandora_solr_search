@@ -236,7 +236,7 @@ dd($channel);
         'attributes' => array(
           'rel' => 'first'),
         'value' => $link_first,
-        'encoded' => TRUE;
+        'encoded' => TRUE,
       ),
       array(
         'key' => 'copyright',
