@@ -77,7 +77,7 @@ class IslandoraSolrResultsRSS extends IslandoraSolrResults {
     $channel = $this->rssChannel($query);
     $rss_attributes = array('version' => '2.0');
     drupal_alter('islandora_solr_config_rss_root_element_attributes', $rss_attributes, $channel, $items);
-dd($channel);
+
     // Give the results clean variable names.
     $title = $channel['title'];
     $url = $channel['url'];
@@ -207,13 +207,26 @@ dd($channel);
     else {
       $link_first = $feed_url;
     }
+
     $page_next = $page_number + 1;
     if ($page_number > 1) {
       $page_prev = $page_number - 1;
     }
-    $link_next = url($link_first . '&page=' . $page_next);
+
+    $next_page = array(
+      'query' => array(
+        'page' => $page_next,
+      ),
+    );
+    $link_next = url($link_first, $next_page);
+
     if (isset($page_prev)) {
-      $link_prev = $link_first . '&page=' . $page_prev;
+      $prev_page = array(
+        'query' => array(
+          'page' => $page_prev,
+        ),
+      );
+      $link_prev = url($link_first, $prev_page);
     }
 
     $result['args'] = array(
