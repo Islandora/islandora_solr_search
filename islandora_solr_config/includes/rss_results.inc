@@ -193,15 +193,17 @@ class IslandoraSolrResultsRSS extends IslandoraSolrResults {
     $result['langcode'] = NULL;
 
     $feed_url = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
-    if (strpos($feed_url, '&page') == FALSE) {
+    $page_params = drupal_get_query_parameters();
+    if (!isset($page_params['page'])) {
       $page_number = '1';
     }
     else {
-      $arr = explode('&page=', $feed_url);
-      $page_number = $arr[1];
+      $page_number = $page_params['page'];
     }
     $link_self = $feed_url;
-    if (isset($arr)) {
+
+    if (isset($page_params['page'])) {
+      $arr = explode('&page=', $feed_url);
       $link_first = $arr[0];
     }
     else {
