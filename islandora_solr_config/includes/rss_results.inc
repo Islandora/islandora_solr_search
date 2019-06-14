@@ -192,8 +192,9 @@ class IslandoraSolrResultsRSS extends IslandoraSolrResults {
     $result['description'] = t('Aggregated search results of: @query', array('@query' => $query));
     $result['langcode'] = NULL;
 
-    $feed_url = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
+    $feed_url = request_uri();
     $page_params = drupal_get_query_parameters();
+
     if (!isset($page_params['page'])) {
       $page_number = '1';
     }
@@ -203,8 +204,9 @@ class IslandoraSolrResultsRSS extends IslandoraSolrResults {
     $link_self = $feed_url;
 
     if (isset($page_params['page'])) {
-      $arr = explode('&page=', $feed_url);
-      $link_first = $arr[0];
+// Problem is here
+      $page = array(array() + $page_params);
+      $link_first = url($base_url . "/" . request_path(), $page);
     }
     else {
       $link_first = $feed_url;
@@ -218,18 +220,25 @@ class IslandoraSolrResultsRSS extends IslandoraSolrResults {
     $next_page = array(
       'query' => array(
         'page' => $page_next,
-      ),
+      )+$page_params,
     );
-    $link_next = url($link_first, $next_page);
+    $link_next = url($base_url . "/" . request_path(), $next_page);
 
     if (isset($page_prev)) {
       $prev_page = array(
         'query' => array(
           'page' => $page_prev,
-        ),
+        )+$page_params,
       );
-      $link_prev = url($link_first, $prev_page);
+      $link_prev = url($base_url . "/" . request_path(), $prev_page);
     }
+
+$args = array(
+  'query' => array(
+    'page' => $page_prev,
+  ) + $page_params,
+);
+$link_prev = url($base_url . "/" . request_path(), $args);
 
     $result['args'] = array(
       array(
