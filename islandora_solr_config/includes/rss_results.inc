@@ -202,7 +202,6 @@ class IslandoraSolrResultsRSS extends IslandoraSolrResults {
       $page_number = $page_params['page'];
     }
     $link_self = $feed_url;
-
     if (isset($page_params['page'])) {
       $link_first = url(
         request_path(),
@@ -213,7 +212,7 @@ class IslandoraSolrResultsRSS extends IslandoraSolrResults {
       );
     }
     else {
-      $link_first = $feed_url;
+      $link_first = $base_url . $feed_url;
     }
 
     $page_next = $page_number + 1;
