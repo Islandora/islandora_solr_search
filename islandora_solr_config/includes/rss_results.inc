@@ -204,9 +204,13 @@ class IslandoraSolrResultsRSS extends IslandoraSolrResults {
     $link_self = $feed_url;
 
     if (isset($page_params['page'])) {
-// Problem is here
-      $page = array(array() + $page_params);
-      $link_first = url($base_url . "/" . request_path(), $page);
+      $link_first = url(
+        request_path(),
+        array(
+          'absolute' => TRUE,
+          'query' => array('page' => 1) + $page_params,
+        )
+      );
     }
     else {
       $link_first = $feed_url;
@@ -232,14 +236,6 @@ class IslandoraSolrResultsRSS extends IslandoraSolrResults {
       );
       $link_prev = url($base_url . "/" . request_path(), $prev_page);
     }
-
-$args = array(
-  'query' => array(
-    'page' => $page_prev,
-  ) + $page_params,
-);
-$link_prev = url($base_url . "/" . request_path(), $args);
-
     $result['args'] = array(
       array(
         'key' => 'link',
