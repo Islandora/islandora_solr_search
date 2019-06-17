@@ -234,6 +234,9 @@ class IslandoraSolrResultsRSS extends IslandoraSolrResults {
       );
       $link_prev = url($base_url . "/" . request_path(), $prev_page);
     }
+    else {
+      $link_prev = "";
+    }
     $result['args'] = array(
       array(
         'key' => 'link',
