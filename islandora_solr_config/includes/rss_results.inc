@@ -69,12 +69,11 @@ class IslandoraSolrResultsRSS extends IslandoraSolrResults {
       // ... and add to items string.
       $items .= "$rendered_item\n";
     }
-
     // Query search terms:
     $query = $islandora_solr_query->solrQuery;
 
     // Get the variables for the <channel> element.
-    $channel = $this->rssChannel($query);
+    $channel = $this->rssChannel($query, $docs);
     $rss_attributes = array('version' => '2.0');
     drupal_alter('islandora_solr_config_rss_root_element_attributes', $rss_attributes, $channel, $items);
 
@@ -176,7 +175,7 @@ class IslandoraSolrResultsRSS extends IslandoraSolrResults {
    * @return array
    *   variable that holds all values to be rendered into <channel> elements
    */
-  public function rssChannel($query) {
+  public function rssChannel($query, $docs) {
     // Set variables.
     global $base_url;
     $rss_channel = variable_get('islandora_solr_config_rss_channel', array(
@@ -191,7 +190,6 @@ class IslandoraSolrResultsRSS extends IslandoraSolrResults {
     $result['url'] = $base_url;
     $result['description'] = t('Aggregated search results of: @query', array('@query' => $query));
     $result['langcode'] = NULL;
-
     $feed_url = request_uri();
     $page_params = drupal_get_query_parameters();
 
@@ -202,11 +200,13 @@ class IslandoraSolrResultsRSS extends IslandoraSolrResults {
       $page_number = $page_params['page'];
     }
     if (isset($page_params['page'])) {
+      $first_params = $page_params;
+      unset($first_params['page']);
       $link_first = url(
         request_path(),
         array(
           'absolute' => TRUE,
-          'query' => array('page' => 1) + $page_params,
+          'query' => $first_params,
         )
       );
     }
@@ -224,15 +224,25 @@ class IslandoraSolrResultsRSS extends IslandoraSolrResults {
         'page' => $page_next,
       )+$page_params,
     );
-    $link_next = url($base_url . "/" . request_path(), $next_page);
+
+    // Only set Next link if there is a next page.
+    $rss_limit = variable_get('islandora_solr_config_rss_limit', 50);
+    if (count($docs) == $rss_limit) {
+      $link_next = url($base_url . "/" . request_path(), $next_page);
+    }
 
     if (isset($page_prev)) {
-      $prev_page = array(
-        'query' => array(
-          'page' => $page_prev,
-        )+$page_params,
-      );
-      $link_prev = url($base_url . "/" . request_path(), $prev_page);
+      if ($page_prev > 1) {
+        $prev_page = array(
+          'query' => array(
+            'page' => $page_prev,
+          )+$page_params,
+        );
+        $link_prev = url($base_url . "/" . request_path(), $prev_page);
+      }
+      else {
+        $link_prev = $link_first;
+      }
     }
     else {
       $link_prev = "";
