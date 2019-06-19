@@ -194,7 +194,7 @@ class IslandoraSolrResultsRSS extends IslandoraSolrResults {
     $page_params = drupal_get_query_parameters();
 
     if (!isset($page_params['page'])) {
-      $page_number = '1';
+      $page_number = '0';
     }
     else {
       $page_number = $page_params['page'];
@@ -215,7 +215,7 @@ class IslandoraSolrResultsRSS extends IslandoraSolrResults {
     }
 
     $page_next = $page_number + 1;
-    if ($page_number > 1) {
+    if ($page_number > 0) {
       $page_prev = $page_number - 1;
     }
 
@@ -232,7 +232,7 @@ class IslandoraSolrResultsRSS extends IslandoraSolrResults {
     }
 
     if (isset($page_prev)) {
-      if ($page_prev > 1) {
+      if ($page_prev > 0) {
         $prev_page = array(
           'query' => array(
             'page' => $page_prev,
