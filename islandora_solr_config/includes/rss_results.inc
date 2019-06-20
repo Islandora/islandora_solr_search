@@ -247,28 +247,35 @@ class IslandoraSolrResultsRSS extends IslandoraSolrResults {
     else {
       $link_prev = "";
     }
-    $result['args'] = array(
-      array(
+    $result['args'] = array();
+    if (isset($link_next)) {
+    $result['args'][] = array(
         'key' => 'link',
         'attributes' => array(
           'rel' => 'next'),
         'value' => $link_next,
         'encoded' => TRUE,
-      ),
-      array(
+      );
+    }
+    if (isset($link_prev)) {
+      $result['args'][] = array(
         'key' => 'link',
         'attributes' => array(
           'rel' => 'previous'),
         'value' => $link_prev,
         'encoded' => TRUE,
-      ),
-      array(
+      );
+    }
+    if (isset($link_first)) {
+      $result['args'][] = array(
         'key' => 'link',
         'attributes' => array(
           'rel' => 'first'),
         'value' => $link_first,
         'encoded' => TRUE,
-      ),
+      );
+    }
+    $final_arguments = array(
       array(
         'key' => 'copyright',
         'value' => $rss_channel['copyright']),
@@ -279,6 +286,7 @@ class IslandoraSolrResultsRSS extends IslandoraSolrResults {
         'key' => 'webMaster',
         'value' => $rss_channel['webMaster']),
     );
+    $result['args'] = array_merge($result['args'], $final_arguments);
     return $result;
   }
 }
