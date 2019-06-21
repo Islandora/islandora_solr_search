@@ -228,7 +228,7 @@ class IslandoraSolrResultsRSS extends IslandoraSolrResults {
     // Only set Next link if there is a next page.
     $rss_limit = variable_get('islandora_solr_config_rss_limit', 50);
     if (count($docs) == $rss_limit) {
-      $link_next = url($base_url . "/" . request_path(), $next_page);
+      $link_next = url(url(request_path(), array('absolute' => TRUE)), $next_page);
     }
 
     if (isset($page_prev)) {
@@ -238,7 +238,7 @@ class IslandoraSolrResultsRSS extends IslandoraSolrResults {
             'page' => $page_prev,
           )+$page_params,
         );
-        $link_prev = url($base_url . "/" . request_path(), $prev_page);
+        $link_prev = url(url(request_path(), array('absolute' => TRUE)), $prev_page);
       }
       else {
         $link_prev = $link_first;
