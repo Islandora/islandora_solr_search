@@ -31,14 +31,15 @@ class IslandoraSolrResultsRSS extends IslandoraSolrResults {
     global $base_url;
 
     drupal_add_http_header('Content-Type', 'application/rss+xml; charset=utf-8');
+
     $islandora_solr_query->solrLimit = variable_get('islandora_solr_config_rss_limit', 50);
     $islandora_solr_query->executeQuery();
 
     // Get raw results.
     $solr_result = $islandora_solr_query->islandoraSolrResult;
-
     // All results.
     $docs = $solr_result['response']['objects'];
+    $total_results = $solr_result['response']['numFound'];
 
     // Loop over results.
     $items = NULL;
@@ -73,7 +74,7 @@ class IslandoraSolrResultsRSS extends IslandoraSolrResults {
     $query = $islandora_solr_query->solrQuery;
 
     // Get the variables for the <channel> element.
-    $channel = $this->rssChannel($query, $docs);
+    $channel = $this->rssChannel($query, $total_results);
     $rss_attributes = array('version' => '2.0');
     drupal_alter('islandora_solr_config_rss_root_element_attributes', $rss_attributes, $channel, $items);
 
@@ -175,7 +176,7 @@ class IslandoraSolrResultsRSS extends IslandoraSolrResults {
    * @return array
    *   variable that holds all values to be rendered into <channel> elements
    */
-  public function rssChannel($query, $docs) {
+  public function rssChannel($query, $total_results) {
     // Set variables.
     global $base_url;
     $rss_channel = variable_get('islandora_solr_config_rss_channel', array(
@@ -228,7 +229,11 @@ class IslandoraSolrResultsRSS extends IslandoraSolrResults {
 
     // Only set Next link if there is a next page.
     $rss_limit = variable_get('islandora_solr_config_rss_limit', 50);
-    if (count($docs) == $rss_limit) {
+// Take $total_results and divide by $rss_limit to get number of pages
+    $total_pages = $total_results / $rss_limit;
+    dd('Total pages: ' . $total_pages);
+    dd('Current page: ' . $page_number);
+    if ($total_pages > ($page_number + 1)) {
       $link_next = url(request_path(), $next_page);
     }
 
