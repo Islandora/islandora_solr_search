@@ -200,9 +200,12 @@ class IslandoraSolrResultsRSS extends IslandoraSolrResults {
     else {
       $page_number = $page_params['page'];
     }
+
+    // Removes the Page parameter to generate the first page link if applicable.
+    $first_params = $page_params;
     if (isset($page_params['page'])) {
-      $first_params = $page_params;
       unset($first_params['page']);
+    }
       $link_first = url(
         request_path(),
         array(
@@ -210,10 +213,6 @@ class IslandoraSolrResultsRSS extends IslandoraSolrResults {
           'query' => $first_params,
         )
       );
-    }
-    else {
-      $link_first = $base_url . $feed_url;
-    }
 
     $page_next = $page_number + 1;
     if ($page_number > 0) {
