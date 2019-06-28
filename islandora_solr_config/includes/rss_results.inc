@@ -230,8 +230,6 @@ class IslandoraSolrResultsRSS extends IslandoraSolrResults {
     $rss_limit = variable_get('islandora_solr_config_rss_limit', 50);
 // Take $total_results and divide by $rss_limit to get number of pages
     $total_pages = $total_results / $rss_limit;
-    dd('Total pages: ' . $total_pages);
-    dd('Current page: ' . $page_number);
     if ($total_pages > ($page_number + 1)) {
       $link_next = url(request_path(), $next_page);
     }
