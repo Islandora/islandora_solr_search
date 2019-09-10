@@ -343,11 +343,11 @@ function islandora_solr_get_field_schema($field_name) {
       // Turn values to lowercase
       array_walk($schema_key, function(&$o) { $o = strtolower($o);});
       // Make array with keys from schema_key and values all False
-      $field_schema = array_combine(array_values($schema_key), array_pad(array(), count($schema_key), False));
+      $field_schema = array_combine(array_values($schema_key), array_pad(array(), count($schema_key), FALSE));
       for ($foo = 0; $foo < strlen($encoded_schema); $foo += 1) {
         $key = substr($encoded_schema, $foo, 1);
         if (array_key_exists($key, $schema_key)) {
-          $field_schema[$schema_key[$key]] = True;
+          $field_schema[$schema_key[$key]] = TRUE;
         }
       }
     }
