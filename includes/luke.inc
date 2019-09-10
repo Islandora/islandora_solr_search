@@ -304,3 +304,53 @@ function islandora_solr_get_solr_version($reset = FALSE) {
   }
   return $version;
 }
+
+/**
+ * Returns an array of schema markers to define what is set for the field.
+ *
+ * Keys are built from Solr so could change based on Solr version. But so far
+ * seem consistent (made lowercase):
+ * - indexed
+ * - tokenized
+ * - stored
+ * - multivalued
+ * - termvector stored
+ * - store offset with termvector
+ * - store position with termvector
+ * - omit norms
+ * - lazy
+ * - binary
+ * - sort missing first
+ * - sort missing last
+ *
+ * @param $field_name
+ *   The field to check
+ *
+ * @return array
+ *   Array with true for schema
+ *
+ * @see https://cwiki.apache.org/confluence/display/solr/LukeRequestHandler
+ */
+function islandora_solr_get_field_schema($field_name) {
+  $info = islandora_solr_get_luke(NULL, $field_name, 1);
+  $field_schema = array();
+  if (is_array($info)) {
+    if (isset($info['fields'][$field_name]['schema']) && isset($info['info']['key'])) {
+      // Only test for active values, ie. non hyphens.
+      $encoded_schema = str_replace('-', '', $info['fields'][$field_name]['schema']);
+      // Get the schema key from Luke
+      $schema_key = $info['info']['key'];
+      // Turn values to lowercase
+      array_walk($schema_key, function(&$o) { $o = strtolower($o);});
+      // Make array with keys from schema_key and values all False
+      $field_schema = array_combine(array_values($schema_key), array_pad(array(), count($schema_key), False));
+      for ($foo = 0; $foo < strlen($encoded_schema); $foo += 1) {
+        $key = substr($encoded_schema, $foo, 1);
+        if (array_key_exists($key, $schema_key)) {
+          $field_schema[$schema_key[$key]] = True;
+        }
+      }
+    }
+  }
+  return $field_schema;
+}
