@@ -191,6 +191,15 @@ function hook_islandora_solr_search_rss_item_alter($item, $doc) {
 }
 
 /**
+ * Implements hook_islandora_solr_facet_variables_alter().
+ */
+function hook_islandora_solr_facet_variables_alter(&$buckets) {
+  foreach ($buckets AS $bucket) {
+    $bucket['link'] = $new_link;
+  }
+}
+
+/**
  * Allow altering of Solr facet buckets links (link, plus, minus).
  *
  * The original intention of this hook is to allow one to implement AJAX
