@@ -99,7 +99,6 @@ function template_preprocess_islandora_solr_facet(&$variables) {
   if ($variables['hidden']) {
     $variables['classes_array'][] = 'hidden';
   }
-//  drupal_alter('islandora_solr_facet_variables', $variables['buckets']);
 }
 
 /**
