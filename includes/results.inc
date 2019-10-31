@@ -1097,10 +1097,11 @@ class IslandoraSolrFacets {
       $buckets[] = $link;
     }
 
+    drupal_alter('islandora_solr_facet_variables', $buckets);
+
     // Show more link.
     if (count($buckets) > $soft_limit) {
       // Create hook_islandora_solr_facet_variables_alter().
-      drupal_alter('islandora_solr_facet_variables', $buckets);
       $buckets_visible = array_slice($buckets, 0, $soft_limit);
       $buckets_hidden = array_slice($buckets, $soft_limit);
       $this->content .= theme('islandora_solr_facet', array(
