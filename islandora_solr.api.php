@@ -193,9 +193,11 @@ function hook_islandora_solr_search_rss_item_alter($item, $doc) {
 /**
  * Implements hook_islandora_solr_facet_variables_alter().
  */
-function hook_islandora_solr_facet_variables_alter(&$buckets) {
+function hook_islandora_solr_facet_variables_alter(&$buckets, &$facet_field) {
   foreach ($buckets AS $bucket) {
-    $bucket['link'] = $new_link;
+    if ($facet_field == $configured_facet_field) {
+      $bucket['link'] = $new_link;
+    }
   }
 }
 
