@@ -191,7 +191,13 @@ function hook_islandora_solr_search_rss_item_alter($item, $doc) {
 }
 
 /**
- * Implements hook_islandora_solr_facet_variables_alter().
+ * This hook allows modules to modify the facets returned from a search.
+ * You may for example wish to modify the facet's display text.
+ *
+ * @param array $buckets
+ *   See the hook definition below.
+ * @param $facet_field
+ *   The Solr field used by the facet being returned.
  */
 function hook_islandora_solr_facet_variables_alter(&$buckets, &$facet_field) {
   foreach ($buckets AS $bucket) {
