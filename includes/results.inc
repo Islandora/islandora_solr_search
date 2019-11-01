@@ -1097,8 +1097,8 @@ class IslandoraSolrFacets {
       $buckets[] = $link;
     }
 
-    drupal_alter('islandora_solr_facet_variables', $buckets);
-
+    drupal_alter('islandora_solr_facet_variables', $buckets, $facet_field);
+dd($facet_field);
     // Show more link.
     if (count($buckets) > $soft_limit) {
       // Create hook_islandora_solr_facet_variables_alter().
