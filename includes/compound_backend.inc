@@ -1,9 +1,9 @@
 <?php
+
 /**
  * @file
  * Compound backend stuff.
  */
-
 
 /**
  * Admin options.
@@ -100,7 +100,7 @@ function islandora_solr_compound_object_query($pid) {
   } while ($total > (($start * $rows) + $rows));
 
   if (count($constituents) > 0) {
-    $sort = function($a, $b) use($sequence_pattern) {
+    $sort = function ($a, $b) use ($sequence_pattern) {
       $a = $a['solr_doc'][$sequence_pattern];
       if (is_array($a)) {
         $a = reset($a);

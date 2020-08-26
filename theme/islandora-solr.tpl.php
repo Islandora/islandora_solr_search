@@ -1,14 +1,14 @@
 <?php
+
 /**
  * @file
  * Islandora solr search primary results template file.
  *
  * Variables available:
- * - $results: Primary profile results array
+ * - $results: Primary profile results array.
  *
  * @see template_preprocess_islandora_solr()
  */
-
 ?>
 <?php if (empty($results)): ?>
   <p class="no-results"><?php print t('Sorry, but your search returned no results.'); ?></p>

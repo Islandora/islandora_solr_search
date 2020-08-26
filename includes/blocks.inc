@@ -88,7 +88,6 @@ function islandora_solr_islandora_solr_query_blocks() {
   );
 }
 
-
 /**
  * Implements hook_block_info().
  */
@@ -145,7 +144,7 @@ function islandora_solr_block_save($delta = '', $edit = array()) {
  * Currently checks for delta of explore and modifies the form to add custom
  * configuration options to setup facet display filters to be rendered.
  */
-function islandora_solr_form_BLOCK_ADMIN_CONFIGURE_alter(&$form, &$form_state) {
+function islandora_solr_form_block_admin_configure_alter(&$form, &$form_state) {
   if ($form['module']['#value'] == 'islandora_solr' && $form['delta']['#value'] == 'explore') {
     // Get the variables for the form display facets.
     $expore_config = (isset($form_state['islandora_solr_facet_filters']) ? $form_state['islandora_solr_facet_filters'] : variable_get('islandora_solr_explore_config', array()));
@@ -451,7 +450,7 @@ function islandora_solr_block_view($block_name = '') {
  * @return array
  *   An associative array containing the fully built form structure.
  */
-function islandora_solr_simple_search_form($form, &$form_state) {
+function islandora_solr_simple_search_form(array $form, array &$form_state) {
 
   $form['simple'] = array(
     '#type' => 'container',
@@ -494,7 +493,7 @@ function islandora_solr_simple_search_form($form, &$form_state) {
  * @param array $form_state
  *   An associative array containing form state.
  */
-function islandora_solr_simple_search_form_submit($form, &$form_state) {
+function islandora_solr_simple_search_form_submit(array $form, array &$form_state) {
   module_load_include('inc', 'islandora_solr', 'includes/utilities');
   $search_string = islandora_solr_replace_slashes($form_state['values']['islandora_simple_search_query']);
 
@@ -530,7 +529,7 @@ function islandora_solr_simple_search_form_submit($form, &$form_state) {
  * @return array
  *   An associative array containing the fully built form structure.
  */
-function islandora_solr_advanced_search_form($form, &$form_state) {
+function islandora_solr_advanced_search_form(array $form, array &$form_state) {
   global $_islandora_solr_queryclass;
 
   // 1: Form update using AJAX.
@@ -723,10 +722,9 @@ function islandora_solr_advanced_search_form($form, &$form_state) {
  *
  * @see islandora_solr_advanced_search_form()
  */
-function _islandora_solr_advanced_search_terms($form, &$form_state) {
+function _islandora_solr_advanced_search_terms(array $form, array &$form_state) {
   return $form['terms'];
 }
-
 
 /**
  * Islandora Solr advanced search form submit callback.
@@ -738,7 +736,7 @@ function _islandora_solr_advanced_search_terms($form, &$form_state) {
  *
  * @see islandora_solr_advanced_search_form()
  */
-function islandora_solr_advanced_search_form_submit($form, &$form_state) {
+function islandora_solr_advanced_search_form_submit(array $form, array &$form_state) {
   module_load_include('inc', 'islandora_solr', 'includes/utilities');
 
   // Collect query values.
@@ -871,7 +869,7 @@ function islandora_solr_display() {
           $attr['title'] = $display_description;
           $attr['href'] = url($path, array('query' => $query));
 
-          // XXX: We're not using l() because of
+          // XXX: We're not using l() because of.
           // @link http://drupal.org/node/41595 active classes. @endlink
           $item = '<a' . drupal_attributes($attr) . '>' . check_plain($display_name) . '</a>';
 
@@ -892,7 +890,6 @@ function islandora_solr_display() {
   }
   return $output;
 }
-
 
 /**
  * Provides a list to change the sorting on a current search query.
@@ -986,7 +983,7 @@ function islandora_solr_sort() {
       $hooks = islandora_build_hook_list(ISLANDORA_SOLR_FACET_BUCKET_CLASSES_HOOK_BASE);
       drupal_alter($hooks, $attributes, $_islandora_solr_queryclass);
 
-      // XXX: We're not using l() because of
+      // XXX: We're not using l() because of.
       // @link http://drupal.org/node/41595 active classes. @endlink
       $item = '<a' . drupal_attributes($attr) . '>' . $attributes['sort']['label'] . ' ' . $indicator . '</a>';
 
@@ -1175,7 +1172,7 @@ function islandora_solr_search_results_limit() {
         $query['limit'] = $limit;
         unset($query['page']);
         $attr['href'] = url($path, array('query' => $query));
-        // XXX: We're not using l() because of
+        // XXX: We're not using l() because of.
         // @link http://drupal.org/node/41595 active classes. @endlink
         $limit_list[] = '<a' . drupal_attributes($attr) . '>' . $limit . '</a>';
       }

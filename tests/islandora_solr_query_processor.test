@@ -5,6 +5,9 @@
  * Ingests an object and uses the query processor to check Solr's index for it.
  */
 
+/**
+ * Class IslandoraSolrQueryProcessorTestCase.
+ */
 class IslandoraSolrQueryProcessorTestCase extends IslandoraWebTestCase {
 
   /**
@@ -115,4 +118,5 @@ class IslandoraSolrQueryProcessorTestCase extends IslandoraWebTestCase {
       sleep(1);
     }
   }
+
 }
