@@ -1103,7 +1103,7 @@ class IslandoraSolrFacets {
     }
 
     // Show more link.
-    if (count($buckets) > $soft_limit) {
+    if (count($buckets) > $soft_limit && $soft_limit > 0) {
       $buckets_visible = array_slice($buckets, 0, $soft_limit);
       $buckets_hidden = array_slice($buckets, $soft_limit);
       $this->content .= theme('islandora_solr_facet', array(
