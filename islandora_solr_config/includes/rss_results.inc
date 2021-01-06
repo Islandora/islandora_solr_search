@@ -31,14 +31,15 @@ class IslandoraSolrResultsRSS extends IslandoraSolrResults {
     global $base_url;
 
     drupal_add_http_header('Content-Type', 'application/rss+xml; charset=utf-8');
+
     $islandora_solr_query->solrLimit = variable_get('islandora_solr_config_rss_limit', 50);
     $islandora_solr_query->executeQuery();
 
     // Get raw results.
     $solr_result = $islandora_solr_query->islandoraSolrResult;
-
     // All results.
     $docs = $solr_result['response']['objects'];
+    $total_results = $solr_result['response']['numFound'];
 
     // Loop over results.
     $items = NULL;
@@ -69,12 +70,11 @@ class IslandoraSolrResultsRSS extends IslandoraSolrResults {
       // ... and add to items string.
       $items .= "$rendered_item\n";
     }
-
     // Query search terms:
     $query = $islandora_solr_query->solrQuery;
 
     // Get the variables for the <channel> element.
-    $channel = $this->rssChannel($query);
+    $channel = $this->rssChannel($query, $total_results);
     $rss_attributes = array('version' => '2.0');
     drupal_alter('islandora_solr_config_rss_root_element_attributes', $rss_attributes, $channel, $items);
 
@@ -176,7 +176,7 @@ class IslandoraSolrResultsRSS extends IslandoraSolrResults {
    * @return array
    *   variable that holds all values to be rendered into <channel> elements
    */
-  public function rssChannel($query) {
+  public function rssChannel($query, $total_results) {
     // Set variables.
     global $base_url;
     $rss_channel = variable_get('islandora_solr_config_rss_channel', array(
@@ -191,7 +191,92 @@ class IslandoraSolrResultsRSS extends IslandoraSolrResults {
     $result['url'] = $base_url;
     $result['description'] = t('Aggregated search results of: @query', array('@query' => $query));
     $result['langcode'] = NULL;
-    $result['args'] = array(
+    $feed_url = request_uri();
+    $page_params = drupal_get_query_parameters();
+
+    if (!isset($page_params['page'])) {
+      $page_number = '0';
+    }
+    else {
+      $page_number = $page_params['page'];
+    }
+
+    // Removes the Page parameter to generate the first page link if applicable.
+    $first_params = $page_params;
+    if (isset($page_params['page'])) {
+      unset($first_params['page']);
+    }
+      $link_first = url(
+        request_path(),
+        array(
+          'absolute' => TRUE,
+          'query' => $first_params,
+        )
+      );
+
+    $page_next = $page_number + 1;
+    if ($page_number > 0) {
+      $page_prev = $page_number - 1;
+    }
+
+    $next_page = array(
+      'absolute' => TRUE,
+      'query' => array(
+        'page' => $page_next,
+      )+$page_params,
+    );
+
+    // Only set Next link if there is a next page.
+    $rss_limit = variable_get('islandora_solr_config_rss_limit', 50);
+// Take $total_results and divide by $rss_limit to get number of pages
+    $total_pages = $total_results / $rss_limit;
+    if ($total_pages > ($page_number + 1)) {
+      $link_next = url(request_path(), $next_page);
+    }
+
+    if (isset($page_prev)) {
+      if ($page_prev > 0) {
+        $prev_page = array(
+          'absolute' => TRUE,
+          'query' => array(
+            'page' => $page_prev,
+          )+$page_params,
+        );
+        $link_prev = url(request_path(), $prev_page);
+      }
+      else {
+        $link_prev = $link_first;
+      }
+    }
+    $result['args'] = array();
+    if (isset($link_next)) {
+    $result['args'][] = array(
+        'key' => 'link',
+        'attributes' => array(
+          'rel' => 'next'),
+        'value' => $link_next,
+        'encoded' => TRUE,
+      );
+    }
+    if (isset($link_prev)) {
+      $result['args'][] = array(
+        'key' => 'link',
+        'attributes' => array(
+          'rel' => 'previous'),
+        'value' => $link_prev,
+        'encoded' => TRUE,
+      );
+    }
+    if (isset($link_first)) {
+      $result['args'][] = array(
+        'key' => 'link',
+        'attributes' => array(
+          'rel' => 'first'),
+        'value' => $link_first,
+        'encoded' => TRUE,
+      );
+    }
+    $final_arguments = array(
       array(
         'key' => 'copyright',
         'value' => $rss_channel['copyright']),
@@ -202,6 +287,7 @@ class IslandoraSolrResultsRSS extends IslandoraSolrResults {
         'key' => 'webMaster',
         'value' => $rss_channel['webMaster']),
     );
+    $result['args'] = array_merge($result['args'], $final_arguments);
     return $result;
   }
 }
