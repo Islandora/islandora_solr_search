@@ -55,6 +55,15 @@ function islandora_solr_config_islandora_solr_secondary_display() {
       'description' => t("Show search results as RSS feed"),
       'logo' => '<img src="' . $path . '/images/rss.png" class="secondary-display-rss" alt="' . t("RSS Feed") . '">',
     ),
+    'atom' => array(
+      'name' => t('Atom'),
+      'module' => 'islandora_solr_config',
+      'file' => 'includes/atom_results.inc',
+      'class' => 'IslandoraSolrResultsAtom',
+      'function' => 'printAtom',
+      'description' => t("Show search results as an Atom feed"),
+      'logo' => '<img src="' . $path . '/images/rss.png" class="secondary-display-atom" alt="' . t("Atom Feed") . '">',
+    ),
   );
 }
 

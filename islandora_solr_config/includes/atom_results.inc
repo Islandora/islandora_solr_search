@@ -1,0 +1,275 @@
+<?php
+
+/**
+ * @file
+ * Contains methods to search solr and display results.  depends on
+ * Apache_Solr_Php client.
+ */
+
+/**
+ * Formats a single atom item.
+ *
+ * Arbitrary elements may be added using the $args associative array.
+ */
+function format_atom_item($title, $link, $description, $args = array()) {
+  $output = "<entry>\n";
+  $output .= ' <title>' . check_plain($title) . "</title>\n";
+  $output .= ' <link>' . check_url($link) . "</link>\n";
+  $output .= ' <description>' . check_plain($description) . "</description>\n";
+  $output .= format_xml_elements($args);
+  $output .= "</entry>\n";
+
+  return $output;
+}
+
+/**
+ * Formats the feed header.
+ */
+function format_atom_channel($title, $link, $description, $items, $langcode = NULL, $args = array()) {
+  global $language_content;
+  $langcode = $langcode ? $langcode : $language_content->language;
+  $output = ' <title>' . check_plain($title) . "</title>\n";
+  $output .= ' <link>' . check_url($link) . "</link>\n";
+
+  // The RSS 2.0 "spec" doesn't indicate HTML can be used in the description.
+  // We strip all HTML tags, but need to prevent double encoding from properly
+  // escaped source data (such as &amp becoming &amp;amp;).
+  $output .= ' <description>' . check_plain(decode_entities(strip_tags($description))) . "</description>\n";
+  $output .= ' <language>' . check_plain($langcode) . "</language>\n";
+  $output .= format_xml_elements($args);
+  $output .= $items;
+  $output .= "\n";
+  return $output;
+}
+
+/**
+ * Extention of IslandoraSolrResults for templating purposes.
+ * This overrides the displayResults function to provide an alternate display
+ * type.
+ */
+
+class IslandoraSolrResultsAtom extends IslandoraSolrResults {
+
+  /**
+   * Outputs results basically in the normal way.
+   *
+   * Thumbnails pulled from the Fedora repository.
+   *
+   * @param object $islandora_solr_query
+   *   A solr query object.
+   *
+   * @return string
+   *   XML output for the resultset. Note: we currently create this
+   *   output manually, should refactor to use drupal forms api.
+   */
+  public function printAtom($islandora_solr_query, $title = "Search Results") {
+
+    global $base_url;
+
+    drupal_add_http_header('Content-Type', 'application/atom+xml; charset=utf-8');
+    $islandora_solr_query->solrLimit = variable_get('islandora_solr_config_rss_limit', 50);
+    $islandora_solr_query->executeQuery();
+
+    // Get raw results.
+    $solr_result = $islandora_solr_query->islandoraSolrResult;
+
+    // All results.
+    $docs = $solr_result['response']['objects'];
+
+    // Loop over results.
+    $items = NULL;
+    foreach ($docs as $doc) {
+      // Turn arrays into strings.
+      foreach ($doc['solr_doc'] as $key => $value) {
+        if (is_array($value)) {
+          // Turn array into comma separated string and trim.
+          $doc[$key] = trim(implode(', ', $value));
+        }
+        else {
+          // Give it a trim.
+          $doc[$key] = trim($value);
+        }
+      }
+      // Get the variables for the <item> element.
+      $item = $this->atomItem($doc);
+
+      // Hook alter to change the atomItem before formatting.
+      drupal_alter('islandora_solr_search_atom_item', $item, $doc);
+
+      // Render rss item.
+      $rendered_item = format_atom_item($item['title'], $item['link'], $item['description'], $item['items']);
+
+      // ... allow it to be altered...
+      drupal_alter('islandora_solr_config_atom_item_post_render', $rendered_item, $doc);
+
+      // ... and add to items string.
+      $items .= "$rendered_item\n";
+    }
+
+    // Query search terms:
+    $query = $islandora_solr_query->solrQuery;
+
+    // Get the variables for the <channel> element.
+    $channel = $this->atomChannel($query);
+    drupal_alter('islandora_solr_config_atom_root_element_attributes', $channel, $items);
+
+    // Give the results clean variable names.
+    $title = $channel['title'];
+    $url = $channel['url'];
+    $feed_url = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
+    if (strpos($feed_url, '&page') == FALSE) {
+      $page_number = '1';
+    }
+    else {
+      $arr = explode('&page=', $feed_url);
+      $page_number = $arr[1];
+    }
+
+    $link_self = $feed_url;
+    if (isset($arr)) {
+      $link_first = $arr[0];
+    }
+    else {
+      $link_first = $feed_url;
+    }
+    $page_next = $page_number + 1;
+    if ($page_number > 1) {
+      $page_prev = $page_number - 1;
+    }
+    $link_next = $link_first . '&page=' . $page_next;
+    if (isset($page_prev)) {
+      $link_prev = $link_first . '&page=' . $page_prev;
+    }
+    $description = $channel['description'];
+    $langcode = $channel['langcode'];
+    $args = $channel['args'];
+
+    $output = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n";
+    $output .= '<feed xmlns="http://www.w3.org/2005/Atom">' . "\n";
+    $output .= ' <link rel="self" href="' . $link_self . '"/>' . "\n";
+    $output .= ' <link rel="first" href="' . $link_first . '"/>' . "\n";
+    if (isset($link_prev)) {
+      $output .= ' <link rel="previous" href="' . $link_prev . '"/>' . "\n";
+    }
+    $output .= ' <link rel="next" href="' . $link_next . '"/>' . "\n";
+    $output .= format_atom_channel($title, $url, $description, $items, $langcode, $args);
+    $output .= "</feed>\n";
+
+    print $output;
+    exit;
+  }
+
+
+  /**
+   * Function for setting the values of the <item> elements for the RSS display.
+   *
+   * @tutorial http://feed2.w3.org/docs/rss2.html#hrelementsOfLtitemgt
+   *
+   * @return array
+   *   variable that holds all values to be rendered into <item> elements
+   */
+  public function atomItem($doc) {
+    // Set variables.
+    global $base_url;
+
+    // Get variables.
+    $rss_item = variable_get('islandora_solr_config_rss_item', array(
+      'title' => 'fgs_label_s',
+      'description' => '',
+      'author' => '',
+      'category' => '',
+      'pubDate' => 'fgs_createdDate_s',
+      'enclosure_dsid' => 'TN',
+    ));
+
+    // Object url.
+    $object_url = url('islandora/object/' . htmlspecialchars($doc['PID'], ENT_QUOTES, 'utf-8'), array('absolute' => TRUE));
+    // Enclosure file url (thumbnail by default).
+    $dsid = ($rss_item['enclosure_dsid'] && isset($rss_item['enclosure_dsid'])) ? $rss_item['enclosure_dsid'] : 'TN';
+    $doc['datastreams'] = isset($doc['datastreams']) ? $doc['datastreams'] : array();
+    $is_datastream = in_array($dsid, $doc['datastreams']);
+
+    if ($is_datastream) {
+      $enclosure_url = $object_url . '/datastream/' . $dsid;
+    }
+
+    $rss_source = variable_get('site_name', "Default site name");
+
+    // Set the variables to be rendered as elements in the <item> element.
+    $result = array();
+    $result['title'] = ($rss_item['title'] && isset($doc[$rss_item['title']])) ? $doc[$rss_item['title']] : '';
+    $result['link'] = $object_url;
+    $result['description'] = ($rss_item['description'] && isset($doc[$rss_item['description']])) ? $doc[$rss_item['description']] : '';
+    $result['items'] = array(
+      array(
+        'key' => 'author',
+        'value' => ($rss_item['author'] && isset($doc[$rss_item['author']])) ? $doc[$rss_item['author']] : ''),
+      array(
+        'key' => 'guid',
+        'value' => $doc['PID'],
+        'attributes' => array('isPermaLink' => 'false')),
+      array(
+        'key' => 'id',
+        'value' => $doc['PID']),
+      array(
+        'key' => 'pubDate',
+        'value' => ($rss_item['pubDate'] && isset($doc[$rss_item['pubDate']])) ? $doc[$rss_item['pubDate']] : ''),
+      array(
+        'key' => 'category',
+        'value' => ($rss_item['category'] && isset($doc[$rss_item['category']])) ? $doc[$rss_item['category']] : ''),
+      array(
+        'key' => 'comments',
+        'value' => ''),
+      array(
+        'key' => 'source',
+        'value' => $rss_source, 'attributes' => array('url' => $base_url)),
+    );
+
+    if ($is_datastream) {
+      $result['items'][] = array(
+        'key' => 'enclosure',
+        'value' => '', 'attributes' => array(
+          'url' => $enclosure_url, 'length' => '',
+          'type' => ''));
+    }
+
+    return $result;
+  }
+
+  /**
+   * Function to set values of the <channel> elements for the RSS display.
+   *
+   * @tutorial http://feed2.w3.org/docs/rss2.html#requiredChannelElements
+   *
+   * @return array
+   *   variable that holds all values to be rendered into <channel> elements
+   */
+  public function atomChannel($query) {
+    // Set variables.
+    global $base_url;
+    $rss_channel = variable_get('islandora_solr_config_rss_channel', array(
+      'copyright' => '',
+      'managingEditor' => '',
+      'webMaster' => '',
+    ));
+
+    // Set the variables to be rendered as elements in the <channel> element.
+    $result = array();
+    $result['title'] = t('@site_name aggregator', array('@site_name' => variable_get('site_name', 'Drupal')));
+    $result['url'] = $base_url;
+    $result['description'] = t('Aggregated search results of: @query', array('@query' => $query));
+    $result['langcode'] = NULL;
+    $result['args'] = array(
+      array(
+        'key' => 'copyright',
+        'value' => $rss_channel['copyright']),
+      array(
+        'key' => 'managingEditor',
+        'value' => $rss_channel['managingEditor']),
+      array(
+        'key' => 'webMaster',
+        'value' => $rss_channel['webMaster']),
+    );
+    return $result;
+  }
+}

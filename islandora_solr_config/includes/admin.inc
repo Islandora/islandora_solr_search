@@ -114,7 +114,7 @@ function islandora_solr_config_admin_rss_settings($form, &$form_state) {
   $form['rss_limit'] = array(
     '#type' => 'textfield',
     '#title' => 'RSS results limit',
-    '#description' => 'Maximum number of results via RSS.',
+    '#description' => 'Maximum number of results via RSS or Atom.',
     '#default_value' => $rss_limit,
   );
   $form['buttons']['submit'] = array(
