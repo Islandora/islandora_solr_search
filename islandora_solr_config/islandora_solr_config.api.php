@@ -13,7 +13,7 @@
  * @param array $doc
  *   A Solr result.
  */
-function hook_islandora_solr_config_rss_item_post_render_alter(&$rendered_item, &$doc) {
+function hook_islandora_solr_config_rss_item_post_render_alter(&$rendered_item, array &$doc) {
   $item = new DOMDocument();
   $item->loadXML($rendered_item);
 
@@ -38,7 +38,7 @@ function hook_islandora_solr_config_rss_item_post_render_alter(&$rendered_item, 
  * @param string $items
  *   The rendered items to add in the channel.
  */
-function hook_islandora_solr_config_rss_root_element_attributes_alter(&$root_attributes, &$channel_info, &$items) {
+function hook_islandora_solr_config_rss_root_element_attributes_alter(array &$root_attributes, array &$channel_info, &$items) {
   // Could add namespaces to the root element or mess with the values to output
   // for the channel or all the items... If trying to parse $items, one would
   // have to treat it as a document fragment (its not valid XML on

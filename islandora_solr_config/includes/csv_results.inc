@@ -2,8 +2,9 @@
 
 /**
  * @file
- * Contains methods to search solr and display results. Depends on
- * Apache_Solr_Php client.
+ * Contains methods to search solr and display results.
+ *
+ * Depends on Apache_Solr_Php client.
  */
 
 /**
@@ -17,15 +18,15 @@ class IslandoraSolrResultsCSV extends IslandoraSolrResults {
    * Renders the Solr results as a comma separated values file (.csv). Resets
    * the html headers so it'll prompt to be downloaded.
    *
-   * @see IslandoraSolrResults
-   *
-   * @global type $base_url
-   *
-   * @param object $islandora_solr_query
+   * @param IslandoraSolrQueryProcessor $islandora_solr_query
    *   The IslandoraSolrQueryProcessor object which includes the current query
    *   settings and the raw Solr results.
+   *
+   * @see IslandoraSolrResults
+   *
+   * @global string $base_url
    */
-  public function printCSV($islandora_solr_query) {
+  public function printCsv(IslandoraSolrQueryProcessor $islandora_solr_query) {
     global $base_url;
     $redirect = drupal_parse_url(request_uri());
     // We want to unset the display profile of CSV, but keep everything else.
@@ -44,10 +45,13 @@ class IslandoraSolrResultsCSV extends IslandoraSolrResults {
   /**
    * Constructs a batch that creates a CSV for export.
    *
-   * @param object $islandora_solr_query
+   * @param IslandoraSolrQueryProcessor $islandora_solr_query
    *   The Islandora Solr Query processor.
+   *
+   * @return array
+   *   The batch operations.
    */
-  public function batchSolrResults($islandora_solr_query) {
+  public function batchSolrResults(IslandoraSolrQueryProcessor $islandora_solr_query) {
     return array(
       'operations' => array(
         array('islandora_solr_config_csv_batch_update_operation', array($islandora_solr_query)),
@@ -60,6 +64,7 @@ class IslandoraSolrResultsCSV extends IslandoraSolrResults {
       'finished' => 'islandora_solr_config_csv_download_csv',
     );
   }
+
 }
 
 /**
@@ -67,12 +72,12 @@ class IslandoraSolrResultsCSV extends IslandoraSolrResults {
  *
  * Batch in 1000 increments so Solr doesn't go kaboooom.
  *
- * @param object $islandora_solr_query
+ * @param IslandoraSolrQueryProcessor $islandora_solr_query
  *   An Islandora Solr Query processor object.
  * @param array $context
  *   The context array for the current batch.
  */
-function islandora_solr_config_csv_batch_update_operation($islandora_solr_query, &$context) {
+function islandora_solr_config_csv_batch_update_operation(IslandoraSolrQueryProcessor $islandora_solr_query, array &$context) {
   $csv_batch_limit = 100;
   $sandbox = &$context['sandbox'];
 
@@ -123,16 +128,16 @@ function islandora_solr_config_csv_batch_update_operation($islandora_solr_query,
 /**
  * Copies file from tmp and appends headers on the front for export.
  *
- * @global type $user
- *
  * @param array $success
  *   The success array from the batch.
  * @param array $results
  *   The results array from the batch.
  * @param array $operations
  *   The operations array from the batch.
+ *
+ * @global $user
  */
-function islandora_solr_config_csv_download_csv($success, $results, $operations) {
+function islandora_solr_config_csv_download_csv(array $success, array $results, array $operations) {
   global $user;
   $export_uri = 'public://csv_export_' . time() . '.csv';
   // We register this file into Drupal so it will be deleted.

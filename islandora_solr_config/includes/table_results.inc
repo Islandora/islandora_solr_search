@@ -2,8 +2,9 @@
 
 /**
  * @file
- * Contains methods to search solr and display results. Depends on
- * Apache_Solr_Php client.
+ * Contains methods to search solr and display results.
+ *
+ * Depends on Apache_Solr_Php client.
  */
 
 /**
@@ -14,16 +15,16 @@ class IslandoraSolrResultsTable extends IslandoraSolrResults {
   /**
    * Renders the Solr results as a table.
    *
-   * @see IslandoraSolrResults::displayResults()
-   *
    * @param array $solr_results
    *   The raw Solr results from
    *   IslandoraSolrQueryProcessor::islandoraSolrResult.
    *
    * @return string
    *   Rendered Solr results
+   *
+   * @see IslandoraSolrResults::displayResults()
    */
-  public function printResults($solr_results) {
+  public function printResults(array $solr_results) {
     $mod_path = drupal_get_path('module', 'islandora_solr_config');
     drupal_add_css("$mod_path/css/islandora_solr_config.theme.css");
 

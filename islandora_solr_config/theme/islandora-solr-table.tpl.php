@@ -1,12 +1,13 @@
 <?php
+
 /**
  * @file
- * Islandora solr table template
+ * Islandora solr table template.
  *
  * Variables available:
  * - $header: Header results
  * - $rows: Row results
- * - $elements: Optional elements
+ * - $elements: Optional elements.
  *
  * @see template_preprocess_islandora_solr_grid()
  */

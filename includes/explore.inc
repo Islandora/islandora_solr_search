@@ -10,7 +10,7 @@
  *
  * @return output
  *   A rendered list containing explore links to islandora solr search and
- * object counts.
+ *   object counts.
  */
 function islandora_solr_explore_generate_links() {
   $output = '';
@@ -45,10 +45,10 @@ function islandora_solr_explore_generate_links() {
 
   if (!empty($links)) {
     $output = theme('item_list', array(
-    'items' => $links,
-    'title' => NULL,
-    'type' => 'ul',
-    'attributes' => array('class' => 'islandora-solr-explore'),
+      'items' => $links,
+      'title' => NULL,
+      'type' => 'ul',
+      'attributes' => array('class' => 'islandora-solr-explore'),
     ));
   }
 

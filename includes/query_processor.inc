@@ -2,8 +2,9 @@
 
 /**
  * @file
- * Contains methods to build and execute a solr query. Depends on
- * Apache_Solr_Php client.
+ * Contains methods to build and execute a solr query.
+ *
+ * Depends on Apache_Solr_Php client.
  */
 
 /**
@@ -16,19 +17,59 @@
 class IslandoraSolrQueryProcessor {
 
   public $solrQuery;
-  // Query alternative set if solrQuery is empty.
+  /**
+   * Query alternative set if solrQuery is empty.
+   *
+   * @var string
+   */
   public $internalSolrQuery;
+  /**
+   * The starting position for the results.
+   *
+   * @var int
+   */
   public $solrStart;
+  /**
+   * Max number of rows to return.
+   *
+   * @var int
+   */
   public $solrLimit;
+  /**
+   * The type of query to execute.
+   *
+   * @var string
+   */
   public $solrDefType;
-  // All other Solr parameters.
+  /**
+   * All other Solr parameters.
+   *
+   * @var array
+   */
   public $solrParams = array();
-  // Solr results tailored for Islandora's use.
+  /**
+   * Solr results tailored for Islandora's use.
+   *
+   * @var array
+   */
   public $islandoraSolrResult;
-  // The current display (for modules wanting to alter the query of a display).
+  /**
+   * The current display (for modules wanting to alter the query of a display).
+   *
+   * @var string
+   */
   public $display;
-  // Parameters from URL.
+  /**
+   * Parameters from URL.
+   *
+   * @var array
+   */
   public $internalSolrParams;
+  /**
+   * Different strings of characters that are considered empty query strings.
+   *
+   * @var array
+   */
   public $differentKindsOfNothing = array(
     ' ',
     '%20',
@@ -38,6 +79,11 @@ class IslandoraSolrQueryProcessor {
     '',
   );
 
+  /**
+   * Solr version from islandora_solr_get_solr_version().
+   *
+   * @var array|bool
+   */
   protected $solrVersion;
 
   /**
@@ -96,7 +142,7 @@ class IslandoraSolrQueryProcessor {
    * @param bool $alter_results
    *   Whether or not to send out hooks to alter the islandora_solr_results.
    */
-  public function buildAndExecuteQuery($query, $params = NULL, $alter_results = TRUE) {
+  public function buildAndExecuteQuery($query, array $params = NULL, $alter_results = TRUE) {
     // Set empty string.
     if (variable_get('islandora_solr_request_handler', '') == 'standard') {
       if (!$query || $query == ' ') {
@@ -118,14 +164,14 @@ class IslandoraSolrQueryProcessor {
    * be used for the query execution. Includes a module_invoke_all to make
    * changes to the query.
    *
-   * @see IslandoraSolrQueryProcessor::buildAndExecuteQuery()
-   *
    * @param string $query
    *   The query string provided in the URL.
    * @param array $params
    *   All URL parameters from the Solr results page.
+   *
+   * @see IslandoraSolrQueryProcessor::buildAndExecuteQuery()
    */
-  public function buildQuery($query, $params = array()) {
+  public function buildQuery($query, array $params = array()) {
     // Set internal parameters gathered from the URL but not 'q' and 'page'.
     $this->internalSolrParams = $params;
     unset($this->internalSolrParams['q']);
@@ -228,7 +274,7 @@ class IslandoraSolrQueryProcessor {
     if (!empty($facet_dates_ranges)) {
       // Set range/date variables.
       $params_date_facets = array();
-      $facet_dates = array_filter($facet_dates_ranges, function($o) {
+      $facet_dates = array_filter($facet_dates_ranges, function ($o) {
         return islandora_solr_is_date_field($o['solr_field']);
       });
       foreach ($facet_dates_ranges as $key => $value) {
@@ -385,6 +431,8 @@ class IslandoraSolrQueryProcessor {
    *
    * @param bool $alter_results
    *   Whether or not to send out hooks to alter the islandora_solr_results.
+   * @param bool $use_post
+   *   Whether to use GET or POST for query.
    */
   public function executeQuery($alter_results = TRUE, $use_post = FALSE) {
     // Init Apache_Solr_Service object.
@@ -431,7 +479,8 @@ class IslandoraSolrQueryProcessor {
             'solr_nav' => array(
               'id' => $id,
               'page' => (isset($page_params['page']) ? $page_params['page'] : 0),
-            ));
+            ),
+          );
         }
         else {
           $url_params = array();
@@ -513,7 +562,7 @@ class IslandoraSolrQueryProcessor {
    * @return array
    *   The object results array with updated solr doc values.
    */
-  public function prepareSolrDoc($object_results) {
+  public function prepareSolrDoc(array $object_results) {
     // Optionally limit results to values given.
     $limit_results = variable_get('islandora_solr_limit_result_fields', 0);
     // Look for fields with no permission.

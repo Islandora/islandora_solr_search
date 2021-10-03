@@ -238,7 +238,7 @@ function _islandora_solr_admin_index_settings_submit($form, &$form_state) {
  * @return array
  *   The form array.
  */
-function islandora_solr_admin_settings($form, &$form_state) {
+function islandora_solr_admin_settings(array $form, array &$form_state) {
   // Add admin form css.
   drupal_set_title(t('Solr settings'));
 
@@ -826,7 +826,7 @@ function islandora_solr_admin_settings_default_confirm_form_submit(array $form, 
  *
  * @link http://drupal.stackexchange.com/questions/14855/how-do-i-dynamically-fill-a-textfield-with-ajax/16576#16576 Stackexchange Post @endlink
  */
-function islandora_solr_admin_settings_fields(&$form_state, &$terms, $field_type) {
+function islandora_solr_admin_settings_fields(array &$form_state, array &$terms, $field_type) {
 
   // Set variables.
   $field_type_class = str_replace('_', '-', $field_type);
@@ -1125,7 +1125,7 @@ function islandora_solr_admin_breadcrumbs_settings(array $form, array &$form_sta
  * @return string
  *   Rendered table.
  */
-function theme_islandora_solr_admin_fields($variables) {
+function theme_islandora_solr_admin_fields(array $variables) {
   $form = $variables['form'];
 
   $field_type = $form['#field_type'];
@@ -1222,7 +1222,7 @@ function theme_islandora_solr_admin_fields($variables) {
  *
  * @see islandora_solr_admin_settings()
  */
-function theme_islandora_solr_admin_primary_display($variables) {
+function theme_islandora_solr_admin_primary_display(array $variables) {
   $form = $variables['form'];
 
   $default = variable_get('islandora_solr_primary_display', 'default');
@@ -1288,7 +1288,7 @@ function theme_islandora_solr_admin_primary_display($variables) {
  * @param array $form_state
  *   The form state.
  */
-function _islandora_solr_admin_settings_validate($form, &$form_state) {
+function _islandora_solr_admin_settings_validate(array $form, array &$form_state) {
   $limits = explode(',', $form_state['values']['islandora_solr_num_of_results_advanced']);
   $form_state['values']['islandora_solr_num_of_results_advanced'] = array_filter(array_map('trim', $limits), 'is_numeric');
   $form_state['values']['islandora_solr_namespace_restriction'] = preg_replace('/:$/', '', $form_state['values']['islandora_solr_namespace_restriction']);
@@ -1302,7 +1302,7 @@ function _islandora_solr_admin_settings_validate($form, &$form_state) {
  * @param array $form_state
  *   The form state.
  */
-function _islandora_solr_admin_settings_submit($form, &$form_state) {
+function _islandora_solr_admin_settings_submit(array $form, array &$form_state) {
 
   // If this function is called not using submit or reset buttons.
   if ($form_state['clicked_button']['#id'] != 'edit-submit' && $form_state['clicked_button']['#id'] != 'edit-reset') {
@@ -1478,7 +1478,7 @@ function _islandora_solr_get_handlers($solr_url) {
  *
  * @see islandora_solr_admin_settings()
  */
-function _islandora_solr_update_solr_url($form, $form_state) {
+function _islandora_solr_update_solr_url(array $form, array $form_state) {
   unset($form_state['submit_handlers']);
   form_execute_handlers('submit', $form, $form_state);
   $form_state['rebuild'] = TRUE;
@@ -1496,7 +1496,7 @@ function _islandora_solr_update_solr_url($form, $form_state) {
  *
  * @see islandora_solr_admin_settings()
  */
-function _islandora_solr_admin_refresh($form, &$form_state) {
+function _islandora_solr_admin_refresh(array $form, array &$form_state) {
   unset($form_state['submit_handlers']);
   form_execute_handlers('submit', $form, $form_state);
   $form_state['rebuild'] = TRUE;
@@ -1560,8 +1560,8 @@ function _islandora_solr_check_dismax($solr_url, $selected_handler) {
  * @param string $string
  *   String filled out in the autocomplete textfield.
  *
- * @return json
- *   A json array containing the Solr luke values that contain the given string.
+ *   Outputs a json array containing the Solr luke values that contain the
+ *   given string.
  */
 function _islandora_solr_autocomplete_luke($string = '') {
 
@@ -1593,7 +1593,7 @@ function _islandora_solr_autocomplete_luke($string = '') {
  * @param array $form_state
  *   An associative array containing the form state.
  */
-function _islandora_solr_update_fields_submit($form, &$form_state) {
+function _islandora_solr_update_fields_submit(array $form, array &$form_state) {
   $form_state['rebuild'] = TRUE;
 }
 
@@ -1610,7 +1610,7 @@ function _islandora_solr_update_fields_submit($form, &$form_state) {
  * @return array
  *   The part of the form array that needs asynchronous updating.
  */
-function _islandora_solr_update_fields($form, &$form_state) {
+function _islandora_solr_update_fields(array $form, array &$form_state) {
 
   // Check what section the call is from.
   switch ($form_state['triggering_element']['#field_type']) {
@@ -1642,7 +1642,7 @@ function _islandora_solr_update_fields($form, &$form_state) {
  * @return array
  *   An array of AJAX commands.
  */
-function _islandora_solr_admin_settings_field_configure($form, &$form_state) {
+function _islandora_solr_admin_settings_field_configure(array $form, array &$form_state) {
   $variables = $form_state['dialog'];
   $field_type = $form_state['dialog']['field_type'];
   $solr_field = $form_state['dialog']['solr_field'];
@@ -1678,7 +1678,7 @@ function _islandora_solr_admin_settings_field_configure($form, &$form_state) {
  * @return array
  *   An array of AJAX commands.
  */
-function _islandora_solr_admin_settings_dialog($form, &$form_state) {
+function _islandora_solr_admin_settings_dialog(array $form, array &$form_state) {
 
   $dialog_id = $form_state['dialog']['dialog_id'];
 
@@ -1836,7 +1836,7 @@ function _islandora_solr_admin_get_form_function($field_type = NULL) {
  *   An associative array containing the definition for the permissions
  *   fieldset.
  */
-function islandora_solr_get_admin_permissions_fieldset($permissions, $permissions_default, $permissions_disable, $default_value) {
+function islandora_solr_get_admin_permissions_fieldset($permissions, array $permissions_default, array $permissions_disable, $default_value) {
   if (is_array($permissions)) {
     $default_enable = !empty($permissions) ? TRUE : $default_value;
   }
@@ -2018,9 +2018,9 @@ function islandora_solr_admin_settings_result_fields($form, &$form_state, $varia
  * @param array $form
  *   An array representing the Drupal form, passed by reference.
  * @param bool $default_value
- *   Whether the default enabled checkbox is to be TRUE or FALSE. *
+ *   Whether the default enabled checkbox is to be TRUE or FALSE.
  */
-function islandora_solr_append_permissions_and_actions($values, &$form, $default_value = TRUE) {
+function islandora_solr_append_permissions_and_actions(array $values, array &$form, $default_value = TRUE) {
   $permissions = isset($values['permissions']) ? $values['permissions'] : array();
   $permissions_disable = _islandora_solr_permissions_disable();
   $permissions_default = _islandora_solr_permissions_default();

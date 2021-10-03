@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Contains all administration related functionality
+ * Contains all administration related functionality.
  */
 
 /**
@@ -16,7 +16,7 @@
  * @return array
  *   The admin form to be rendered.
  */
-function islandora_solr_config_admin_rss_settings($form, &$form_state) {
+function islandora_solr_config_admin_rss_settings(array $form, array &$form_state) {
   // Get variables.
   $rss_item = variable_get('islandora_solr_config_rss_item', array(
     'title' => 'fgs_label_s',

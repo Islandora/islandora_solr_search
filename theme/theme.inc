@@ -5,13 +5,10 @@
  * Theme functions for the Islandora Solr Search module.
  */
 
-
 /**
  * Prepares variables for islandora_solr_wrapper templates.
  *
  * Default template: theme/islandora-solr-wrapper.tpl.php.
- *
- * @global string $base_url
  *
  * @param array $variables
  *   An associative array containing:
@@ -22,12 +19,14 @@
  *     - pager: (optional) Rendered pager
  *     - solr_total: (optional) Total amount of documents found.
  *     - solr_start: (optional) Solr start position
- *     - solr_end: (optional) Solr end position
+ *     - solr_end: (optional) Solr end position.
+ *
+ * @global string $base_url
  *
  * @see islandora_solr_theme()
  * @see IslandoraSolrResults::displayResults()
  */
-function template_preprocess_islandora_solr_wrapper(&$variables) {
+function template_preprocess_islandora_solr_wrapper(array &$variables) {
   global $base_url;
   $variables['base_url'] = $base_url;
 
@@ -111,7 +110,7 @@ function template_preprocess_islandora_solr_facet(&$variables) {
  *
  * @ingroup themeable
  */
-function theme_islandora_solr_facet_wrapper($variables) {
+function theme_islandora_solr_facet_wrapper(array $variables) {
   $output = '<div class="islandora-solr-facet-wrapper">';
   $output .= '<h3>' . $variables['title'] . '</h3>';
   $output .= $variables['content'];

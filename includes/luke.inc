@@ -131,8 +131,6 @@ function islandora_solr_get_luke($solr_url = NULL, $field = NULL, $num_terms = 0
  * Returns an array containing all fields in Luke that are sortable.
  *
  * Must be indexed and can't be multivalued.
- * @link http://archive.apache.org/dist/lucene/solr/ref-guide/
- * Common Query Parameters: Sort section for more info on constraints. @endlink
  *
  * @param string $solr_url
  *   URL which points to Solr.
@@ -140,6 +138,9 @@ function islandora_solr_get_luke($solr_url = NULL, $field = NULL, $num_terms = 0
  * @return array|bool
  *   An array containing all fields in Luke that are sortable. If no
  *   fields are sortable, it returns FALSE.
+ *
+ * @see http://archive.apache.org/dist/lucene/solr/ref-guide/
+ * Common Query Parameters: Sort section for more info on constraints.
  */
 function islandora_solr_get_sortable($solr_url = NULL) {
   $sortable = array();
@@ -164,7 +165,6 @@ function islandora_solr_get_sortable($solr_url = NULL) {
  * Checks a single Solr field if it's sortable.
  *
  * Must be indexed and can't be multivalued.
- * @link http://wiki.apache.org/solr/CommonQueryParameters#sort More info on constraints. @endlink
  *
  * @param string $solr_url
  *   URL which points to Solr.
@@ -174,6 +174,9 @@ function islandora_solr_get_sortable($solr_url = NULL) {
  * @return bool
  *   Returns TRUE if the given field is sortable, returns FALSE if the field is
  *   not sortable or if field is not set.
+ *
+ * @see http://wiki.apache.org/solr/CommonQueryParameters#sort
+ * More info on constraints.
  */
 function islandora_solr_check_sortable($solr_url = NULL, $field = NULL) {
   $sortable = FALSE;
@@ -245,13 +248,13 @@ function islandora_solr_get_type_class($solr_type) {
  * @return array|bool
  *   The version array or FALSE if can't be determined.
  *
- * Version array has keys:
- *    'version' => 'string of version'.
- *    'major' => first digit (if parseable),
- *    'minor' => second digit (if applicable),
- *    'patch' => third digit (if applicable)
+ *   Version array has keys:
+ *   'version' => 'string of version'.
+ *   'major' => first digit (if parseable),
+ *   'minor' => second digit (if applicable),
+ *   'patch' => third digit (if applicable)
  *
- *  Only version is guaranteed to be returned on a successful request.
+ *   Only version is guaranteed to be returned on a successful request.
  */
 function islandora_solr_get_solr_version($reset = FALSE) {
   $version = &drupal_static(__FUNCTION__);

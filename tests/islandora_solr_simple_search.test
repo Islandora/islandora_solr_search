@@ -5,6 +5,9 @@
  * Ingests an object and datastream and checks Solr for it via simple search.
  */
 
+/**
+ * Class IslandoraSolrSimpleSearchTestCase.
+ */
 class IslandoraSolrSimpleSearchTestCase extends IslandoraWebTestCase {
 
   /**
@@ -119,4 +122,5 @@ class IslandoraSolrSimpleSearchTestCase extends IslandoraWebTestCase {
       sleep(1);
     }
   }
+
 }

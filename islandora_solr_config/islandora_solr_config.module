@@ -81,6 +81,7 @@ function islandora_solr_config_menu() {
   );
   return $items;
 }
+
 /**
  * Implements hook_theme().
  */

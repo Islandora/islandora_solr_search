@@ -1,7 +1,8 @@
 <?php
+
 /**
  * @file
- * Islandora solr search results wrapper template
+ * Islandora solr search results wrapper template.
  *
  * Variables available:
  * - $variables: all array elements of $variables can be used as a variable.

@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Class override for grid display
+ * Class override for grid display.
  */
 
 /**
@@ -16,16 +16,16 @@ class IslandoraSolrResultsGrid extends IslandoraSolrResults {
    * Markup and styling is based on the Islandora collection grid view. Some
    * styling is inherited from it.
    *
-   * @see IslandoraSolrResults::displayResults()
-   *
    * @param array $solr_results
    *   The processed Solr results from
    *   IslandoraSolrQueryProcessor::islandoraSolrResult.
    *
    * @return string
    *   Rendered Solr results.
+   *
+   * @see IslandoraSolrResults::displayResults()
    */
-  public function printResults($solr_results) {
+  public function printResults(array $solr_results) {
     $mod_path = drupal_get_path('module', 'islandora_solr_config');
     drupal_add_css("$mod_path/css/islandora_solr_config.theme.css");
     $object_results = $solr_results['response']['objects'];
@@ -39,4 +39,5 @@ class IslandoraSolrResultsGrid extends IslandoraSolrResults {
       'elements' => $elements,
     ));
   }
+
 }

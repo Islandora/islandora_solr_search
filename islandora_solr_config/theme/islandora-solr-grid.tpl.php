@@ -1,10 +1,11 @@
 <?php
+
 /**
  * @file
- * Islandora Solr grid template
+ * Islandora Solr grid template.
  *
  * Variables available:
- * - $results: Primary profile results array
+ * - $results: Primary profile results array.
  *
  * @see template_preprocess_islandora_solr_grid()
  */

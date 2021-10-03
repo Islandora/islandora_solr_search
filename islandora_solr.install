@@ -30,7 +30,6 @@ function islandora_solr_requirements($phase) {
   return $requirements;
 }
 
-
 /**
  * Implements hook_install().
  */
@@ -253,7 +252,7 @@ function islandora_solr_update_7002() {
     ->fields('c', array('collection_pid', 'sort_string'))
     ->execute();
 
-  $is_empty = function($o) {
+  $is_empty = function ($o) {
     return (empty($o) || !trim($o));
   };
 

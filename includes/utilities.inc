@@ -11,8 +11,6 @@
  * The nuts and bolts of this function are borrowed from z3950.module
  * and also apachesolr.module.
  *
- * @see pager_query()
- *
  * @param int $total
  *   The total number of items found.
  * @param int $limit
@@ -22,6 +20,8 @@
  *
  * @return int
  *   The current page for $element. 0 by default if $_GET['page'] is empty.
+ *
+ * @see pager_query()
  */
 function islandora_solr_pager_init($total, $limit = 10, $element = 0) {
   global $pager_page_array, $pager_total, $pager_total_items;
@@ -85,6 +85,7 @@ function islandora_solr_replace_slashes($str) {
  * A better explode method allows quotes in the returned strings.
  *
  * Taken from php.net.
+ * XXX: Is this function really necessary?
  *
  * @param string $delim
  *   The delimiter on which to break (',' by default).
@@ -94,8 +95,6 @@ function islandora_solr_replace_slashes($str) {
  *   An enclosing character.
  * @param bool $preserve
  *   ??? Something to do with $enclose.
- *
- * XXX: Is this function really necessary?
  *
  * @return array
  *   An array containing the items of $str, broken apart on $delim.
@@ -126,14 +125,13 @@ function islandora_solr_csv_explode($delim = ',', $str = '', $enclose = '"', $pr
  *
  * @param string $value
  *   A string to escape.
- *
  * @param array $pattern
- *   An regular expression pattern
+ *   An regular expression pattern.
  *
  * @return string
  *   The escaped string.
  */
-function islandora_solr_facet_query_escape($value, $pattern = NULL) {
+function islandora_solr_facet_query_escape($value, array $pattern = NULL) {
   if (!$pattern) {
     $pattern = ISLANDORA_SOLR_QUERY_FACET_LUCENE_ESCAPE_REGEX_DEFAULT;
   }
@@ -212,10 +210,6 @@ function islandora_solr_escape($facets) {
  *
  * Mostly used with variable_get().
  *
- * @deprecated
- *   No longer used, due to the use of a separate database table for
- *   configuration.
- *
  * @param string $raw_field_list
  *   A string containing the list of fields to parse, with individual items
  *   separated by either a comma or newline. Each field entry may be either a
@@ -227,6 +221,10 @@ function islandora_solr_escape($facets) {
  *
  * @return array
  *   An associative array mapping the fields to our human-readable label.
+ *
+ * @deprecated
+ *   No longer used, due to the use of a separate database table for
+ *   configuration.
  */
 function islandora_solr_build_substitution_list($raw_field_list) {
   $facet_array = array();
@@ -265,7 +263,7 @@ function islandora_solr_build_substitution_list($raw_field_list) {
  * @return array
  *   The original object results array, but with a modified Solr doc.
  */
-function islandora_solr_prepare_solr_doc($object_results) {
+function islandora_solr_prepare_solr_doc(array $object_results) {
   $fields_all = islandora_solr_get_fields('result_fields', FALSE);
   // Loop over object results.
   foreach ($object_results as $object_index => $object_result) {
@@ -301,7 +299,7 @@ function islandora_solr_prepare_solr_doc($object_results) {
  * @return array
  *   Returns the same array but with prepared Solr field values.
  */
-function islandora_solr_prepare_solr_results($solr_results) {
+function islandora_solr_prepare_solr_results(array $solr_results) {
   module_load_include('inc', 'islandora_solr', 'includes/field_truncation');
 
   $object_results = $solr_results['response']['objects'];
@@ -521,7 +519,7 @@ function islandora_solr_islandora_basic_collection_backend_callable($collection_
  *   Min wordsafe length.
  * @param string $separator
  *   A separator to use for display output.
- * @param array|NULL $link_options
+ * @param array|null $link_options
  *   (Optional) An array of link options including:
  *   - 'link_to_object' : (bool) Include link to object.
  *   - 'link_to_search' : (bool) Include link to search results.
@@ -532,7 +530,7 @@ function islandora_solr_islandora_basic_collection_backend_callable($collection_
  * @return string
  *   The updated display values.
  */
-function islandora_solr_truncate_field_display($display_values, $max_length, $add_ellipsis, $word_safe, $wordsafe_length, $separator, $link_options = NULL) {
+function islandora_solr_truncate_field_display(array $display_values, $max_length, $add_ellipsis, $word_safe, $wordsafe_length, $separator, $link_options = NULL) {
   module_load_include('inc', 'islandora_solr', 'includes/field_truncation');
 
   $updated_display_values = $display_values;
@@ -582,7 +580,7 @@ function islandora_solr_truncate_field_display($display_values, $max_length, $ad
         $solr_query = format_string('!field:"!value"', array(
           '!field' => $link_options['field'],
           '!value' => islandora_solr_lesser_escape($original_value),
-          ));
+        ));
         $original_value = l(
           $original_value,
           "islandora/search/$solr_query",
@@ -625,7 +623,7 @@ function islandora_solr_truncate_field_display($display_values, $max_length, $ad
  * Check the field type against the user-specified list of date field types.
  *
  * @param string $solr_field
- *   The Solr field name
+ *   The Solr field name.
  *
  * @return bool
  *   Whether the field matches the date field types.
@@ -667,7 +665,7 @@ function islandora_solr_is_boolean_field($solr_field) {
  * @return bool
  *   Whether the field type is in the provided list.
  */
-function islandora_solr_is_typed_field($solr_field, $types) {
+function islandora_solr_is_typed_field($solr_field, array $types) {
   $luke_result = islandora_solr_get_luke(NULL, $solr_field);
   $type = (isset($luke_result['fields'][$solr_field]['type']) ? $luke_result['fields'][$solr_field]['type'] : FALSE);
   if ($type) {
