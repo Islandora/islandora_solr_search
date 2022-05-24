@@ -1038,6 +1038,9 @@ function islandora_solr_search_navigation() {
     $next_page = NULL;
     $offset = $params['solr_nav']['offset'];
     $page = $params['solr_nav']['page'];
+    if (!is_numeric($offset) || !is_numeric($page)) {
+      return NULL;
+    }
     $query_processor = new IslandoraSolrQueryProcessor();
     $query_processor->solrQuery = $nav_params['query'];
     $query_processor->internalSolrQuery = $nav_params['query_internal'];
